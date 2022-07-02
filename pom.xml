@@ -14,7 +14,14 @@
         <module>Homework02_Homework</module>
         <module>Homework00_Common</module>
         <module>Homework03_Course</module>
-        <module>Homework04_SQL_Connection</module>
+        <module>Homework04_Creator</module>
+        <module>Homework05_Respondent</module>
+        <module>Homework06_CourseManager</module>
+        <module>Homework07_Teacher</module>
+        <module>Homework08_Student</module>
+        <module>Homework09_Admin</module>
+        <module>Homework10_Register</module>
+        <module>Homework11_Gateway</module>
     </modules>
 
     <!--设定版本-->
