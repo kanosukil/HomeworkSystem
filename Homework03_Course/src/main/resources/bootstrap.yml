@@ -1,0 +1,15 @@
+# 该服务的端口
+server:
+  port: 9993
+# 服务注册名
+spring:
+  application:
+    name: CourseSQL
+  # Nacos 配置
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8800
+      config:
+        group: Homework_System-Config
+        name: course-config
+        file-extension: yml
