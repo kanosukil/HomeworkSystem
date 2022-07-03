@@ -3,4 +3,38 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.UserDao">
     <cache type="cn.summer.homework.cache.RedisCache"/>
+    <!-- 根据用户名查找 -->
+    <select id="selectByName" parameterType="string" resultType="cn.summer.homework.Entity.User">
+        select *
+        from user
+        where name = #{name};
+    </select>
+    <!-- 根据 email 地址查找用户 -->
+    <select id="selectByEmail" parameterType="string" resultType="cn.summer.homework.Entity.User">
+        select *
+        from user
+        where email = #{email}
+        limit 1;
+    </select>
+    <!--创建新用户-->
+    <insert id="insertNewUser" parameterType="cn.summer.homework.Entity.User">
+        insert into user (name, password_hash, head_image, introduction, email, create_time)
+        VALUES (#{name}, #{password_hash}, #{head_image}, #{introduction}, #{email}, #{create_time})
+    </insert>
+    <!--删除用户-->
+    <delete id="deleteUser" parameterType="integer">
+        delete
+        from user
+        where id = #{id};
+    </delete>
+    <!--更新用户数据-->
+    <update id="updateUser" parameterType="cn.summer.homework.Entity.User">
+        update user
+        set name=#{name},
+            password_hash=#{password_hash},
+            head_image=#{head_image},
+            introduction=#{introduction},
+            email=#{email}
+        where id = #{id};
+    </update>
 </mapper>

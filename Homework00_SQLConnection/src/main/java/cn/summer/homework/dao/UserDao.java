@@ -1,6 +1,9 @@
 package cn.summer.homework.dao;
 
+import cn.summer.homework.Entity.User;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,5 +12,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserDao {
+    List<User> selectByName(String name);
 
+    User selectByEmail(String email);
+
+    int insertNewUser(User user);
+
+    int deleteUser(Integer id);
+
+    int updateUser(User user);
 }
