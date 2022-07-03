@@ -3,5 +3,33 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.CourseDao">
     <cache type="cn.summer.homework.cache.RedisCache"/>
-
+    <!--列出所有课程-->
+    <select id="selectAll" resultType="cn.summer.homework.Entity.Course">
+        select *
+        from course;
+    </select>
+    <!--通过 ID 查询课程-->
+    <select id="selectByID" parameterType="integer" resultType="cn.summer.homework.Entity.Course">
+        select *
+        from course
+        where id = #{id};
+    </select>
+    <!--新创建课程(一开始没有人选课, 因此 student_num 为默认值 0)-->
+    <insert id="createNewCourse" parameterType="cn.summer.homework.Entity.Course">
+        insert into course (name, create_time)
+        values (#{name}, #{create_time});
+    </insert>
+    <!--删除课程-->
+    <delete id="deleteCourse" parameterType="integer">
+        delete
+        from course
+        where id = #{id};
+    </delete>
+    <!--更新课程数据-->
+    <update id="updateCourse" parameterType="cn.summer.homework.Entity.Course">
+        update course
+        set name=#{name},
+            student_num=#{student_num}
+        where id = #{id};
+    </update>
 </mapper>

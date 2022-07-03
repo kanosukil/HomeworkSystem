@@ -3,23 +3,34 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.UserRoleDao">
     <cache-ref namespace="cn.summer.homework.dao.UserDao"/>
+    <!--查询用户的角色-->
     <select id="selectByUser" parameterType="integer" resultType="integer">
         select rid
         from user_role
         where uid = #{uid};
     </select>
+    <!--查询某个角色的用户有哪些-->
     <select id="selectByRole" parameterType="integer" resultType="integer">
         select uid
         from user_role
         where rid = #{rid};
     </select>
+    <!--新加一个用户的角色-->
     <insert id="createNewUser" parameterType="cn.summer.homework.PO.UserRole">
         insert into user_role
         values (#{uid}, #{rid});
     </insert>
+    <!--将一个用户删除-->
     <delete id="deleteUser" parameterType="integer">
         delete
         from user_role
         where uid = #{uid};
+    </delete>
+    <!--删除指定用户的指定角色-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.UserRole">
+        delete
+        from user_role
+        where rid = #{rid}
+          and uid = #{uid};
     </delete>
 </mapper>

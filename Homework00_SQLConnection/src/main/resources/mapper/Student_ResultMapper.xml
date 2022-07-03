@@ -3,6 +3,40 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.StudentResultDao">
     <cache-ref namespace="cn.summer.homework.dao.ResultDao"/>
-
-
+    <!--查询某学生的所有答案-->
+    <select id="selectBySID" parameterType="integer" resultType="cn.summer.homework.PO.StudentResult">
+        select *
+        from student_result
+        where sid = #{sid};
+    </select>
+    <!--查询某个答案的答题者-->
+    <select id="selectByRID" parameterType="integer" resultType="cn.summer.homework.PO.StudentResult">
+        select *
+        from student_result
+        where rid = #{rid};
+    </select>
+    <!--学生新答了一道题-->
+    <insert id="addNewResult" parameterType="cn.summer.homework.PO.StudentResult">
+        insert into student_result
+        values (#{sid}, #{rid});
+    </insert>
+    <!--学生删除了一个答案-->
+    <delete id="deleteByRID" parameterType="integer">
+        delete
+        from student_result
+        where rid = #{rid};
+    </delete>
+    <!--删除一个学生的所有答案-->
+    <delete id="deleteBySID" parameterType="integer">
+        delete
+        from student_result
+        where sid = #{sid};
+    </delete>
+    <!--删除指定学生的指定答案-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.StudentResult">
+        delete
+        from student_result
+        where sid = #{sid}
+          and rid = #{rid};
+    </delete>
 </mapper>

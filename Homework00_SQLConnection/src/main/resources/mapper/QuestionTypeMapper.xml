@@ -3,5 +3,32 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.QuestionTypeDao">
     <cache type="cn.summer.homework.cache.RedisCache"/>
-
+    <!--列出所有题目类型-->
+    <select id="selectAll" resultType="string">
+        select typeName
+        from questiontype;
+    </select>
+    <!--查询题目类型(by id)-->
+    <select id="selectByID" parameterType="integer" resultType="string">
+        select typeName
+        from questiontype
+        where id = #{id};
+    </select>
+    <!--添加题目类型-->
+    <insert id="addQuestionType" parameterType="string">
+        insert into questiontype(typeName)
+        values (#{typeName});
+    </insert>
+    <!--删除题目类型-->
+    <delete id="deleteQuestionType" parameterType="string">
+        delete
+        from questiontype
+        where typeName = #{typeName};
+    </delete>
+    <!--删除题目类型(By id)-->
+    <delete id="deleteByID" parameterType="integer">
+        delete
+        from questiontype
+        where id = #{id};
+    </delete>
 </mapper>

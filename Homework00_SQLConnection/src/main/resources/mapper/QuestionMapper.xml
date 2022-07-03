@@ -3,5 +3,37 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.QuestionDao">
     <cache type="cn.summer.homework.cache.RedisCache"/>
-
+    <!--列出所有问题-->
+    <select id="selectAll" resultType="cn.summer.homework.Entity.Question">
+        select *
+        from question;
+    </select>
+    <!--根据 id 查询问题-->
+    <select id="selectByID" parameterType="integer" resultType="cn.summer.homework.Entity.Question">
+        select *
+        from question
+        where id = #{id};
+    </select>
+    <!--新建问题-->
+    <insert id="createNewQuestion" parameterType="cn.summer.homework.Entity.Question">
+        insert into question (title, extension, score, isFile, answer, comment, create_time)
+        values (#{title}, #{extension}, #{score}, #{isFile}, #{answer}, #{comment}, #{create_time})
+    </insert>
+    <!--删除某个问题(通过 id)-->
+    <delete id="deleteByID" parameterType="integer">
+        delete
+        from question
+        where id = #{id};
+    </delete>
+    <!--更新问题-->
+    <update id="updateQuestion" parameterType="cn.summer.homework.Entity.Question">
+        update question
+        set title=#{title},
+            extension=#{extension},
+            score=#{score},
+            isFile=#{isFile},
+            answer=#{answer},
+            comment=#{comment}
+        where id = #{id};
+    </update>
 </mapper>

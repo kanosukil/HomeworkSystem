@@ -3,5 +3,40 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.QuestionResultDao">
     <cache-ref namespace="cn.summer.homework.dao.ResultDao"/>
-
+    <!--根据qid 问题找结果-->
+    <select id="selectByQID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionResult">
+        select *
+        from question_result
+        where qid = #{qid};
+    </select>
+    <!--根据rid 结果找问题-->
+    <select id="selectByRID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionResult">
+        select *
+        from question_result
+        where rid = #{rid};
+    </select>
+    <!--新创建问题的回答-->
+    <insert id="createResultOfQuestion" parameterType="cn.summer.homework.PO.QuestionResult">
+        insert into question_result
+        values (#{qid}, #{rid});
+    </insert>
+    <!--删除所有问题的同一个答案(但由于 result 的 unique, 因此相当于删除指定问题的指定答案)-->
+    <delete id="deleteByRID" parameterType="integer">
+        delete
+        from question_result
+        where rid = #{rid};
+    </delete>
+    <!--删除整个问题以及其答案-->
+    <delete id="deleteByQID" parameterType="integer">
+        delete
+        from question_result
+        where qid = #{qid};
+    </delete>
+    <!--精准删除 指定问题指定答案-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.QuestionResult">
+        delete
+        from question_result
+        where qid = #{qid}
+          and rid = #{rid};
+    </delete>
 </mapper>

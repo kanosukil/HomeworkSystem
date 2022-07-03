@@ -3,5 +3,40 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.QuestionTypeDao">
     <cache-ref namespace="cn.summer.homework.dao.QuestionDao"/>
-
+    <!--查询某个问题的类型(根据 qid)-->
+    <select id="selectByQID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionType">
+        select *
+        from question_type
+        where qid = #{qid};
+    </select>
+    <!--查询某个类型的所有题目(根据 qtid)-->
+    <select id="selectByQTID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionType">
+        select *
+        from question_type
+        where qtid = #{qtid};
+    </select>
+    <!--定义问题的类型-->
+    <insert id="createTypeOfQuestion" parameterType="cn.summer.homework.PO.QuestionType">
+        insert into question_type
+        values (#{qid}, #{qtid});
+    </insert>
+    <!--删除某个题目-->
+    <delete id="deleteByQID" parameterType="integer">
+        delete
+        from question_type
+        where qid = #{qid};
+    </delete>
+    <!--删除某个类型的所有题目-->
+    <delete id="deleteByQTID" parameterType="integer">
+        delete
+        from question_type
+        where qtid = #{qtid};
+    </delete>
+    <!--删除指定类型的指定题目-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.QuestionType">
+        delete
+        from question_type
+        where qtid = #{qtid}
+          and qid = #{qid};
+    </delete>
 </mapper>

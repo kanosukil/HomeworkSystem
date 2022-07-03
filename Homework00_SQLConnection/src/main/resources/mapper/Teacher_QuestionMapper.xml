@@ -3,6 +3,40 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.TeacherQuestionDao">
     <cache-ref namespace="cn.summer.homework.dao.QuestionDao"/>
-
-
+    <!--查询老师出的所有问题-->
+    <select id="selectByTID" parameterType="integer" resultType="cn.summer.homework.PO.TeacherQuestion">
+        select *
+        from teacher_question
+        where tid = #{tid};
+    </select>
+    <!--查询指定问题的出题老师-->
+    <select id="selectByQID" parameterType="integer" resultType="cn.summer.homework.PO.TeacherQuestion">
+        select *
+        from teacher_question
+        where qid = #{qid};
+    </select>
+    <!--老师新出题-->
+    <insert id="addNewQuestion" parameterType="cn.summer.homework.PO.TeacherQuestion">
+        insert into teacher_question
+        values (#{tid}, #{qid});
+    </insert>
+    <!--老师销号-->
+    <delete id="deleteByTID" parameterType="integer">
+        delete
+        from teacher_question
+        where tid = #{tid};
+    </delete>
+    <!--删除指定问题-->
+    <delete id="deleteByQID" parameterType="integer">
+        delete
+        from teacher_question
+        where qid = #{qid};
+    </delete>
+    <!--删除指定老师的指定问题-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.TeacherQuestion">
+        delete
+        from teacher_question
+        where tid = #{tid}
+          and qid = #{qid};
+    </delete>
 </mapper>

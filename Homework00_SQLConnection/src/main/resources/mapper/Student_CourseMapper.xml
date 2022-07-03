@@ -3,6 +3,40 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.summer.homework.dao.cascade.StudentCourseDao">
     <cache-ref namespace="cn.summer.homework.dao.UserDao"/>
-
-
+    <!--查询学生选修了哪些课程-->
+    <select id="selectBySID" parameterType="integer" resultType="cn.summer.homework.PO.StudentCourse">
+        select *
+        from student_course
+        where sid = #{sid};
+    </select>
+    <!--查询选秀该课程的学生-->
+    <select id="selectByCID" parameterType="integer" resultType="cn.summer.homework.PO.StudentCourse">
+        select *
+        from student_course
+        where cid = #{cid};
+    </select>
+    <!--一个学生选修了该课程-->
+    <insert id="addNewStudentOfCourse" parameterType="cn.summer.homework.PO.StudentCourse">
+        insert into student_course
+        values (#{sid}, #{cid});
+    </insert>
+    <!--一个学生删除了账号-->
+    <delete id="deleteBySID" parameterType="integer">
+        delete
+        from student_course
+        where sid = #{sid};
+    </delete>
+    <!--一个课程被删除了-->
+    <delete id="deleteByCID" parameterType="integer">
+        delete
+        from student_course
+        where cid = #{cid};
+    </delete>
+    <!--学生退课 or 老师强退-->
+    <delete id="accurateDelete" parameterType="cn.summer.homework.PO.StudentCourse">
+        delete
+        from student_course
+        where sid = #{sid}
+          and cid = #{cid};
+    </delete>
 </mapper>
