@@ -1,6 +1,9 @@
 package cn.summer.homework.dao.cascade;
 
+import cn.summer.homework.PO.TeacherQuestion;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,4 +12,15 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface TeacherQuestionDao {
+    List<TeacherQuestion> selectByTID(Integer tid);
+
+    List<TeacherQuestion> selectByQID(Integer qid);
+
+    int addNewQuestion(TeacherQuestion teacherQuestion);
+
+    int deleteByTID(Integer tid);
+
+    int deleteByQID(Integer qid);
+
+    int accurateDelete(TeacherQuestion teacherQuestion);
 }

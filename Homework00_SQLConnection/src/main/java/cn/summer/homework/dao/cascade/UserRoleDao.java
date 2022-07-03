@@ -1,6 +1,9 @@
 package cn.summer.homework.dao.cascade;
 
+import cn.summer.homework.PO.UserRole;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,4 +12,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserRoleDao {
+    List<Integer> selectByUser(Integer uid);
+
+    List<Integer> selectByRole(Integer rid);
+
+    int createNewUser(UserRole userRole);
+
+    int deleteUser(Integer uid);
+
+    int accurateDelete(UserRole userRole);
 }

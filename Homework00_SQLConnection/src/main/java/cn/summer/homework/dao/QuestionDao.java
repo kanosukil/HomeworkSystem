@@ -1,6 +1,9 @@
 package cn.summer.homework.dao;
 
+import cn.summer.homework.Entity.Question;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,4 +12,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface QuestionDao {
+    List<Question> selectAll();
+
+    Question selectByID(Integer id);
+
+    int createNewQuestion(Question question);
+
+    int deleteByID(Integer id);
+
+    int updateQuestion(Question question);
 }

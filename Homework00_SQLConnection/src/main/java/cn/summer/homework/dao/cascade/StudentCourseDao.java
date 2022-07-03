@@ -1,6 +1,9 @@
 package cn.summer.homework.dao.cascade;
 
+import cn.summer.homework.PO.StudentCourse;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,4 +12,15 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface StudentCourseDao {
+    List<StudentCourse> selectBySID(Integer sid);
+
+    List<StudentCourse> selectByCID(Integer cid);
+
+    int addNewStudentOfCourse(StudentCourse studentCourse);
+
+    int deleteBySID(Integer sid);
+
+    int deleteByCID(Integer cid);
+
+    int accurateDelete(StudentCourse studentCourse);
 }

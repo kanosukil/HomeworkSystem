@@ -1,6 +1,9 @@
 package cn.summer.homework.dao.cascade;
 
+import cn.summer.homework.PO.StudentResult;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -9,4 +12,15 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface StudentResultDao {
+    List<StudentResult> selectBySID(Integer sid);
+
+    List<StudentResult> selectByRID(Integer rid);
+
+    int addNewResult(StudentResult studentResult);
+
+    int deleteByRID(Integer rid);
+
+    int deleteBySID(Integer sid);
+
+    int accurateDelete(StudentResult studentResult);
 }
