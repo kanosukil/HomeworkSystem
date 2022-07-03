@@ -1,6 +1,6 @@
 package cn.summer.homework.cache;
 
-import cn.summer.homework.Utils.ApplicationContextUtils;
+import cn.summer.homework.utils.ApplicationContextUtils;
 import org.apache.ibatis.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class RedisCache implements Cache {
         // 设置超时时间
         // 这样设置将可能导致所有的缓存同一时间全部过期, 从而引发缓存雪崩或缓存穿透
         template.expire(id, 30, TimeUnit.MINUTES);
-        
+
     }
 
     @Override

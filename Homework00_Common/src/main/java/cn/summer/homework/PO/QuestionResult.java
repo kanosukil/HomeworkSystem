@@ -4,11 +4,11 @@ import lombok.Data;
 
 /**
  * @author VHBin
- * @date 2022/7/3-15:24
+ * @date 2022/7/3-15:40
  */
 
 @Data
-public class UserRole {
-    private Integer uid;
+public class QuestionResult {
+    private Integer qid;
     private Integer rid;
 }

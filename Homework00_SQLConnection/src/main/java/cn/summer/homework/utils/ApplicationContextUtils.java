@@ -1,4 +1,4 @@
-package cn.summer.homework.Utils;
+package cn.summer.homework.utils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
