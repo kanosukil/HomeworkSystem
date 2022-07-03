@@ -1,0 +1,16 @@
+# 该服务的端口
+server:
+  port: 9990
+# 服务注册名
+spring:
+  application:
+    name: SQLService
+  # Nacos 配置
+  cloud:
+    nacos:
+      server-addr: 127.0.0.1:8800
+      config:
+        group: Homework_System-Config
+        name: sql-config
+        file-extension: yml
+        namespace: Homework-System
