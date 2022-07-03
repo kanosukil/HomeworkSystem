@@ -110,41 +110,45 @@ CREATE INDEX `user_index_0` ON `user` (`name`);
 
 CREATE UNIQUE INDEX `user_index_1` ON `user` (`email`);
 
-CREATE UNIQUE INDEX `user_role_index_2` ON `user_role` (`uid`, `rid`);
+CREATE UNIQUE INDEX `roleName` ON `role` (`name`);
 
-CREATE UNIQUE INDEX `user_role_index_3` ON `user_role` (`rid`, `uid`);
+CREATE UNIQUE INDEX `user_role_index_3` ON `user_role` (`uid`, `rid`);
 
-CREATE UNIQUE INDEX `student_result_index_4` ON `student_result` (`sid`, `rid`);
+CREATE UNIQUE INDEX `user_role_index_4` ON `user_role` (`rid`, `uid`);
 
-CREATE UNIQUE INDEX `student_result_index_5` ON `student_result` (`rid`, `sid`);
+CREATE UNIQUE INDEX `student_result_index_5` ON `student_result` (`sid`, `rid`);
 
-CREATE UNIQUE INDEX `question_type_index_6` ON `question_type` (`qid`, `qtid`);
+CREATE UNIQUE INDEX `student_result_index_6` ON `student_result` (`rid`, `sid`);
 
-CREATE UNIQUE INDEX `question_type_index_7` ON `question_type` (`qtid`, `qid`);
+CREATE UNIQUE INDEX `typeName` ON `questionType` (`typeName`);
 
-CREATE UNIQUE INDEX `teacher_question_index_8` ON `teacher_question` (`tid`, `qid`);
+CREATE UNIQUE INDEX `question_type_index_8` ON `question_type` (`qid`, `qtid`);
 
-CREATE UNIQUE INDEX `teacher_question_index_9` ON `teacher_question` (`qid`, `tid`);
+CREATE UNIQUE INDEX `question_type_index_9` ON `question_type` (`qtid`, `qid`);
 
-CREATE UNIQUE INDEX `question_result_index_10` ON `question_result` (`qid`, `rid`);
+CREATE UNIQUE INDEX `teacher_question_index_10` ON `teacher_question` (`tid`, `qid`);
 
-CREATE UNIQUE INDEX `question_result_index_11` ON `question_result` (`rid`, `qid`);
+CREATE UNIQUE INDEX `teacher_question_index_11` ON `teacher_question` (`qid`, `tid`);
 
-CREATE UNIQUE INDEX `teacher_course_index_12` ON `teacher_course` (`tid`, `cid`);
+CREATE UNIQUE INDEX `question_result_index_12` ON `question_result` (`qid`, `rid`);
 
-CREATE UNIQUE INDEX `teacher_course_index_13` ON `teacher_course` (`cid`, `tid`);
+CREATE UNIQUE INDEX `question_result_index_13` ON `question_result` (`rid`, `qid`);
 
-CREATE UNIQUE INDEX `student_course_index_14` ON `student_course` (`sid`, `cid`);
+CREATE UNIQUE INDEX `teacher_course_index_14` ON `teacher_course` (`tid`, `cid`);
 
-CREATE UNIQUE INDEX `student_course_index_15` ON `student_course` (`cid`, `sid`);
+CREATE UNIQUE INDEX `teacher_course_index_15` ON `teacher_course` (`cid`, `tid`);
 
-CREATE UNIQUE INDEX `question_course_index_16` ON `question_course` (`qid`, `cid`);
+CREATE UNIQUE INDEX `student_course_index_16` ON `student_course` (`sid`, `cid`);
 
-CREATE UNIQUE INDEX `question_course_index_17` ON `question_course` (`cid`, `qid`);
+CREATE UNIQUE INDEX `student_course_index_17` ON `student_course` (`cid`, `sid`);
 
-CREATE UNIQUE INDEX `result_course_index_18` ON `result_course` (`rid`, `cid`);
+CREATE UNIQUE INDEX `question_course_index_18` ON `question_course` (`qid`, `cid`);
 
-CREATE UNIQUE INDEX `result_course_index_19` ON `result_course` (`cid`, `rid`);
+CREATE UNIQUE INDEX `question_course_index_19` ON `question_course` (`cid`, `qid`);
+
+CREATE UNIQUE INDEX `result_course_index_20` ON `result_course` (`rid`, `cid`);
+
+CREATE UNIQUE INDEX `result_course_index_21` ON `result_course` (`cid`, `rid`);
 
 ALTER TABLE `user_role`
     ADD FOREIGN KEY (`uid`) REFERENCES `user` (`id`);
