@@ -109,9 +109,28 @@ public class UserServiceImpl implements UserService {
     public UserInfo getAllUser() {
         UserInfo userInfo = new UserInfo();
         List<User> users = userDao.selectAll();
+        Map<String, Object> map = new HashMap<>();
+        String[] roles;
         for (User user : users) {
-
+            roles = getRoles(user.getId());
+            if (roles.length > 0) {
+                map.put(user.getEmail(), new UserDTO(user, roles));
+            } else {
+                map.clear();
+                map.put("Error", user);
+                break;
+            }
         }
+        if (!map.containsKey("Error")) {
+            setUserInfo(userInfo, "All User", users.size(), map);
+            logger.info("获取全部用户信息完成");
+        } else {
+            Integer id = ((User) map.get("Error")).getId();
+            setUserInfo(userInfo, "All User", -1,
+                    "获取 User 角色信息失败", id.toString());
+            logger.error("获取 User: {} 角色信息失败", id);
+        }
+        return userInfo;
     }
 
     @Override
@@ -391,32 +410,37 @@ public class UserServiceImpl implements UserService {
                             "查询 Role", "role 不存在");
                     logger.error("Cause: Role: {} 不存在", role);
                 } else {
-
-                    if (userDao.updateUser(user) > 0) {
-                        if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
-                            setUserInfo(userInfo, "Op:update", 1,
-                                    new HashMap<>() {{
-                                        put("srcUser", new UserDTO(srcUser, srcRoles));
-                                        put("updateUser", new UserDTO(user, getRoles(id)));
-                                    }});
-                            logger.info("User: id {} & UserRole: role {} 表更新成功", id, role);
-                        } else {
-                            logger.error("Cause: 更新 UserID: {} Role: {} 时, 插入 UserRole 失败, User 更新成功", id, role);
-                            int reset = userDao.updateUser(srcUser);
-                            if (reset > 0) {
-                                logger.info("User 重置成功");
+                    if (userRoleDao.accurateSelect(new UserRole(user.getId(), r)) == 0) {
+                        if (userDao.updateUser(user) > 0) {
+                            if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
+                                setUserInfo(userInfo, "Op:update", 1,
+                                        new HashMap<>() {{
+                                            put("srcUser", new UserDTO(srcUser, srcRoles));
+                                            put("updateUser", new UserDTO(user, getRoles(id)));
+                                        }});
+                                logger.info("User: id {} & UserRole: role {} 表更新成功", id, role);
                             } else {
-                                logger.error("User 重置失败");
-                            }
+                                logger.error("Cause: 更新 UserID: {} Role: {} 时, 插入 UserRole 失败, User 更新成功", id, role);
+                                int reset = userDao.updateUser(srcUser);
+                                if (reset > 0) {
+                                    logger.info("User 重置成功");
+                                } else {
+                                    logger.error("User 重置失败");
+                                }
+                                setUserInfo(userInfo, "Op:update", -1,
+                                        "插入 UserRole 表",
+                                        "插入失败".concat(reset > 0 ? "" : ", 但 User 已更新"));
+                            } // userRole update
+                        } else {
                             setUserInfo(userInfo, "Op:update", -1,
-                                    "插入 UserRole 表",
-                                    "插入失败".concat(reset > 0 ? "" : ", 但 User 已更新"));
-                        } // userRole update
+                                    "更新 User", "更新失败");
+                            logger.error("Cause: 更新 UserID: {} Role: {} 时, 更新 User 失败", id, role);
+                        } // user update
                     } else {
-                        setUserInfo(userInfo, "Op:update", -1,
-                                "更新 User", "更新失败");
-                        logger.error("Cause: 更新 UserID: {} Role: {} 时, 更新 User 失败", id, role);
-                    } // user update
+                        setUserInfo(userInfo, "Op:update", 0,
+                                "添加 Role", "role 已存在");
+                        logger.error("Cause: UserID: {} 添加 Role: {} 时, User 已有 Role 角色", id, role);
+                    }
                 } // role
             } else {
                 setUserInfo(userInfo, "Op:update", -1,
@@ -445,19 +469,25 @@ public class UserServiceImpl implements UserService {
                             "Cause: 查询 Role", "role 不存在");
                     logger.error("Cause: Role: {} 不存在", role);
                 } else {
-                    if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
-                        User user = userDao.selectByID(id);
-                        setUserInfo(userInfo, "Op:update", 1,
-                                new HashMap<>() {{
-                                    put("srcUser", new UserDTO(user, srcRoles));
-                                    put("updateUser", new UserDTO(user, getRoles(id)));
-                                }});
-                        logger.info("UserID: {} 添加 Role: {} 成功", id, role);
+                    if (userRoleDao.accurateSelect(new UserRole(id, r)) == 0) {
+                        if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
+                            User user = userDao.selectByID(id);
+                            setUserInfo(userInfo, "Op:update", 1,
+                                    new HashMap<>() {{
+                                        put("srcUser", new UserDTO(user, srcRoles));
+                                        put("updateUser", new UserDTO(user, getRoles(id)));
+                                    }});
+                            logger.info("UserID: {} 添加 Role: {} 成功", id, role);
+                        } else {
+                            setUserInfo(userInfo, "Op:update", -1,
+                                    "插入 UserRole ", "插入失败");
+                            logger.error("Cause: UserID: {} 添加 Role: {} 失败", id, role);
+                        } // userRole
                     } else {
-                        setUserInfo(userInfo, "Op:update", -1,
-                                "插入 UserRole ", "插入失败");
-                        logger.error("Cause: UserID: {} 添加 Role: {} 失败", id, role);
-                    } // userRole
+                        setUserInfo(userInfo, "Op:update", 0,
+                                "添加 Role", "role 已存在");
+                        logger.error("Cause: UserID: {} 添加 Role: {} 时, User 已有 Role 角色", id, role);
+                    }
                 } // role
             } else {
                 setUserInfo(userInfo, "Op:update", -1,
@@ -476,12 +506,18 @@ public class UserServiceImpl implements UserService {
     public UserInfo deleteUserRole(Integer id, String role) {
         UserInfo userInfo = new UserInfo();
 
+        // 用户是否存在
         if (isExists(id)) {
             String[] roles = getRoles(id);
+            // 角色查询是否成功
             if (roles.length > 0) {
                 Integer r = roleDao.selectByName(role);
+                // 需要删除的角色是否正确
                 if (r > 0 && r <= 3) {
-                    if (userRoleDao.deleteUser(id) > 0) {
+                    UserRole userRole = new UserRole(id, r);
+                    // 用户有该角色时, 才能删除
+                    if (userRoleDao.accurateSelect(userRole) == 1 &&
+                            userRoleDao.accurateDelete(userRole) > 0) {
                         User user = userDao.selectByID(id);
                         setUserInfo(userInfo, "Op:update", 1,
                                 new HashMap<>() {{
@@ -503,6 +539,10 @@ public class UserServiceImpl implements UserService {
                 setUserInfo(userInfo, "Op:update", -1,
                         "Error", "角色获取异常");
                 logger.error("Cause: 角色获取异常 deleteRole");
+            }
+            // 防止用户最后没有角色, 因此设为默认角色
+            if (userRoleDao.selectByUser(id).size() == 0) {
+                userRoleDao.addNewUser(new UserRole(id, 1));
             }
         } else {
             setUserInfo(userInfo, "Op:update", 0,

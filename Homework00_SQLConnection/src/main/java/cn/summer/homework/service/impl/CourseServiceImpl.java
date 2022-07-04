@@ -1,5 +1,6 @@
 package cn.summer.homework.service.impl;
 
+import cn.summer.homework.DTO.CourseInfo;
 import cn.summer.homework.dao.CourseDao;
 import cn.summer.homework.dao.cascade.StudentCourseDao;
 import cn.summer.homework.dao.cascade.TeacherCourseDao;
@@ -24,4 +25,9 @@ public class CourseServiceImpl implements CourseService {
     private StudentCourseDao studentCourseDao;
     @Resource
     private TeacherCourseDao teacherCourseDao;
+
+    @Override
+    public CourseInfo getAllCourse() {
+        return null;
+    }
 }
