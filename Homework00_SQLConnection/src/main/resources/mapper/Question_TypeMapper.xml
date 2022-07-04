@@ -15,6 +15,13 @@
         from question_type
         where qtid = #{qtid};
     </select>
+    <!--精准查找-->
+    <select id="accurateSelect" parameterType="cn.summer.homework.PO.QuestionType" resultType="integer">
+        select count(*)
+        from question_type
+        where qid = #{qid}
+          and qtid = #{qtid};
+    </select>
     <!--定义问题的类型-->
     <insert id="createTypeOfQuestion" parameterType="cn.summer.homework.PO.QuestionType">
         insert into question_type

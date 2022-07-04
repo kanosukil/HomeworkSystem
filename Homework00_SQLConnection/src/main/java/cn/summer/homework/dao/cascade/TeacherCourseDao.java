@@ -16,6 +16,8 @@ public interface TeacherCourseDao {
 
     List<TeacherCourse> selectByCID(Integer cid);
 
+    int accurateSelect(TeacherCourse teacherCourse);
+
     int addNewCourse(TeacherCourse teacherCourse);
 
     int deleteByTID(Integer tid);

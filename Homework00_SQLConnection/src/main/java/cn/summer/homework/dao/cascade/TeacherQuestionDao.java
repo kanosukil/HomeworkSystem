@@ -16,6 +16,8 @@ public interface TeacherQuestionDao {
 
     List<TeacherQuestion> selectByQID(Integer qid);
 
+    int accurateSelect(TeacherQuestion teacherQuestion);
+
     int addNewQuestion(TeacherQuestion teacherQuestion);
 
     int deleteByTID(Integer tid);

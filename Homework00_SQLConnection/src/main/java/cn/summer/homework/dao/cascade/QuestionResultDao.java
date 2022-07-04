@@ -16,6 +16,8 @@ public interface QuestionResultDao {
 
     List<QuestionResult> selectByRID(Integer rid);
 
+    int accurateSelect(QuestionResult questionResult);
+
     int createResultOfQuestion(QuestionResult questionResult);
 
     int deleteByRID(Integer rid);

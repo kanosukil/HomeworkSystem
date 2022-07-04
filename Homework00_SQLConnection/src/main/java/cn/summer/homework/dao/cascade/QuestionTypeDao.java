@@ -16,6 +16,8 @@ public interface QuestionTypeDao {
 
     List<QuestionType> selectByQTID(Integer qtid);
 
+    int accurateSelect(QuestionType questionType);
+
     int createTypeOfQuestion(QuestionType questionType);
 
     int deleteByQID(Integer qid);

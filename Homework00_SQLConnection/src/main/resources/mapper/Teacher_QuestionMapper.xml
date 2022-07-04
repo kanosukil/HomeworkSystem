@@ -15,6 +15,13 @@
         from teacher_question
         where qid = #{qid};
     </select>
+    <!--精准查找-->
+    <select id="accurateSelect" parameterType="cn.summer.homework.PO.TeacherQuestion" resultType="integer">
+        select count(*)
+        from teacher_question
+        where tid = #{tid}
+          and qid = #{qid};
+    </select>
     <!--老师新出题-->
     <insert id="addNewQuestion" parameterType="cn.summer.homework.PO.TeacherQuestion">
         insert into teacher_question

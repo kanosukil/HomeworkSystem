@@ -15,6 +15,13 @@
         from user_role
         where rid = #{rid};
     </select>
+    <!--精准查找-->
+    <select id="accurateSelect" parameterType="cn.summer.homework.PO.UserRole" resultType="integer">
+        select count(*)
+        from user_role
+        where rid = #{rid}
+          and uid = #{uid};
+    </select>
     <!--新加一个用户的角色-->
     <insert id="addNewUser" parameterType="cn.summer.homework.PO.UserRole">
         insert into user_role

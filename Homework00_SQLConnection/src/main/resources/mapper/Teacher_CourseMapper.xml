@@ -15,6 +15,13 @@
         from teacher_course
         where cid = #{cid};
     </select>
+    <!--精准查找-->
+    <select id="accurateSelect" parameterType="cn.summer.homework.PO.TeacherCourse" resultType="integer">
+        select count(*)
+        from teacher_course
+        where tid = #{tid}
+          and cid = #{cid};
+    </select>
     <!--老师新授课-->
     <insert id="addNewCourse" parameterType="cn.summer.homework.PO.TeacherCourse">
         insert into teacher_course

@@ -16,6 +16,8 @@ public interface StudentResultDao {
 
     List<StudentResult> selectByRID(Integer rid);
 
+    int accurateSelect(StudentResult studentResult);
+
     int addNewResult(StudentResult studentResult);
 
     int deleteByRID(Integer rid);

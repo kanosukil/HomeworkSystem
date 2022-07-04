@@ -16,6 +16,8 @@ public interface QuestionCourseDao {
 
     List<QuestionCourse> selectByCID(Integer cid);
 
+    int accurateSelect(QuestionCourse questionCourse);
+
     int createQuestionOfCourse(QuestionCourse questionCourse);
 
     int deleteByQID(Integer qid);

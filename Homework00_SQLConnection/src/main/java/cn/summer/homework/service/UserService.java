@@ -21,6 +21,8 @@ public interface UserService {
 
     boolean isEmailUsed(String email);
 
+    UserInfo getAllUser();
+
     UserInfo findUser(String username);
 
     UserInfo findUser(Integer id);

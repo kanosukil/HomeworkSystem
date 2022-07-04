@@ -16,6 +16,8 @@ public interface ResultCourseDao {
 
     List<ResultCourse> selectByCID(Integer cid);
 
+    int accurateSelect(ResultCourse resultCourse);
+
     int addResultOfCourse(ResultCourse resultCourse);
 
     int deleteByRID(Integer rid);

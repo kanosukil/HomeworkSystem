@@ -15,6 +15,13 @@
         from student_result
         where rid = #{rid};
     </select>
+    <!--精准查找-->
+    <select id="accurateSelect" parameterType="cn.summer.homework.PO.StudentResult" resultType="integer">
+        select count(*)
+        from student_result
+        where rid = #{rid}
+          and sid = #{sid};
+    </select>
     <!--学生新答了一道题-->
     <insert id="addNewResult" parameterType="cn.summer.homework.PO.StudentResult">
         insert into student_result
