@@ -16,7 +16,7 @@
         where rid = #{rid};
     </select>
     <!--新加一个用户的角色-->
-    <insert id="createNewUser" parameterType="cn.summer.homework.PO.UserRole">
+    <insert id="addNewUser" parameterType="cn.summer.homework.PO.UserRole">
         insert into user_role
         values (#{uid}, #{rid});
     </insert>

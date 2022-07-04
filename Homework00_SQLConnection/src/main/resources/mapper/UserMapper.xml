@@ -21,6 +21,12 @@
         where email = #{email}
         limit 1;
     </select>
+    <!--根据 id 查找用户-->
+    <select id="selectByID" parameterType="integer" resultType="cn.summer.homework.Entity.User">
+        select *
+        from user
+        where id = #{id};
+    </select>
     <!--创建新用户-->
     <insert id="insertNewUser" parameterType="cn.summer.homework.Entity.User">
         insert into user (name, password_hash, head_image, introduction, email, create_time)

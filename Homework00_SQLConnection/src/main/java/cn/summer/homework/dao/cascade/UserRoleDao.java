@@ -16,7 +16,7 @@ public interface UserRoleDao {
 
     List<Integer> selectByRole(Integer rid);
 
-    int createNewUser(UserRole userRole);
+    int addNewUser(UserRole userRole);
 
     int deleteUser(Integer uid);
 

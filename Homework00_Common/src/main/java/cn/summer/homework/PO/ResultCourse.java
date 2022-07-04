@@ -1,6 +1,8 @@
 package cn.summer.homework.PO;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author VHBin
@@ -8,6 +10,8 @@ import lombok.Data;
  */
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResultCourse {
     private Integer rid;
     private Integer cid;

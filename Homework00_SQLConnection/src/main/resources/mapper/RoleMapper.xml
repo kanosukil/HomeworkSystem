@@ -9,4 +9,9 @@
         from role
         where id = #{id};
     </select>
+    <select id="selectByName" parameterType="string" resultType="integer">
+        select id
+        from role
+        where name = #{roleName};
+    </select>
 </mapper>

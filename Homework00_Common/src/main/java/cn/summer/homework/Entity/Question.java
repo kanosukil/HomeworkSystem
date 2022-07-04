@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 public class Question {
-    private Integer id;
+    private Integer id = 0;
     private String title;
     private String extension;
     private Integer score;

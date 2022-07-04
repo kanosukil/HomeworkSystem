@@ -19,6 +19,8 @@ public interface UserDao {
 
     User selectByEmail(String email);
 
+    User selectByID(Integer id);
+
     int insertNewUser(User user);
 
     int deleteUser(Integer id);

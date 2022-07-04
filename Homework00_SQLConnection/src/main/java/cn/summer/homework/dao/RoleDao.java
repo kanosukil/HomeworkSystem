@@ -10,4 +10,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface RoleDao {
     String selectByID(Integer id);
+
+    Integer selectByName(String roleName);
 }

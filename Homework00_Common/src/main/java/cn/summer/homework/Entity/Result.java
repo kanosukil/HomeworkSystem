@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 public class Result {
-    private Integer id;
+    private Integer id = 0;
     private String content;
     private Boolean isFile;
     private Boolean isCheck;

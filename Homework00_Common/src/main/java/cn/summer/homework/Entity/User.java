@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 public class User {
-    private Integer id;
+    private Integer id = 0;
     private String name;
     private String password_hash;
     private String head_image;

@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 public class Course {
-    private Integer id;
+    private Integer id = 0;
     private String name;
     private Integer student_num;
     private Date create_time;
