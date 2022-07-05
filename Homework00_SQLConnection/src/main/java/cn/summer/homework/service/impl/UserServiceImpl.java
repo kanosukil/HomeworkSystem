@@ -110,10 +110,10 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = new UserInfo();
         List<User> users = userDao.selectAll();
         Map<String, Object> map = new HashMap<>();
-        String[] roles;
+        List<String> roles;
         for (User user : users) {
             roles = getRoles(user.getId());
-            if (roles.length > 0) {
+            if (roles.size() > 0) {
                 map.put(user.getEmail(), new UserDTO(user, roles));
             } else {
                 map.clear();
@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
                     break;
                 }
                 map.put(user.getEmail(), new UserDTO(
-                        user, roles.toArray(new String[0])));
+                        user, roles));
                 roles.clear();
             }
             if (userInfo.getNumber() != -1) {
@@ -186,8 +186,7 @@ public class UserServiceImpl implements UserService {
                 setUserInfo(userInfo, "Op:SelectByID", 1,
                         new HashMap<>() {{
                             put(user.getEmail(),
-                                    new UserDTO(user,
-                                            roles.toArray(new String[0])));
+                                    new UserDTO(user, roles));
                         }});
                 logger.info("UserID: {} 已找到", id);
             }
@@ -218,7 +217,7 @@ public class UserServiceImpl implements UserService {
                         new HashMap<>() {{
                             put(email,
                                     new UserDTO(user,
-                                            roles.toArray(new String[0])));
+                                            roles));
                         }});
                 logger.info("UserEmail: {} 已找到", email);
             }
@@ -247,7 +246,9 @@ public class UserServiceImpl implements UserService {
                     setUserInfo(userInfo, "Op:insert", 1,
                             new HashMap<>() {{
                                 put(finalUser.getEmail(),
-                                        new UserDTO(finalUser, new String[]{role}));
+                                        new UserDTO(finalUser, new ArrayList<>() {{
+                                            add(role);
+                                        }}));
                             }});
                     logger.info("UserID: {} 创建成功", finalUser.getId());
                 } else {
@@ -271,11 +272,11 @@ public class UserServiceImpl implements UserService {
         return userInfo;
     }
 
-    private String[] getRoles(Integer id) {
+    private List<String> getRoles(Integer id) {
         List<String> roles = new ArrayList<>();
         userRoleDao.selectByUser(id).forEach(e
                 -> roles.add(roleDao.selectByID(e)));
-        return roles.toArray(roles.toArray(new String[0]));
+        return roles;
     }
 
     // 销号
@@ -285,8 +286,8 @@ public class UserServiceImpl implements UserService {
 
         if (isExists(id)) {
             // 备份原用户的角色集
-            String[] role = getRoles(id);
-            if (role.length > 0) {
+            List<String> role = getRoles(id);
+            if (role.size() > 0) {
                 // 删除用户在 userRole 表中的映射
                 if (userRoleDao.deleteUser(id) > 0) {
                     // 备份原用户信息
@@ -327,8 +328,8 @@ public class UserServiceImpl implements UserService {
 
         if (isEmailUsed(email)) {
             User user = userDao.selectByEmail(email);
-            String[] role = getRoles(user.getId());
-            if (role.length > 0) {
+            List<String> role = getRoles(user.getId());
+            if (role.size() > 0) {
                 if (userRoleDao.deleteUser(user.getId()) > 0) {
                     if (userDao.deleteUser(user.getId()) > 0) {
                         setUserInfo(userInfo, "Op:delete", 1,
@@ -367,8 +368,8 @@ public class UserServiceImpl implements UserService {
 
         if (isExists(id)) {
             User srcUser = userDao.selectByID(id);
-            String[] role = getRoles(id);
-            if (role.length > 0) {
+            List<String> role = getRoles(id);
+            if (role.size() > 0) {
                 if (userDao.updateUser(user) > 0) {
                     setUserInfo(userInfo, "Op:update", 1,
                             new HashMap<>() {{
@@ -401,9 +402,9 @@ public class UserServiceImpl implements UserService {
 
         if (isExists(id)) {
             User srcUser = userDao.selectByID(id);
-            String[] srcRoles = getRoles(id);
+            List<String> srcRoles = getRoles(id);
 
-            if (srcRoles.length > 0) {
+            if (srcRoles.size() > 0) {
                 Integer r = roleDao.selectByName(role);
                 if (r <= 0 || r > 3) {
                     setUserInfo(userInfo, "Op:update", 0,
@@ -460,9 +461,9 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo = new UserInfo();
 
         if (isExists(id)) {
-            String[] srcRoles = getRoles(id);
+            List<String> srcRoles = getRoles(id);
 
-            if (srcRoles.length > 0) {
+            if (srcRoles.size() > 0) {
                 Integer r = roleDao.selectByName(role);
                 if (r <= 0 || r > 3) {
                     setUserInfo(userInfo, "Op:update", 0,
@@ -508,9 +509,9 @@ public class UserServiceImpl implements UserService {
 
         // 用户是否存在
         if (isExists(id)) {
-            String[] roles = getRoles(id);
+            List<String> roles = getRoles(id);
             // 角色查询是否成功
-            if (roles.length > 0) {
+            if (roles.size() > 0) {
                 Integer r = roleDao.selectByName(role);
                 // 需要删除的角色是否正确
                 if (r > 0 && r <= 3) {
@@ -550,5 +551,10 @@ public class UserServiceImpl implements UserService {
             logger.error("UserID: {} 删除 Role: {} 失败", id, role);
         } // 不存在
         return userInfo;
+    }
+
+    @Override
+    public User selectByID(Integer id) {
+        return userDao.selectByID(id);
     }
 }

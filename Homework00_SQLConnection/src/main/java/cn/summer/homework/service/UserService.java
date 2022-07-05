@@ -55,4 +55,6 @@ public interface UserService {
 
     UserInfo deleteUserRole(Integer id, String role);
     // username="Op:update"
+
+    User selectByID(Integer id);
 }

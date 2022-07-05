@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author VHBin
  * @date 2022/7/4-16:34
@@ -15,5 +17,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserDTO {
     private User user;
-    private String[] roles;
+    private List<String> roles;
 }

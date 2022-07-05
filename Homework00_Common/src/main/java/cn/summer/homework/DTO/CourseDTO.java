@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author VHBin
  * @date 2022/7/4-23:43
@@ -16,6 +18,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CourseDTO {
     private Course course;
-    private User[] teacher;
-    private User[] students;
+    private List<User> teacher;
+    private List<User> students;
 }

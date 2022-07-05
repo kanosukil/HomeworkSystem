@@ -16,6 +16,8 @@ public interface CourseDao {
 
     Course selectByID(Integer id);
 
+    List<Course> selectByName(String name);
+
     int createNewCourse(Course course);
 
     int deleteCourse(Integer id);
