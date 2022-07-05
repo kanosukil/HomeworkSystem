@@ -35,7 +35,7 @@ public interface CourseService {
     CourseInfo joinCourse(Integer cid, Integer tid);
     // 新老师加入一个已建课程共同教授
     // Course teacher_num 需要修改, Teacher_Course 需要插入
-    // courseName="Op:insert"
+    // courseName="Op:update"
 
     CourseInfo chooseCourse(Integer cid, Integer sid);
     // 学生选修课程
@@ -54,7 +54,7 @@ public interface CourseService {
     CourseInfo outCourse(Integer cid, Integer tid);
     // 老师退出授课名单
     // Course teacher_num 需要修改, Teacher_Course 需要删除
-    // courseName="Op:insert"
+    // courseName="Op:update"
 
     CourseInfo deleteCourse(Integer id);
     // 管理员\教师删除指定课程

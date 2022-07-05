@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author VHBin
@@ -122,9 +119,8 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseInfo getCourse(Integer id) {
         Course course = courseDao.selectByID(id);
-        return setCourse(new ArrayList<>() {{
-            add(course);
-        }}, "Course:".concat(course.getName()));
+        return setCourse(new ArrayList<>(Collections.singletonList(course)),
+                "Course:".concat(course.getName()));
     }
 
     @Override
@@ -134,7 +130,46 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseInfo createNewCourse(Course course, Integer tid) {
-        return null;
+        CourseInfo courseInfo;
+        if (userService.isTeacher(tid)) {
+            if (courseDao.createNewCourse(course) > 0) {
+                // 对于吞吐量小的课程创建可行
+                // 但是在同一时刻创建了相同名字课程时, 该方法将产生不可重复读问题
+                List<Course> courses = courseDao.selectByName(course.getName());
+                Course c = courses.get(courses.size() - 1);
+                Integer id = c.getId();
+                if (teacherCourseDao.addNewCourse(new TeacherCourse(tid, id)) > 0) {
+                    courseInfo = getCourseInfo("Op:insert", 1,
+                            new HashMap<>() {{
+                                put("Course:ID".concat(id.toString()),
+                                        new CourseDTO(c,
+                                                new ArrayList<>(Collections.singletonList(
+                                                        userService.selectByID(tid))),
+                                                new ArrayList<>()));
+                            }});
+                    logger.info("TeacherID: {} CourseID: {} 插入成功", tid, id);
+                } else {
+                    logger.error("TeacherID: {} CourseID: {} 插入 TeacherCourse 失败", tid, id);
+                    int reset = courseDao.deleteCourse(id);
+                    if (reset > 0) {
+                        logger.info("CourseID: {} 删除成功", id);
+                    } else {
+                        logger.error("CourseID: {} 删除失败", id);
+                    }
+                    courseInfo = getCourseInfo("Op:insert", -1,
+                            "插入 TeacherCourse", "插入失败".concat(reset > 0 ? "" : ", 但 Course 已创建"));
+                } // teacherCourse
+            } else {
+                courseInfo = getCourseInfo("Op:insert", -1,
+                        "创建 Course", "创建失败");
+                logger.error("TeacherID: {} 创建 Course 失败", tid);
+            } // course
+        } else {
+            courseInfo = getCourseInfo("Op:insert", 0,
+                    "查询 User", "未找到用户/用户权限不够");
+            logger.error("UserID: {} 不存在/权限不够", tid);
+        }
+        return courseInfo;
     }
 
     @Override
