@@ -1,7 +1,5 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.DTO.CourseDTO;
-import cn.summer.homework.DTO.CourseInfo;
 import cn.summer.homework.Entity.Course;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.PO.StudentCourse;
@@ -174,7 +172,15 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseInfo joinCourse(Integer cid, Integer tid) {
-        return null;
+        CourseInfo courseInfo;
+        if (userService.isTeacher(tid)) {
+            if ()
+        } else {
+            courseInfo = getCourseInfo("Op:update", 0,
+                    "查询 User", "未找到用户/用户权限不够");
+            logger.error("UserID: {} 不存在/权限不够", tid);
+        } // userService
+        return courseInfo;
     }
 
     @Override

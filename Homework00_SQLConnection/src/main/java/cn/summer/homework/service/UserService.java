@@ -1,7 +1,9 @@
 package cn.summer.homework.service;
 
-import cn.summer.homework.DTO.UserInfo;
+import cn.summer.homework.DTO.UserOpDTO;
 import cn.summer.homework.Entity.User;
+
+import java.util.List;
 
 /**
  * @author VHBin
@@ -21,40 +23,29 @@ public interface UserService {
 
     boolean isEmailUsed(String email);
 
-    UserInfo getAllUser();
+    List<User> getAllUser();
 
-    UserInfo findUser(String username);
+    List<User> findUser(String username);
 
-    UserInfo findUser(Integer id);
-    // username="Op:selectByID"
+    User findUser(Integer id);
 
-    UserInfo findUserByEmail(String email);
-    // username="Op:selectByEmail"
+    User findUserByEmail(String email);
 
-    UserInfo createNewUser(User user, String role);
-    // username="Op:insert"
+    UserOpDTO createNewUser(User user, String role);
 
     /**
      * 删除不能使用 username
      * username 设置为可重复的
      */
-    UserInfo deleteUser(Integer id);
-    // username="Op:delete"
+    UserOpDTO deleteUser(Integer id);
 
-    UserInfo deleteUser(String email);
-    // username="Op:delete"
+    UserOpDTO deleteUser(String email);
 
-    UserInfo updateUserInfo(User user);
-    // username="Op:update"
+    UserOpDTO updateUserInfo(User user);
 
-    UserInfo updateUserInfo(User user, String role);
-    // username="Op:update"
+    UserOpDTO updateUserInfo(User user, String role);
 
-    UserInfo updateUserRole(Integer id, String role);
-    // username="Op:update"
+    UserOpDTO updateUserRole(Integer id, String role);
 
-    UserInfo deleteUserRole(Integer id, String role);
-    // username="Op:update"
-
-    User selectByID(Integer id);
+    UserOpDTO deleteUserRole(Integer id, String role);
 }

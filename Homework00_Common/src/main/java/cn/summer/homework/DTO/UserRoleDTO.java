@@ -1,6 +1,5 @@
 package cn.summer.homework.DTO;
 
-import cn.summer.homework.Entity.Course;
 import cn.summer.homework.Entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,14 +9,13 @@ import java.util.List;
 
 /**
  * @author VHBin
- * @date 2022/7/4-23:43
+ * @date 2022/7/6-14:30
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseDTO {
-    private Course course;
-    private List<User> teacher;
-    private List<User> students;
+public class UserRoleDTO {
+    private User user;
+    private List<String> roles;
 }

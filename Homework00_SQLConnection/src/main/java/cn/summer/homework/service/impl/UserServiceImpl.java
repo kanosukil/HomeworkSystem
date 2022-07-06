@@ -1,7 +1,7 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.DTO.UserDTO;
-import cn.summer.homework.DTO.UserInfo;
+import cn.summer.homework.DTO.UserOpDTO;
+import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.PO.UserRole;
 import cn.summer.homework.dao.RoleDao;
@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +38,11 @@ public class UserServiceImpl implements UserService {
     // user->userRole<-role
     @Override
     public boolean isStudent(Integer id) {
+        // 获取 UserRole 信息
         List<Integer> roles = userRoleDao.selectByUser(id);
+        // 获取 Role: Student id
         Integer student = roleDao.selectByName("Student");
+        // 比对 UserRole 信息中是否有 Role: Student
         for (Integer role : roles) {
             if (role.equals(student))
                 return true;
@@ -49,8 +53,11 @@ public class UserServiceImpl implements UserService {
     // role->userRole==id
     @Override
     public boolean isTeacher(Integer id) {
+        // 获取 Role: Teacher id
         Integer teacher = roleDao.selectByName("Teacher");
+        // 获取 UserRole 信息
         List<Integer> users = userRoleDao.selectByRole(teacher);
+        // 比对 UserRole 中是否有 Role: Teacher id
         AtomicBoolean res = new AtomicBoolean(false);
         users.forEach(e -> {
             if (e.equals(id)) {
@@ -63,7 +70,9 @@ public class UserServiceImpl implements UserService {
     // user->userRole->role
     @Override
     public boolean isAdmin(Integer id) {
+        // 获取 UserRole 信息
         List<Integer> roles = userRoleDao.selectByUser(id);
+        // 直接比对
         for (Integer role : roles) {
             if ("Admin".equals(roleDao.selectByID(role)))
                 return true;
@@ -87,474 +96,301 @@ public class UserServiceImpl implements UserService {
         return userDao.selectByEmail(email).getEmail().equals(email);
     }
 
-    // 用户信息传输体设置
-    private void setUserInfo(UserInfo userInfo, String username, int number,
-                             String key, String value) {
-        userInfo.setUsername(username);
-        userInfo.setNumber(number);
-        userInfo.setInfo(new HashMap<>() {{
+    @Override
+    public List<User> getAllUser() {
+        return userDao.selectAll();
+    }
+
+    @Override
+    public List<User> findUser(String username) {
+        return userDao.selectByName(username);
+    }
+
+    @Override
+    public User findUser(Integer id) {
+        return userDao.selectByID(id);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return userDao.selectByEmail(email);
+    }
+
+    private void setUserOpDTO(@Nonnull UserOpDTO userOpDTO,
+                              String key, String value) {
+        userOpDTO.setIsSuccess(false);
+        userOpDTO.setInfo(new HashMap<>() {{
             put(key, value);
         }});
+
     }
 
-    private void setUserInfo(UserInfo userInfo, String username,
-                             int number, Map<String, Object> map) {
-        userInfo.setUsername(username);
-        userInfo.setNumber(number);
-        userInfo.setInfo(map);
+    private void setUserOpDTO(@Nonnull UserOpDTO userOpDTO,
+                              Map<String, Object> map) {
+        userOpDTO.setIsSuccess(true);
+        userOpDTO.setInfo(map);
     }
 
-    // 查找用户
+    private List<String> getRoles(Integer uid) {
+        List<String> res = new ArrayList<>();
+        userRoleDao.selectByUser(uid).forEach(e ->
+                res.add(roleDao.selectByID(e)));
+        return res;
+    }
+
     @Override
-    public UserInfo getAllUser() {
-        UserInfo userInfo = new UserInfo();
-        List<User> users = userDao.selectAll();
-        Map<String, Object> map = new HashMap<>();
-        List<String> roles;
-        for (User user : users) {
-            roles = getRoles(user.getId());
-            if (roles.size() > 0) {
-                map.put(user.getEmail(), new UserDTO(user, roles));
-            } else {
-                map.clear();
-                map.put("Error", user);
-                break;
+    public UserOpDTO createNewUser(User user, String role) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        int[] insert = new int[2];
+        Integer rid;
+        Integer uid = 0;
+        int flag = 0;
+        try {
+            rid = roleDao.selectByName(role);
+            if (rid <= 0) {
+                throw new Exception("查询Role异常: Role=".concat(role));
             }
-        }
-        if (!map.containsKey("Error")) {
-            setUserInfo(userInfo, "All User", users.size(), map);
-            logger.info("获取全部用户信息完成");
-        } else {
-            Integer id = ((User) map.get("Error")).getId();
-            setUserInfo(userInfo, "All User", -1,
-                    "获取 User 角色信息失败", id.toString());
-            logger.error("获取 User: {} 角色信息失败", id);
-        }
-        return userInfo;
-    }
-
-    @Override
-    public UserInfo findUser(String username) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isExists(username)) {
-            List<User> users = userDao.selectByName(username);
-            HashMap<String, Object> map = new HashMap<>();
-            List<String> roles = new ArrayList<>();
-
-            for (User user : users) {
-                userRoleDao.selectByUser(user.getId()).forEach(e ->
-                        roles.add(roleDao.selectByID(e)));
-                if (roles.size() == 0) {
-                    setUserInfo(userInfo, username, -1,
-                            "Error", "角色获取异常");
-                    logger.error("Cause: 角色获取异常");
-                    break;
+            flag = 1;
+            insert[0] = userDao.insertNewUser(user);
+            User finalUser = userDao.selectByEmail(user.getEmail());
+            uid = finalUser.getId();
+            flag = 2;
+            insert[1] = userRoleDao.addNewUser(
+                    new UserRole(uid, rid));
+            flag = 3;
+            logger.info("新建 UserID: {} 成功", uid);
+            logger.info("User 表成功插入 {} 条数据", insert[0]);
+            logger.info("UserRole 表成功插入 {} 条数据", insert[1]);
+            Integer finalUid = uid;
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("新增用户",
+                        new UserRoleDTO(finalUser, getRoles(finalUid)));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 插入异常", uid);
+            switch (flag) {
+                case 1 -> logger.error("User 插入失败: {}", ex.getMessage());
+                case 2 -> {
+                    logger.error("UserRole 插入失败: {}", ex.getMessage());
+                    if (uid > 0) {
+                        int i = userDao.deleteUser(uid);
+                        if (i <= 0) {
+                            logger.error("UserID: {} 新增 User 删除失败", uid);
+                        }
+                    }
                 }
-                map.put(user.getEmail(), new UserDTO(
-                        user, roles));
-                roles.clear();
+                case 0 -> logger.error("Role 查询异常: {}", ex.getMessage());
+                default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            if (userInfo.getNumber() != -1) {
-                setUserInfo(userInfo, username, users.size(), map);
-                logger.info("UserName: {} 已找到", username);
-            }
-        } else {
-            setUserInfo(userInfo, username, 0,
-                    "查询 User", "用户不存在");
-            logger.error("Cause: 用户不存在");
+            setUserOpDTO(userOpDTO, "新建 User 失败", ex.getMessage());
         }
-
-        return userInfo;
+        return userOpDTO;
     }
 
-    @Override
-    public UserInfo findUser(Integer id) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isExists(id)) {
-            List<String> roles = new ArrayList<>();
-            User user = userDao.selectByID(id);
-
-            userRoleDao.selectByUser(id).forEach(e ->
-                    roles.add(roleDao.selectByID(e)));
-            if (roles.size() == 0) {
-                setUserInfo(userInfo, "Op:SelectByID", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常");
-            } else {
-                setUserInfo(userInfo, "Op:SelectByID", 1,
-                        new HashMap<>() {{
-                            put(user.getEmail(),
-                                    new UserDTO(user, roles));
-                        }});
-                logger.info("UserID: {} 已找到", id);
-            }
-        } else {
-            setUserInfo(userInfo, "Op:SelectByID", 0,
-                    "查询 User", "用户不存在");
-            logger.error("Cause: 用户不存在");
+    private void deleteExLog(UserOpDTO userOpDTO, int flag, Exception ex) {
+        switch (flag) {
+            case 0 -> logger.error("User 查询, 用户不存在: {}", ex.getMessage());
+            case 1 -> logger.error("UserRole 删除失败: {}", ex.getMessage());
+            case 2 -> logger.error("User 删除失败: {}", ex.getMessage());
+            default -> logger.error("未知错误: {}", ex.getMessage());
         }
-        return userInfo;
+        setUserOpDTO(userOpDTO, "删除 User 失败", ex.getMessage());
     }
 
     @Override
-    public UserInfo findUserByEmail(String email) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isEmailUsed(email)) {
-            List<String> roles = new ArrayList<>();
-            User user = userDao.selectByEmail(email);
-
-            userRoleDao.selectByUser(user.getId()).forEach(e
-                    -> roles.add(roleDao.selectByID(e)));
-            if (roles.size() == 0) {
-                setUserInfo(userInfo, "Op:SelectByEmail", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常");
-            } else {
-                setUserInfo(userInfo, "Op:SelectByEmail", 1,
-                        new HashMap<>() {{
-                            put(email,
-                                    new UserDTO(user,
-                                            roles));
-                        }});
-                logger.info("UserEmail: {} 已找到", email);
+    public UserOpDTO deleteUser(Integer id) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        int[] delete = new int[2];
+        int flag = 0;
+        try {
+            if (isExists(id)) {
+                throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
-        } else {
-            setUserInfo(userInfo, "Op:SelectByEmail", 0,
-                    " 查询 User", "用户不存在");
-            logger.error("Cause: 用户不存在");
-        }
-        return null;
-    }
-
-    // 新建角色
-    @Override
-    public UserInfo createNewUser(User user, String role) {
-        UserInfo userInfo = new UserInfo();
-
-        Integer r = roleDao.selectByName(role);
-        if (r < 1 || r > 3) {
-            setUserInfo(userInfo, "Op:insert", r,
-                    "查询 Role 表", "角色不存在");
-            logger.error("Cause: role: {} 不存在", role);
-        } else {
-            if (userDao.insertNewUser(user) > 0) {
-                User finalUser = userDao.selectByEmail(user.getEmail());
-                if (userRoleDao.addNewUser(new UserRole(user.getId(), r)) > 0) {
-                    setUserInfo(userInfo, "Op:insert", 1,
-                            new HashMap<>() {{
-                                put(finalUser.getEmail(),
-                                        new UserDTO(finalUser, new ArrayList<>() {{
-                                            add(role);
-                                        }}));
-                            }});
-                    logger.info("UserID: {} 创建成功", finalUser.getId());
-                } else {
-                    logger.error("Cause: UserRole 表插入失败");
-                    int reset = userDao.deleteUser(finalUser.getId());
-                    if (reset > 0) {
-                        logger.info("新建 User 已删除");
-                    } else {
-                        logger.error("新建 User 删除失败!新建 User 已存在于 User 表中.");
-                    }
-                    setUserInfo(userInfo, "Op:insert", -1,
-                            "插入 UserRole 表",
-                            "插入失败".concat(reset > 0 ? "" : ", 但 User 已创建"));
-                } // userRoleDao
-            } else {
-                setUserInfo(userInfo, "Op:insert", r,
-                        " 插入 User 表", "插入失败");
-                logger.error("Cause: UserEmail: {} 插入失败", user.getEmail());
-            } // user
-        }
-        return userInfo;
-    }
-
-    private List<String> getRoles(Integer id) {
-        List<String> roles = new ArrayList<>();
-        userRoleDao.selectByUser(id).forEach(e
-                -> roles.add(roleDao.selectByID(e)));
-        return roles;
-    }
-
-    // 销号
-    @Override
-    public UserInfo deleteUser(Integer id) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isExists(id)) {
-            // 备份原用户的角色集
-            List<String> role = getRoles(id);
-            if (role.size() > 0) {
-                // 删除用户在 userRole 表中的映射
-                if (userRoleDao.deleteUser(id) > 0) {
-                    // 备份原用户信息
-                    User user = userDao.selectByID(id);
-                    // 删除 user 表中的用户信息
-                    if (userDao.deleteUser(id) > 0) {
-                        setUserInfo(userInfo, "Op:delete", 1,
-                                new HashMap<>() {{
-                                    put("srcUser", new UserDTO(user, role));
-                                }});
-                        logger.info("UserID: {} 已成功删除", id);
-                    } else {
-                        setUserInfo(userInfo, "Op:delete", -1,
-                                "删除 User ByID", "User 表删除失败");
-                        logger.error("Cause: User 表删除失败! UserID: {} 仍存在于 User 表中", id);
-                    } // userDao
-                } else {
-                    setUserInfo(userInfo, "Op:delete", -1,
-                            "删除 UserRole 表 ByID", "UserRole 表删除失败");
-                    logger.error("Cause: UserRole 表删除失败! UserID: {} 仍存在于 User 表和 UserRole 表中", id);
-                } // userRoleDao
-            } else {
-                setUserInfo(userInfo, "Op:delete", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 DeleteByID");
-            } // role = 0
-        } else {
-            setUserInfo(userInfo, "Op:delete", 0,
-                    "删除 User 表操作 ByID", "用户不存在");
-            logger.error("Cause: User 表中不存在 UserID: {} 的用户", id);
-        }
-        return userInfo;
-    }
-
-    @Override
-    public UserInfo deleteUser(String email) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isEmailUsed(email)) {
-            User user = userDao.selectByEmail(email);
-            List<String> role = getRoles(user.getId());
-            if (role.size() > 0) {
-                if (userRoleDao.deleteUser(user.getId()) > 0) {
-                    if (userDao.deleteUser(user.getId()) > 0) {
-                        setUserInfo(userInfo, "Op:delete", 1,
-                                new HashMap<>() {{
-                                    put("注销 User 信息", new UserDTO(user, role));
-                                }});
-                        logger.info("UserEmail: {} 已成功删除", email);
-                    } else {
-                        setUserInfo(userInfo, "Op:delete", -1,
-                                "删除 User ByEmail", "User 表删除失败");
-                        logger.error("Cause: User 表删除失败! UserEmail: {} 仍存在于 User 表中", email);
-                    } // user
-                } else {
-                    setUserInfo(userInfo, "Op:delete", -1,
-                            "删除 UserRole 表 ByEmail", "UserRole 表删除失败");
-                    logger.error("Cause: UserRole 表删除失败! UserEmail: {} 仍存在于 User 表和 UserRole 表中", email);
-                } // userRole
-            } else {
-                setUserInfo(userInfo, "Op:delete", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 DeleteByEmail");
-            }
-        } else {
-            setUserInfo(userInfo, "Op:delete", 0,
-                    "删除 User 表操作 ByEmail", "用户不存在");
-            logger.error("Cause: User 表中不存在 UserEmail: {} 的用户", email);
-        } // 不存在
-        return null;
-    }
-
-    // 更新信息
-    @Override
-    public UserInfo updateUserInfo(User user) {
-        UserInfo userInfo = new UserInfo();
-        Integer id = user.getId();
-
-        if (isExists(id)) {
-            User srcUser = userDao.selectByID(id);
-            List<String> role = getRoles(id);
-            if (role.size() > 0) {
-                if (userDao.updateUser(user) > 0) {
-                    setUserInfo(userInfo, "Op:update", 1,
-                            new HashMap<>() {{
-                                put("sourceUser", new UserDTO(srcUser, role));
-                                put("updateUser", new UserDTO(user, role));
-                            }});
-                    logger.info("UserID: {} 已更新", id);
-                } else {
-                    setUserInfo(userInfo, "Op:update", -1,
-                            "更新 User", "更新失败");
-                    logger.error("Cause: UserID: {} 更新失败", id);
-                } // user
-            } else {
-                setUserInfo(userInfo, "Op:update", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 UpdateUser");
-            }
-        } else {
-            setUserInfo(userInfo, "Op:update", 0,
-                    "更新 User", "用户不存在");
-            logger.error("Cause: UserID: {} 不存在", id);
-        } // 不存在
-        return userInfo;
-    }
-
-    @Override
-    public UserInfo updateUserInfo(User user, String role) {
-        UserInfo userInfo = new UserInfo();
-        Integer id = user.getId();
-
-        if (isExists(id)) {
-            User srcUser = userDao.selectByID(id);
-            List<String> srcRoles = getRoles(id);
-
-            if (srcRoles.size() > 0) {
-                Integer r = roleDao.selectByName(role);
-                if (r <= 0 || r > 3) {
-                    setUserInfo(userInfo, "Op:update", 0,
-                            "查询 Role", "role 不存在");
-                    logger.error("Cause: Role: {} 不存在", role);
-                } else {
-                    if (userRoleDao.accurateSelect(new UserRole(user.getId(), r)) == 0) {
-                        if (userDao.updateUser(user) > 0) {
-                            if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
-                                setUserInfo(userInfo, "Op:update", 1,
-                                        new HashMap<>() {{
-                                            put("srcUser", new UserDTO(srcUser, srcRoles));
-                                            put("updateUser", new UserDTO(user, getRoles(id)));
-                                        }});
-                                logger.info("User: id {} & UserRole: role {} 表更新成功", id, role);
-                            } else {
-                                logger.error("Cause: 更新 UserID: {} Role: {} 时, 插入 UserRole 失败, User 更新成功", id, role);
-                                int reset = userDao.updateUser(srcUser);
-                                if (reset > 0) {
-                                    logger.info("User 重置成功");
-                                } else {
-                                    logger.error("User 重置失败");
-                                }
-                                setUserInfo(userInfo, "Op:update", -1,
-                                        "插入 UserRole 表",
-                                        "插入失败".concat(reset > 0 ? "" : ", 但 User 已更新"));
-                            } // userRole update
-                        } else {
-                            setUserInfo(userInfo, "Op:update", -1,
-                                    "更新 User", "更新失败");
-                            logger.error("Cause: 更新 UserID: {} Role: {} 时, 更新 User 失败", id, role);
-                        } // user update
-                    } else {
-                        setUserInfo(userInfo, "Op:update", 0,
-                                "添加 Role", "role 已存在");
-                        logger.error("Cause: UserID: {} 添加 Role: {} 时, User 已有 Role 角色", id, role);
-                    }
-                } // role
-            } else {
-                setUserInfo(userInfo, "Op:update", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 updateUser&Role");
-            }
-        } else {
-            setUserInfo(userInfo, "Op:update", 0,
-                    "更新 User", "用户不存在");
-            logger.error("Cause: UserID: {} 不存在", id);
-        } // 不存在
-        return userInfo;
-    }
-
-    @Override
-    public UserInfo updateUserRole(Integer id, String role) {
-        UserInfo userInfo = new UserInfo();
-
-        if (isExists(id)) {
-            List<String> srcRoles = getRoles(id);
-
-            if (srcRoles.size() > 0) {
-                Integer r = roleDao.selectByName(role);
-                if (r <= 0 || r > 3) {
-                    setUserInfo(userInfo, "Op:update", 0,
-                            "Cause: 查询 Role", "role 不存在");
-                    logger.error("Cause: Role: {} 不存在", role);
-                } else {
-                    if (userRoleDao.accurateSelect(new UserRole(id, r)) == 0) {
-                        if (userRoleDao.addNewUser(new UserRole(id, r)) > 0) {
-                            User user = userDao.selectByID(id);
-                            setUserInfo(userInfo, "Op:update", 1,
-                                    new HashMap<>() {{
-                                        put("srcUser", new UserDTO(user, srcRoles));
-                                        put("updateUser", new UserDTO(user, getRoles(id)));
-                                    }});
-                            logger.info("UserID: {} 添加 Role: {} 成功", id, role);
-                        } else {
-                            setUserInfo(userInfo, "Op:update", -1,
-                                    "插入 UserRole ", "插入失败");
-                            logger.error("Cause: UserID: {} 添加 Role: {} 失败", id, role);
-                        } // userRole
-                    } else {
-                        setUserInfo(userInfo, "Op:update", 0,
-                                "添加 Role", "role 已存在");
-                        logger.error("Cause: UserID: {} 添加 Role: {} 时, User 已有 Role 角色", id, role);
-                    }
-                } // role
-            } else {
-                setUserInfo(userInfo, "Op:update", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 updateRole");
-            }
-        } else {
-            setUserInfo(userInfo, "Op:update", 0,
-                    "添加 Role", "用户不存在");
-            logger.error("Cause: UserID: {} 添加 Role: {} 时失败, User 不存在", id, role);
-        }
-        return userInfo;
-    }
-
-    @Override
-    public UserInfo deleteUserRole(Integer id, String role) {
-        UserInfo userInfo = new UserInfo();
-
-        // 用户是否存在
-        if (isExists(id)) {
+            flag = 1;
             List<String> roles = getRoles(id);
-            // 角色查询是否成功
-            if (roles.size() > 0) {
-                Integer r = roleDao.selectByName(role);
-                // 需要删除的角色是否正确
-                if (r > 0 && r <= 3) {
-                    UserRole userRole = new UserRole(id, r);
-                    // 用户有该角色时, 才能删除
-                    if (userRoleDao.accurateSelect(userRole) == 1 &&
-                            userRoleDao.accurateDelete(userRole) > 0) {
-                        User user = userDao.selectByID(id);
-                        setUserInfo(userInfo, "Op:update", 1,
-                                new HashMap<>() {{
-                                    put("srcUser", new UserDTO(user, roles));
-                                    put("updateRole", new UserDTO(user, getRoles(id)));
-                                }});
-                        logger.info("UserID: {} 删除 Role: {} 成功", id, role);
-                    } else {
-                        setUserInfo(userInfo, "Op:update", -1,
-                                "删除 UserRole", "删除失败");
-                        logger.error("Cause: UserID: {} 删除 Role: {} 失败", id, role);
-                    } // userRole
-                } else {
-                    setUserInfo(userInfo, "Op:update", 0,
-                            "查询 Role", "Role 不存在");
-                    logger.error("Cause: Role {} 不存在", role);
-                }
-            } else {
-                setUserInfo(userInfo, "Op:update", -1,
-                        "Error", "角色获取异常");
-                logger.error("Cause: 角色获取异常 deleteRole");
-            }
-            // 防止用户最后没有角色, 因此设为默认角色
-            if (userRoleDao.selectByUser(id).size() == 0) {
-                userRoleDao.addNewUser(new UserRole(id, 1));
-            }
-        } else {
-            setUserInfo(userInfo, "Op:update", 0,
-                    "删除 Role", "用户不存在");
-            logger.error("UserID: {} 删除 Role: {} 失败", id, role);
-        } // 不存在
-        return userInfo;
+            delete[0] = userRoleDao.deleteUser(id);
+            flag = 2;
+            User user = userDao.selectByID(id);
+            delete[1] = userDao.deleteUser(id);
+            flag = 3;
+            logger.info("删除 UserID: {} 成功", id);
+            logger.info("User 表删除 {} 条数据", delete[1]);
+            logger.info("UserRole 表删除 {} 条数据", delete[0]);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("删除用户", new UserRoleDTO(user, roles));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 删除异常", id);
+            deleteExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
     }
 
     @Override
-    public User selectByID(Integer id) {
-        return userDao.selectByID(id);
+    public UserOpDTO deleteUser(String email) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        int[] delete = new int[2];
+        int flag = 0;
+        try {
+            if (isEmailUsed(email)) {
+                throw new Exception("用户不存在. UserEmail=".concat(email));
+            }
+            User user = userDao.selectByEmail(email);
+            Integer id = user.getId();
+            flag = 1;
+            List<String> roles = getRoles(id);
+            delete[0] = userRoleDao.deleteUser(id);
+            flag = 2;
+            delete[1] = userDao.deleteUser(id);
+            flag = 3;
+            logger.info("删除 UserID: {} 成功", id);
+            logger.info("User 表删除 {} 条数据", delete[1]);
+            logger.info("UserRole 表删除 {} 条数据", delete[0]);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("删除用户", new UserRoleDTO(user, roles));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserEmail: {} 删除异常", email);
+            deleteExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
+    }
+
+    private void updateExLog(UserOpDTO userOpDTO, int flag, Exception ex) {
+        switch (flag) {
+            case 0 -> logger.error("查询异常: {}", ex.getMessage());
+            case 1 -> logger.error("User 表更新异常: {}", ex.getMessage());
+            case 2 -> logger.error("UserRole 表更新异常: {}", ex.getMessage());
+            default -> logger.error("未知异常: {}", ex.getMessage());
+        }
+        setUserOpDTO(userOpDTO, "更新 User 失败", ex.getMessage());
+    }
+
+    @Override
+    public UserOpDTO updateUserInfo(User user) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        Integer id = user.getId();
+        int flag = 0;
+        try {
+            if (isExists(id)) {
+                throw new Exception("用户不存在. UserID=".concat(id.toString()));
+            }
+            User srcUser = userDao.selectByID(id);
+            flag = 1;
+            int update = userDao.updateUser(user);
+            flag = 2;
+            logger.info("UserID: {} 更新完成", id);
+            logger.info("User 表更新 {} 条数据", update);
+            List<String> roles = getRoles(id);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("SrcUser", new UserRoleDTO(srcUser, roles));
+                put("UpdateUser", new UserRoleDTO(user, roles));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 更新异常", id);
+            updateExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
+    }
+
+    @Override
+    public UserOpDTO updateUserInfo(User user, String role) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        Integer uid = user.getId();
+        Integer rid;
+        int flag = 0;
+        int[] update = new int[2];
+        try {
+            if (isExists(uid)) {
+                throw new Exception("用户不存在. UserID=".concat(uid.toString()));
+            }
+            if ((rid = roleDao.selectByName(role)) <= 0) {
+                throw new Exception("需要添加的角色不存在. Role=".concat(role));
+            }
+            User srcUser = userDao.selectByID(uid);
+            flag = 1;
+            update[0] = userDao.updateUser(user);
+            flag = 2;
+            List<String> srcRoles = getRoles(uid);
+            update[1] = userRoleDao.addNewUser(new UserRole(uid, rid));
+            flag = 3;
+            logger.info("UserID: {} 更新完成", uid);
+            logger.info("User 表更新 {} 条数据", update[0]);
+            logger.info("UserRole 表更新 {} 条数据", update[1]);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("SrcUser", new UserRoleDTO(srcUser, srcRoles));
+                put("UpdateUser", new UserRoleDTO(user, getRoles(uid)));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 更新异常", uid);
+            updateExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
+    }
+
+    @Override
+    public UserOpDTO updateUserRole(Integer id, String role) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        int flag = 0;
+        Integer rid;
+        try {
+            if (isExists(id)) {
+                throw new Exception("用户不存在. UserID=".concat(id.toString()));
+            }
+            if ((rid = roleDao.selectByName(role)) <= 0) {
+                throw new Exception("需要添加的角色不存在. Role=".concat(role));
+            }
+            if (userRoleDao.accurateSelect(new UserRole(id, rid)) > 0) {
+                throw new Exception("用户已有该角色. UserID=" + id + " Role=" + role);
+            }
+            List<String> srcRoles = getRoles(id);
+            flag = 2;
+            int update = userRoleDao.addNewUser(new UserRole(id, rid));
+            flag = 3;
+            logger.info("UserID: {} 更新完成", id);
+            logger.info("UserRole 表更新 {} 条数据", update);
+            User user = userDao.selectByID(id);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("SrcUser", new UserRoleDTO(user, srcRoles));
+                put("UpdateUser", new UserRoleDTO(user, getRoles(id)));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 更新异常", id);
+            updateExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
+    }
+
+    @Override
+    public UserOpDTO deleteUserRole(Integer id, String role) {
+        UserOpDTO userOpDTO = new UserOpDTO();
+        int flag = 0;
+        Integer rid;
+        try {
+            if (isExists(id)) {
+                throw new Exception("用户不存在. UserID=".concat(id.toString()));
+            }
+            if ((rid = roleDao.selectByName(role)) <= 0) {
+                throw new Exception("需要删除的角色不存在. Role=".concat(role));
+            }
+            if (userRoleDao.accurateSelect(new UserRole(id, rid)) <= 0) {
+                throw new Exception("用户已有该角色. UserID=" + id + " Role=" + role);
+            }
+            List<String> srcRoles = getRoles(id);
+            flag = 2;
+            int update = userRoleDao.accurateDelete(new UserRole(id, rid));
+            flag = 3;
+            logger.info("UserID: {} 更新完成", id);
+            logger.info("UserRole 表更新 {} 条数据", update);
+            User user = userDao.selectByID(id);
+            setUserOpDTO(userOpDTO, new HashMap<>() {{
+                put("SrcUser", new UserRoleDTO(user, srcRoles));
+                put("UpdateUser", new UserRoleDTO(user, getRoles(id)));
+            }});
+        } catch (Exception ex) {
+            logger.error("UserID: {} 更新异常", id);
+            updateExLog(userOpDTO, flag, ex);
+        }
+        return userOpDTO;
     }
 }

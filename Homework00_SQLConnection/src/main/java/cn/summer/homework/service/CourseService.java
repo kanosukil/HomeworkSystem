@@ -1,6 +1,5 @@
 package cn.summer.homework.service;
 
-import cn.summer.homework.DTO.CourseInfo;
 import cn.summer.homework.Entity.Course;
 
 /**
