@@ -13,6 +13,7 @@ import java.util.Date;
 public class Course {
     private Integer id = 0;
     private String name;
+    private Integer teacher_num;
     private Integer student_num;
     private Date create_time;
 }

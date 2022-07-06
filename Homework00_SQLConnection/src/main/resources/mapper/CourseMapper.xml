@@ -35,6 +35,7 @@
     <update id="updateCourse" parameterType="cn.summer.homework.Entity.Course">
         update course
         set name=#{name},
+            teacher_num=#{teacher_num},
             student_num=#{student_num}
         where id = #{id};
     </update>

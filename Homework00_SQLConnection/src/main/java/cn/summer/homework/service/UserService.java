@@ -2,6 +2,7 @@ package cn.summer.homework.service;
 
 import cn.summer.homework.DTO.UserOpDTO;
 import cn.summer.homework.Entity.User;
+import cn.summer.homework.exception.SQLRWException;
 
 import java.util.List;
 
@@ -31,21 +32,21 @@ public interface UserService {
 
     User findUserByEmail(String email);
 
-    UserOpDTO createNewUser(User user, String role);
+    UserOpDTO createNewUser(User user, String role) throws SQLRWException;
 
     /**
      * 删除不能使用 username
      * username 设置为可重复的
      */
-    UserOpDTO deleteUser(Integer id);
+    UserOpDTO deleteUser(Integer id) throws SQLRWException;
 
-    UserOpDTO deleteUser(String email);
+    UserOpDTO deleteUser(String email) throws SQLRWException;
 
-    UserOpDTO updateUserInfo(User user);
+    UserOpDTO updateUserInfo(User user) throws SQLRWException;
 
-    UserOpDTO updateUserInfo(User user, String role);
+    UserOpDTO updateUserInfo(User user, String role) throws SQLRWException;
 
-    UserOpDTO updateUserRole(Integer id, String role);
+    UserOpDTO updateUserRole(Integer id, String role) throws SQLRWException;
 
-    UserOpDTO deleteUserRole(Integer id, String role);
+    UserOpDTO deleteUserRole(Integer id, String role) throws SQLRWException;
 }

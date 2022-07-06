@@ -7,10 +7,12 @@ import cn.summer.homework.PO.UserRole;
 import cn.summer.homework.dao.RoleDao;
 import cn.summer.homework.dao.UserDao;
 import cn.summer.homework.dao.cascade.UserRoleDao;
+import cn.summer.homework.exception.SQLRWException;
 import cn.summer.homework.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
@@ -139,7 +141,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOpDTO createNewUser(User user, String role) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO createNewUser(User user, String role)
+            throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         int[] insert = new int[2];
         Integer rid;
@@ -170,40 +174,45 @@ public class UserServiceImpl implements UserService {
             logger.error("UserID: {} 插入异常", uid);
             switch (flag) {
                 case 1 -> logger.error("User 插入失败: {}", ex.getMessage());
-                case 2 -> {
-                    logger.error("UserRole 插入失败: {}", ex.getMessage());
-                    if (uid > 0) {
-                        int i = userDao.deleteUser(uid);
-                        if (i <= 0) {
-                            logger.error("UserID: {} 新增 User 删除失败", uid);
-                        }
-                    }
-                }
+                case 2 -> logger.error("UserRole 插入失败: {}", ex.getMessage());
                 case 0 -> logger.error("Role 查询异常: {}", ex.getMessage());
                 default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            setUserOpDTO(userOpDTO, "新建 User 失败", ex.getMessage());
+            setUserOpDTO(userOpDTO,
+                    flag == 3 ? "插入 User 完成, 但仍有异常" : "插入 User 失败",
+                    ex.getMessage());
+            if (flag == 1 || flag == 2) {
+                throw new SQLRWException("User/UseRole 插入异常");
+            }
         }
         return userOpDTO;
     }
 
-    private void deleteExLog(UserOpDTO userOpDTO, int flag, Exception ex) {
+    private void deleteExLog(UserOpDTO userOpDTO, int flag, Exception ex)
+            throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("User 查询, 用户不存在: {}", ex.getMessage());
             case 1 -> logger.error("UserRole 删除失败: {}", ex.getMessage());
             case 2 -> logger.error("User 删除失败: {}", ex.getMessage());
             default -> logger.error("未知错误: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpDTO, "删除 User 失败", ex.getMessage());
+        setUserOpDTO(userOpDTO,
+                flag == 3 ? "删除 User 完成, 但仍有异常" : "删除 User 失败",
+                ex.getMessage());
+        if (flag == 1 || flag == 2) {
+            throw new SQLRWException("User/UserRole删除异常");
+        }
     }
 
     @Override
-    public UserOpDTO deleteUser(Integer id) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO deleteUser(Integer id) throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         int[] delete = new int[2];
         int flag = 0;
+
         try {
-            if (isExists(id)) {
+            if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
             flag = 1;
@@ -227,12 +236,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOpDTO deleteUser(String email) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO deleteUser(String email) throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         int[] delete = new int[2];
         int flag = 0;
         try {
-            if (isEmailUsed(email)) {
+            if (!isEmailUsed(email)) {
                 throw new Exception("用户不存在. UserEmail=".concat(email));
             }
             User user = userDao.selectByEmail(email);
@@ -256,29 +266,37 @@ public class UserServiceImpl implements UserService {
         return userOpDTO;
     }
 
-    private void updateExLog(UserOpDTO userOpDTO, int flag, Exception ex) {
+    private void updateExLog(UserOpDTO userOpDTO, int flag, Exception ex)
+            throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("查询异常: {}", ex.getMessage());
             case 1 -> logger.error("User 表更新异常: {}", ex.getMessage());
             case 2 -> logger.error("UserRole 表更新异常: {}", ex.getMessage());
             default -> logger.error("未知异常: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpDTO, "更新 User 失败", ex.getMessage());
+        setUserOpDTO(userOpDTO,
+                flag == 3 ? "更新 User 完成, 但仍有异常" : "更新 User 失败",
+                ex.getMessage());
+        if (flag == 1 || flag == 2) {
+            throw new SQLRWException("User/UserRole删除异常");
+        }
     }
 
     @Override
-    public UserOpDTO updateUserInfo(User user) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO updateUserInfo(User user)
+            throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         Integer id = user.getId();
         int flag = 0;
         try {
-            if (isExists(id)) {
+            if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
             User srcUser = userDao.selectByID(id);
             flag = 1;
             int update = userDao.updateUser(user);
-            flag = 2;
+            flag = 3;
             logger.info("UserID: {} 更新完成", id);
             logger.info("User 表更新 {} 条数据", update);
             List<String> roles = getRoles(id);
@@ -294,14 +312,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOpDTO updateUserInfo(User user, String role) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO updateUserInfo(User user, String role)
+            throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         Integer uid = user.getId();
         Integer rid;
         int flag = 0;
         int[] update = new int[2];
         try {
-            if (isExists(uid)) {
+            if (!isExists(uid)) {
                 throw new Exception("用户不存在. UserID=".concat(uid.toString()));
             }
             if ((rid = roleDao.selectByName(role)) <= 0) {
@@ -329,12 +349,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOpDTO updateUserRole(Integer id, String role) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO updateUserRole(Integer id, String role)
+            throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         int flag = 0;
         Integer rid;
         try {
-            if (isExists(id)) {
+            if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
             if ((rid = roleDao.selectByName(role)) <= 0) {
@@ -362,19 +384,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserOpDTO deleteUserRole(Integer id, String role) {
+    @Transactional(rollbackFor = SQLRWException.class)
+    public UserOpDTO deleteUserRole(Integer id, String role)
+            throws SQLRWException {
         UserOpDTO userOpDTO = new UserOpDTO();
         int flag = 0;
         Integer rid;
         try {
-            if (isExists(id)) {
+            if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
             if ((rid = roleDao.selectByName(role)) <= 0) {
                 throw new Exception("需要删除的角色不存在. Role=".concat(role));
             }
             if (userRoleDao.accurateSelect(new UserRole(id, rid)) <= 0) {
-                throw new Exception("用户已有该角色. UserID=" + id + " Role=" + role);
+                throw new Exception("用户没有该角色. UserID=" + id + " Role=" + role);
             }
             List<String> srcRoles = getRoles(id);
             flag = 2;
@@ -383,9 +407,18 @@ public class UserServiceImpl implements UserService {
             logger.info("UserID: {} 更新完成", id);
             logger.info("UserRole 表更新 {} 条数据", update);
             User user = userDao.selectByID(id);
+            List<String> updateRoles = getRoles(id);
+//            // 当该用户没有角色时, 添加一个默认角色 Student
+//            if (updateRoles.size() == 0) {
+//                if (userRoleDao.addNewUser(new UserRole(id, 1)) > 0) {
+//                    updateRoles.add("Student");
+//                } else {
+//                    throw new Exception("用户角色已全被删除, 若仍需使用该用户, 请添加角色.");
+//                }
+//            }
             setUserOpDTO(userOpDTO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(user, srcRoles));
-                put("UpdateUser", new UserRoleDTO(user, getRoles(id)));
+                put("UpdateUser", new UserRoleDTO(user, updateRoles));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 更新异常", id);
