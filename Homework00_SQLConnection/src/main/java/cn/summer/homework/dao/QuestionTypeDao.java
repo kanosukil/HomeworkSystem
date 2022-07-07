@@ -20,4 +20,6 @@ public interface QuestionTypeDao {
     int deleteQuestionType(String typeName);
 
     int deleteByID(Integer id);
+
+    int getLast();
 }

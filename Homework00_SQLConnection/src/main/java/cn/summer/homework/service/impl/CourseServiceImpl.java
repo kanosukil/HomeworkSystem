@@ -1,8 +1,8 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.DTO.CourseOpDTO;
+import cn.summer.homework.BO.CourseOpBO;
+import cn.summer.homework.BO.UserOpBO;
 import cn.summer.homework.DTO.CourseSTDTO;
-import cn.summer.homework.DTO.UserOpDTO;
 import cn.summer.homework.Entity.Course;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.PO.StudentCourse;
@@ -38,40 +38,40 @@ public class CourseServiceImpl implements CourseService {
     @Resource
     private TeacherCourseDao teacherCourseDao;
 
-    private List<User> getStudent(List<StudentCourse> sc) {
+    private List<User> getStudent(List<Integer> sc) {
         List<User> res = new ArrayList<>();
-        sc.forEach(e -> res.add(userService.findUser(e.getSid())));
+        sc.forEach(e -> res.add(userService.findUser(e).getUser()));
         return res;
     }
 
-    private List<User> getTeacher(List<TeacherCourse> tc) {
+    private List<User> getTeacher(List<Integer> tc) {
         List<User> res = new ArrayList<>();
-        tc.forEach(e -> res.add(userService.findUser(e.getTid())));
+        tc.forEach(e -> res.add(userService.findUser(e).getUser()));
         return res;
     }
 
-    private List<Course> getSCourse(List<StudentCourse> sc) {
+    private List<Course> getSCourse(List<Integer> sc) {
         List<Course> res = new ArrayList<>();
-        sc.forEach(e -> res.add(courseDao.selectByID(e.getCid())));
+        sc.forEach(e -> res.add(courseDao.selectByID(e)));
         return res;
     }
 
-    private List<Course> getTCourse(List<TeacherCourse> tc) {
+    private List<Course> getTCourse(List<Integer> tc) {
         List<Course> res = new ArrayList<>();
-        tc.forEach(e -> res.add(courseDao.selectByID(e.getCid())));
+        tc.forEach(e -> res.add(courseDao.selectByID(e)));
         return res;
     }
 
-    private void setCourseOpDTO(CourseOpDTO courseOpDTO, String key, String value) {
-        courseOpDTO.setIsSuccess(false);
-        courseOpDTO.setMap(new HashMap<>() {{
+    private void setCourseOpDTO(CourseOpBO courseOpBO, String key, String value) {
+        courseOpBO.setIsSuccess(false);
+        courseOpBO.setMap(new HashMap<>() {{
             put(key, value);
         }});
     }
 
-    private void setCourseOpDTO(CourseOpDTO courseOpDTO, Map<String, Object> map) {
-        courseOpDTO.setIsSuccess(true);
-        courseOpDTO.setMap(map);
+    private void setCourseOpDTO(CourseOpBO courseOpBO, Map<String, Object> map) {
+        courseOpBO.setIsSuccess(true);
+        courseOpBO.setMap(map);
     }
 
     private CourseSTDTO getCourseSTDTO(Integer cid) {
@@ -148,9 +148,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO createNewCourse(Course course, Integer tid)
+    public CourseOpBO createNewCourse(Course course, Integer tid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] insert = new int[2];
 
@@ -161,15 +161,14 @@ public class CourseServiceImpl implements CourseService {
             flag = 1;
             insert[0] = courseDao.createNewCourse(course);
             flag = 2;
-            List<Course> courses = courseDao.selectByName(course.getName());
-            Course finalCourse = courses.get(courses.size() - 1);
+            Course finalCourse = courseDao.selectByID(courseDao.getLast());
             Integer cid = finalCourse.getId();
             insert[1] = teacherCourseDao.addNewCourse(new TeacherCourse(tid, cid));
             flag = 3;
             logger.info("UserID: {} 创建课程 CourseID: {} 成功", tid, cid);
             logger.info("Course 表插入 {} 条数据", insert[0]);
             logger.info("TeacherCourse 表插入 {} 条数据", insert[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("新建课程", getCourseSTDTO(finalCourse));
             }});
         } catch (Exception ex) {
@@ -180,17 +179,17 @@ public class CourseServiceImpl implements CourseService {
                 case 2 -> logger.error("TeacherCourse 插入异常: {} ", ex.getMessage());
                 default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            setCourseOpDTO(courseOpDTO,
+            setCourseOpDTO(courseOpBO,
                     flag == 3 ? "创建 Course 完成, 但仍有异常" : "创建 Course 失败",
                     ex.getMessage());
             if (flag == 1 || flag == 2) {
                 throw new SQLRWException("Course/TeacherCourse 插入异常");
             }
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
-    private void updateExLog(CourseOpDTO courseOpDTO, int flag, Exception ex)
+    private void updateExLog(CourseOpBO courseOpBO, int flag, Exception ex)
             throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("查询异常: {}", ex.getMessage());
@@ -198,7 +197,7 @@ public class CourseServiceImpl implements CourseService {
             case 2 -> logger.error("TeacherCourse 插入/删除异常: {}", ex.getMessage());
             default -> logger.error("其他异常: {}", ex.getMessage());
         }
-        setCourseOpDTO(courseOpDTO,
+        setCourseOpDTO(courseOpBO,
                 flag == 3 ?
                         "更新 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
                         "更新 Course/TeacherCourse/StudentCourse 失败",
@@ -210,9 +209,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO joinCourse(Integer cid, Integer tid)
+    public CourseOpBO joinCourse(Integer cid, Integer tid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] update = new int[2];
 
@@ -234,22 +233,22 @@ public class CourseServiceImpl implements CourseService {
             logger.info("老师 UserID: {} 加入课程完成", tid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("TeacherCourse 表插入 {} 条数据", update[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
                 put("updateCourse", getCourseSTDTO(cid));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 加入 TeacherCourse 异常", tid);
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO chooseCourse(Integer cid, Integer sid)
+    public CourseOpBO chooseCourse(Integer cid, Integer sid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] update = new int[2];
 
@@ -272,22 +271,22 @@ public class CourseServiceImpl implements CourseService {
             logger.info("学生 UserID: {} 选修课程完成", sid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("StudentCourse 表插入 {} 条数据", update[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
                 put("updateCourse", getCourseSTDTO(cid));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 加入 StudentCourse 异常", sid);
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO updateCourseName(Integer cid, String name)
+    public CourseOpBO updateCourseName(Integer cid, String name)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
 
         try {
@@ -302,23 +301,23 @@ public class CourseServiceImpl implements CourseService {
             flag = 3;
             logger.info("CourseID: {} 课程名更新完成", cid);
             logger.info("Course 表更新 {} 条数据", update);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
                 put("updateCourse", getCourseSTDTO(cid));
             }});
         } catch (Exception ex) {
             logger.error("CourseID: {} 更新异常", cid);
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
 
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO dropCourse(Integer cid, Integer sid)
+    public CourseOpBO dropCourse(Integer cid, Integer sid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] update = new int[2];
 
@@ -341,22 +340,22 @@ public class CourseServiceImpl implements CourseService {
             logger.info("学生 UserID: {} 退课完成", sid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("StudentCourse 表删除 {} 条数据", update[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
                 put("updateCourse", getCourseSTDTO(cid));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 从 StudentCourse 删去异常", sid);
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO outCourse(Integer cid, Integer tid)
+    public CourseOpBO outCourse(Integer cid, Integer tid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] update = new int[2];
 
@@ -378,18 +377,18 @@ public class CourseServiceImpl implements CourseService {
             logger.info("老师 UserID: {} 退出课程完成", tid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("TeacherCourse 表删除 {} 条数据", update[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
                 put("updateCourse", getCourseSTDTO(cid));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 从 TeacherCourse 删去异常", tid);
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
-    private void deleteExLog(CourseOpDTO courseOpDTO, int flag, Exception ex)
+    private void deleteExLog(CourseOpBO courseOpBO, int flag, Exception ex)
             throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("查询异常: {}", ex.getMessage());
@@ -398,7 +397,7 @@ public class CourseServiceImpl implements CourseService {
             case 3 -> logger.error("Course 删除异常: {}", ex.getMessage());
             default -> logger.error("其他异常: {}", ex.getMessage());
         }
-        setCourseOpDTO(courseOpDTO,
+        setCourseOpDTO(courseOpBO,
                 flag >= 4 ?
                         "删除 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
                         "删除 Course/TeacherCourse/StudentCourse 失败",
@@ -410,9 +409,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO deleteCourse(Integer id)
+    public CourseOpBO deleteCourse(Integer id)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] delete = new int[3];
 
@@ -433,21 +432,21 @@ public class CourseServiceImpl implements CourseService {
             logger.info("Course 删除了 {} 条数据", delete[2]);
             logger.info("TeacherCourse 删除了 {} 条数据", delete[0]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("被删除课程", srcCourseSTDTO);
             }});
         } catch (Exception ex) {
             logger.error("CourseID: {} 删除异常", ex.getMessage());
-            updateExLog(courseOpDTO, flag, ex);
+            updateExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO deleteTeachCourse(Integer tid)
+    public CourseOpBO deleteTeachCourse(Integer tid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] delete = new int[4];
 
@@ -467,7 +466,7 @@ public class CourseServiceImpl implements CourseService {
             tCourse.forEach(e ->
                     delete[2] += courseDao.deleteCourse(e.getId()));
             flag = 4;
-            UserOpDTO deleteUser = userService.deleteUser(tid);
+            UserOpBO deleteUser = userService.deleteUser(tid);
             if (!deleteUser.getIsSuccess()) {
                 throw new Exception("课程删除完毕, 用户删除异常");
             }
@@ -478,23 +477,23 @@ public class CourseServiceImpl implements CourseService {
             logger.info("Course 删除了 {} 条数据", delete[2]);
             logger.info("TeacherCourse 删除了 {} 条数据", delete[0]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[1]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 tCourse.forEach(e -> put(tid.toString() + "\t"
                                 + e.getId() + "\t" + e.getName(),
                         getCourseSTDTO(e)));
             }});
         } catch (Exception ex) {
             logger.error("Teacher UserID: {} 销号异常 ", tid);
-            deleteExLog(courseOpDTO, flag, ex);
+            deleteExLog(courseOpBO, flag, ex);
         }
-        return courseOpDTO;
+        return courseOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpDTO deleteLearnCourse(Integer sid)
+    public CourseOpBO deleteLearnCourse(Integer sid)
             throws SQLRWException {
-        CourseOpDTO courseOpDTO = new CourseOpDTO();
+        CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] delete = new int[2];
 
@@ -506,7 +505,7 @@ public class CourseServiceImpl implements CourseService {
             flag = 2;
             delete[0] = studentCourseDao.deleteBySID(sid);
             flag = 4;
-            UserOpDTO deleteUser = userService.deleteUser(sid);
+            UserOpBO deleteUser = userService.deleteUser(sid);
             if (!deleteUser.getIsSuccess()) {
                 throw new Exception("课程删除完毕, 用户删除异常");
             }
@@ -515,16 +514,16 @@ public class CourseServiceImpl implements CourseService {
             logger.info("Student UserID: {} 删除完成", sid);
             logger.info("User 删除了 {} 条数据", delete[1]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[0]);
-            setCourseOpDTO(courseOpDTO, new HashMap<>() {{
+            setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 sCourse.forEach(e -> put(sid.toString() + "\t"
                                 + e.getId() + "\t" + e.getName(),
                         getCourseSTDTO(e)));
             }});
         } catch (Exception ex) {
             logger.error("Student UserID: {} 销号异常", sid);
-            deleteExLog(courseOpDTO, flag, ex);
+            deleteExLog(courseOpBO, flag, ex);
         }
 
-        return courseOpDTO;
+        return courseOpBO;
     }
 }

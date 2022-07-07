@@ -21,4 +21,6 @@ public interface QuestionDao {
     int deleteByID(Integer id);
 
     int updateQuestion(Question question);
+
+    int getLast();
 }

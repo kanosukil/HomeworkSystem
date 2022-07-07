@@ -4,14 +4,14 @@
 <mapper namespace="cn.summer.homework.dao.cascade.ResultCourseDao">
     <cache-ref namespace="cn.summer.homework.dao.ResultDao"/>
     <!--查询一个答案-->
-    <select id="selectByRID" parameterType="integer" resultType="cn.summer.homework.PO.ResultCourse">
-        select *
+    <select id="selectByRID" parameterType="integer" resultType="integer">
+        select cid
         from result_course
         where rid = #{rid};
     </select>
     <!--查询一个课程下的所有答案-->
-    <select id="selectByCID" parameterType="integer" resultType="cn.summer.homework.PO.ResultCourse">
-        select *
+    <select id="selectByCID" parameterType="integer" resultType="integer">
+        select rid
         from result_course
         where cid = #{cid};
     </select>

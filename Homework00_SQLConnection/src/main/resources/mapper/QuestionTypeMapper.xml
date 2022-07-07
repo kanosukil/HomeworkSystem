@@ -31,4 +31,7 @@
         from questiontype
         where id = #{id};
     </delete>
+    <select id="getLast" resultType="integer">
+        select last_insert_id();
+    </select>
 </mapper>

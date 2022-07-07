@@ -12,9 +12,9 @@ import java.util.List;
 
 @Mapper
 public interface StudentCourseDao {
-    List<StudentCourse> selectBySID(Integer sid);
+    List<Integer> selectBySID(Integer sid);
 
-    List<StudentCourse> selectByCID(Integer cid);
+    List<Integer> selectByCID(Integer cid);
 
     int accurateSelect(StudentCourse studentCourse);
 

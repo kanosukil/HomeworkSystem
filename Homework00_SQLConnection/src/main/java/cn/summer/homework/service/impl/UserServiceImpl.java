@@ -1,6 +1,6 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.DTO.UserOpDTO;
+import cn.summer.homework.BO.UserOpBO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.PO.UserRole;
@@ -99,38 +99,45 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getAllUser() {
-        return userDao.selectAll();
+    public List<UserRoleDTO> getAllUser() {
+        List<UserRoleDTO> res = new ArrayList<>();
+        userDao.selectAll().forEach(e
+                -> res.add(new UserRoleDTO(e, getRoles(e.getId()))));
+        return res;
     }
 
     @Override
-    public List<User> findUser(String username) {
-        return userDao.selectByName(username);
+    public List<UserRoleDTO> findUser(String username) {
+        List<UserRoleDTO> res = new ArrayList<>();
+        userDao.selectByName(username).forEach(e
+                -> res.add(new UserRoleDTO(e, getRoles(e.getId()))));
+        return res;
     }
 
     @Override
-    public User findUser(Integer id) {
-        return userDao.selectByID(id);
+    public UserRoleDTO findUser(Integer id) {
+        return new UserRoleDTO(userDao.selectByID(id), getRoles(id));
     }
 
     @Override
-    public User findUserByEmail(String email) {
-        return userDao.selectByEmail(email);
+    public UserRoleDTO findUserByEmail(String email) {
+        User user = userDao.selectByEmail(email);
+        return new UserRoleDTO(user, getRoles(user.getId()));
     }
 
-    private void setUserOpDTO(@Nonnull UserOpDTO userOpDTO,
+    private void setUserOpDTO(@Nonnull UserOpBO userOpBO,
                               String key, String value) {
-        userOpDTO.setIsSuccess(false);
-        userOpDTO.setInfo(new HashMap<>() {{
+        userOpBO.setIsSuccess(false);
+        userOpBO.setInfo(new HashMap<>() {{
             put(key, value);
         }});
 
     }
 
-    private void setUserOpDTO(@Nonnull UserOpDTO userOpDTO,
+    private void setUserOpDTO(@Nonnull UserOpBO userOpBO,
                               Map<String, Object> map) {
-        userOpDTO.setIsSuccess(true);
-        userOpDTO.setInfo(map);
+        userOpBO.setIsSuccess(true);
+        userOpBO.setInfo(map);
     }
 
     private List<String> getRoles(Integer uid) {
@@ -142,9 +149,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO createNewUser(User user, String role)
+    public UserOpBO createNewUser(User user, String role)
             throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+        UserOpBO userOpBO = new UserOpBO();
         int[] insert = new int[2];
         Integer rid;
         Integer uid = 0;
@@ -156,8 +163,8 @@ public class UserServiceImpl implements UserService {
             }
             flag = 1;
             insert[0] = userDao.insertNewUser(user);
-            User finalUser = userDao.selectByEmail(user.getEmail());
-            uid = finalUser.getId();
+            uid = userDao.getLast();
+            User finalUser = userDao.selectByID(uid);
             flag = 2;
             insert[1] = userRoleDao.addNewUser(
                     new UserRole(uid, rid));
@@ -166,7 +173,7 @@ public class UserServiceImpl implements UserService {
             logger.info("User 表成功插入 {} 条数据", insert[0]);
             logger.info("UserRole 表成功插入 {} 条数据", insert[1]);
             Integer finalUid = uid;
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("新增用户",
                         new UserRoleDTO(finalUser, getRoles(finalUid)));
             }});
@@ -178,17 +185,17 @@ public class UserServiceImpl implements UserService {
                 case 0 -> logger.error("Role 查询异常: {}", ex.getMessage());
                 default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            setUserOpDTO(userOpDTO,
+            setUserOpDTO(userOpBO,
                     flag == 3 ? "插入 User 完成, 但仍有异常" : "插入 User 失败",
                     ex.getMessage());
             if (flag == 1 || flag == 2) {
                 throw new SQLRWException("User/UseRole 插入异常");
             }
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
-    private void deleteExLog(UserOpDTO userOpDTO, int flag, Exception ex)
+    private void deleteExLog(UserOpBO userOpBO, int flag, Exception ex)
             throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("User 查询, 用户不存在: {}", ex.getMessage());
@@ -196,7 +203,7 @@ public class UserServiceImpl implements UserService {
             case 2 -> logger.error("User 删除失败: {}", ex.getMessage());
             default -> logger.error("未知错误: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpDTO,
+        setUserOpDTO(userOpBO,
                 flag == 3 ? "删除 User 完成, 但仍有异常" : "删除 User 失败",
                 ex.getMessage());
         if (flag == 1 || flag == 2) {
@@ -206,8 +213,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO deleteUser(Integer id) throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+    public UserOpBO deleteUser(Integer id) throws SQLRWException {
+        UserOpBO userOpBO = new UserOpBO();
         int[] delete = new int[2];
         int flag = 0;
 
@@ -225,20 +232,20 @@ public class UserServiceImpl implements UserService {
             logger.info("删除 UserID: {} 成功", id);
             logger.info("User 表删除 {} 条数据", delete[1]);
             logger.info("UserRole 表删除 {} 条数据", delete[0]);
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("删除用户", new UserRoleDTO(user, roles));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 删除异常", id);
-            deleteExLog(userOpDTO, flag, ex);
+            deleteExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO deleteUser(String email) throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+    public UserOpBO deleteUser(String email) throws SQLRWException {
+        UserOpBO userOpBO = new UserOpBO();
         int[] delete = new int[2];
         int flag = 0;
         try {
@@ -256,17 +263,17 @@ public class UserServiceImpl implements UserService {
             logger.info("删除 UserID: {} 成功", id);
             logger.info("User 表删除 {} 条数据", delete[1]);
             logger.info("UserRole 表删除 {} 条数据", delete[0]);
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("删除用户", new UserRoleDTO(user, roles));
             }});
         } catch (Exception ex) {
             logger.error("UserEmail: {} 删除异常", email);
-            deleteExLog(userOpDTO, flag, ex);
+            deleteExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
-    private void updateExLog(UserOpDTO userOpDTO, int flag, Exception ex)
+    private void updateExLog(UserOpBO userOpBO, int flag, Exception ex)
             throws SQLRWException {
         switch (flag) {
             case 0 -> logger.error("查询异常: {}", ex.getMessage());
@@ -274,7 +281,7 @@ public class UserServiceImpl implements UserService {
             case 2 -> logger.error("UserRole 表更新异常: {}", ex.getMessage());
             default -> logger.error("未知异常: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpDTO,
+        setUserOpDTO(userOpBO,
                 flag == 3 ? "更新 User 完成, 但仍有异常" : "更新 User 失败",
                 ex.getMessage());
         if (flag == 1 || flag == 2) {
@@ -284,9 +291,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO updateUserInfo(User user)
+    public UserOpBO updateUserInfo(User user)
             throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+        UserOpBO userOpBO = new UserOpBO();
         Integer id = user.getId();
         int flag = 0;
         try {
@@ -300,22 +307,22 @@ public class UserServiceImpl implements UserService {
             logger.info("UserID: {} 更新完成", id);
             logger.info("User 表更新 {} 条数据", update);
             List<String> roles = getRoles(id);
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(srcUser, roles));
                 put("UpdateUser", new UserRoleDTO(user, roles));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 更新异常", id);
-            updateExLog(userOpDTO, flag, ex);
+            updateExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO updateUserInfo(User user, String role)
+    public UserOpBO updateUserInfo(User user, String role)
             throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+        UserOpBO userOpBO = new UserOpBO();
         Integer uid = user.getId();
         Integer rid;
         int flag = 0;
@@ -337,22 +344,22 @@ public class UserServiceImpl implements UserService {
             logger.info("UserID: {} 更新完成", uid);
             logger.info("User 表更新 {} 条数据", update[0]);
             logger.info("UserRole 表更新 {} 条数据", update[1]);
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(srcUser, srcRoles));
                 put("UpdateUser", new UserRoleDTO(user, getRoles(uid)));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 更新异常", uid);
-            updateExLog(userOpDTO, flag, ex);
+            updateExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO updateUserRole(Integer id, String role)
+    public UserOpBO updateUserRole(Integer id, String role)
             throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+        UserOpBO userOpBO = new UserOpBO();
         int flag = 0;
         Integer rid;
         try {
@@ -372,22 +379,22 @@ public class UserServiceImpl implements UserService {
             logger.info("UserID: {} 更新完成", id);
             logger.info("UserRole 表更新 {} 条数据", update);
             User user = userDao.selectByID(id);
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(user, srcRoles));
                 put("UpdateUser", new UserRoleDTO(user, getRoles(id)));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 更新异常", id);
-            updateExLog(userOpDTO, flag, ex);
+            updateExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public UserOpDTO deleteUserRole(Integer id, String role)
+    public UserOpBO deleteUserRole(Integer id, String role)
             throws SQLRWException {
-        UserOpDTO userOpDTO = new UserOpDTO();
+        UserOpBO userOpBO = new UserOpBO();
         int flag = 0;
         Integer rid;
         try {
@@ -408,22 +415,24 @@ public class UserServiceImpl implements UserService {
             logger.info("UserRole 表更新 {} 条数据", update);
             User user = userDao.selectByID(id);
             List<String> updateRoles = getRoles(id);
-//            // 当该用户没有角色时, 添加一个默认角色 Student
-//            if (updateRoles.size() == 0) {
-//                if (userRoleDao.addNewUser(new UserRole(id, 1)) > 0) {
-//                    updateRoles.add("Student");
-//                } else {
-//                    throw new Exception("用户角色已全被删除, 若仍需使用该用户, 请添加角色.");
-//                }
-//            }
-            setUserOpDTO(userOpDTO, new HashMap<>() {{
+            /*
+                // 当该用户没有角色时, 添加一个默认角色 Student
+                if (updateRoles.size() == 0) {
+                    if (userRoleDao.addNewUser(new UserRole(id, 1)) > 0) {
+                        updateRoles.add("Student");
+                    } else {
+                        throw new Exception("用户角色已全被删除, 若仍需使用该用户, 请添加角色.");
+                    }
+                }
+            */
+            setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(user, srcRoles));
                 put("UpdateUser", new UserRoleDTO(user, updateRoles));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 更新异常", id);
-            updateExLog(userOpDTO, flag, ex);
+            updateExLog(userOpBO, flag, ex);
         }
-        return userOpDTO;
+        return userOpBO;
     }
 }

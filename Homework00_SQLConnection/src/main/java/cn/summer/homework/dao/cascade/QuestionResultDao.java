@@ -12,9 +12,9 @@ import java.util.List;
 
 @Mapper
 public interface QuestionResultDao {
-    List<QuestionResult> selectByQID(Integer qid);
+    List<Integer> selectByQID(Integer qid);
 
-    List<QuestionResult> selectByRID(Integer rid);
+    List<Integer> selectByRID(Integer rid);
 
     int accurateSelect(QuestionResult questionResult);
 

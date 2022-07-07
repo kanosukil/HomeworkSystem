@@ -21,4 +21,6 @@ public interface ResultDao {
     int deleteByID(Integer id);
 
     int updateResult(Result result);
+
+    int getLast();
 }

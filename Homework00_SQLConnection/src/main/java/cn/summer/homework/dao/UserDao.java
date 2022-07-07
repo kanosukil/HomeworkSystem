@@ -26,4 +26,6 @@ public interface UserDao {
     int deleteUser(Integer id);
 
     int updateUser(User user);
+
+    int getLast();
 }

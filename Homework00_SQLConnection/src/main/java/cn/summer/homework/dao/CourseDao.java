@@ -23,4 +23,6 @@ public interface CourseDao {
     int deleteCourse(Integer id);
 
     int updateCourse(Course course);
+
+    int getLast();
 }

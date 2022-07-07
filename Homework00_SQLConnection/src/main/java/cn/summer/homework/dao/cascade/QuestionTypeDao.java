@@ -12,9 +12,9 @@ import java.util.List;
 
 @Mapper
 public interface QuestionTypeDao {
-    List<QuestionType> selectByQID(Integer qid);
+    List<Integer> selectByQID(Integer qid);
 
-    List<QuestionType> selectByQTID(Integer qtid);
+    List<Integer> selectByQTID(Integer qtid);
 
     int accurateSelect(QuestionType questionType);
 

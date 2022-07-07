@@ -1,4 +1,4 @@
-package cn.summer.homework.DTO;
+package cn.summer.homework.BO;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
-public class CourseOpDTO {
+public class CourseOpBO {
     private Boolean isSuccess;
     private Map<String, Object> map;
 }

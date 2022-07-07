@@ -4,14 +4,14 @@
 <mapper namespace="cn.summer.homework.dao.cascade.QuestionTypeDao">
     <cache-ref namespace="cn.summer.homework.dao.QuestionDao"/>
     <!--查询某个问题的类型(根据 qid)-->
-    <select id="selectByQID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionType">
-        select *
+    <select id="selectByQID" parameterType="integer" resultType="integer">
+        select qtid
         from question_type
         where qid = #{qid};
     </select>
     <!--查询某个类型的所有题目(根据 qtid)-->
-    <select id="selectByQTID" parameterType="integer" resultType="cn.summer.homework.PO.QuestionType">
-        select *
+    <select id="selectByQTID" parameterType="integer" resultType="integer">
+        select qid
         from question_type
         where qtid = #{qtid};
     </select>
