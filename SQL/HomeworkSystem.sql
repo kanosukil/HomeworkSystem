@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `result`
 CREATE TABLE IF NOT EXISTS `student_result`
 (
     `sid` int,
-    `rid` int
+    `rid` int UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `question`
@@ -65,19 +65,20 @@ CREATE TABLE IF NOT EXISTS `question_type`
 CREATE TABLE IF NOT EXISTS `teacher_question`
 (
     `tid` int,
-    `qid` int
+    `qid` int UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `question_result`
 (
     `qid` int,
-    `rid` int
+    `rid` int UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS `course`
 (
     `id`          int PRIMARY KEY AUTO_INCREMENT,
     `name`        varchar(255) NOT NULL,
+    `teacher_num` int DEFAULT 1,
     `student_num` int DEFAULT 0,
     `create_time` timestamp    NOT NULL
 );
@@ -96,13 +97,13 @@ CREATE TABLE IF NOT EXISTS `student_course`
 
 CREATE TABLE IF NOT EXISTS `question_course`
 (
-    `qid` int,
+    `qid` int UNIQUE,
     `cid` int
 );
 
 CREATE TABLE IF NOT EXISTS `result_course`
 (
-    `rid` int,
+    `rid` int UNIQUE,
     `cid` int
 );
 
@@ -134,21 +135,23 @@ CREATE UNIQUE INDEX `question_result_index_12` ON `question_result` (`qid`, `rid
 
 CREATE UNIQUE INDEX `question_result_index_13` ON `question_result` (`rid`, `qid`);
 
-CREATE UNIQUE INDEX `teacher_course_index_14` ON `teacher_course` (`tid`, `cid`);
+CREATE INDEX `courseName` ON `course` (`name`);
 
-CREATE UNIQUE INDEX `teacher_course_index_15` ON `teacher_course` (`cid`, `tid`);
+CREATE UNIQUE INDEX `teacher_course_index_15` ON `teacher_course` (`tid`, `cid`);
 
-CREATE UNIQUE INDEX `student_course_index_16` ON `student_course` (`sid`, `cid`);
+CREATE UNIQUE INDEX `teacher_course_index_16` ON `teacher_course` (`cid`, `tid`);
 
-CREATE UNIQUE INDEX `student_course_index_17` ON `student_course` (`cid`, `sid`);
+CREATE UNIQUE INDEX `student_course_index_17` ON `student_course` (`sid`, `cid`);
 
-CREATE UNIQUE INDEX `question_course_index_18` ON `question_course` (`qid`, `cid`);
+CREATE UNIQUE INDEX `student_course_index_18` ON `student_course` (`cid`, `sid`);
 
-CREATE UNIQUE INDEX `question_course_index_19` ON `question_course` (`cid`, `qid`);
+CREATE UNIQUE INDEX `question_course_index_19` ON `question_course` (`qid`, `cid`);
 
-CREATE UNIQUE INDEX `result_course_index_20` ON `result_course` (`rid`, `cid`);
+CREATE UNIQUE INDEX `question_course_index_20` ON `question_course` (`cid`, `qid`);
 
-CREATE UNIQUE INDEX `result_course_index_21` ON `result_course` (`cid`, `rid`);
+CREATE UNIQUE INDEX `result_course_index_21` ON `result_course` (`rid`, `cid`);
+
+CREATE UNIQUE INDEX `result_course_index_22` ON `result_course` (`cid`, `rid`);
 
 ALTER TABLE `user_role`
     ADD FOREIGN KEY (`uid`) REFERENCES `user` (`id`);
