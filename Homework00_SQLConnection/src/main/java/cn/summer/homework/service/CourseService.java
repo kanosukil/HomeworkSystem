@@ -57,4 +57,8 @@ public interface CourseService {
 
     CourseOpBO deleteLearnCourse(Integer sid) throws SQLRWException;
     // 学生销号
+
+    boolean isTeachingByTeacher(Integer cid, Integer tid);
+
+    boolean isLearningByStudent(Integer cid, Integer sid);
 }

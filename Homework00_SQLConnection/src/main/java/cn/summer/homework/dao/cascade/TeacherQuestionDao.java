@@ -14,7 +14,7 @@ import java.util.List;
 public interface TeacherQuestionDao {
     List<Integer> selectByTID(Integer tid);
 
-    List<Integer> selectByQID(Integer qid);
+    Integer selectByQID(Integer qid);
 
     int accurateSelect(TeacherQuestion teacherQuestion);
 

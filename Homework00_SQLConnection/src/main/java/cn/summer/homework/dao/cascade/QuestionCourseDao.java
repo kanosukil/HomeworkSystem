@@ -12,7 +12,7 @@ import java.util.List;
 
 @Mapper
 public interface QuestionCourseDao {
-    List<Integer> selectByQID(Integer qid);
+    Integer selectByQID(Integer qid);
 
     List<Integer> selectByCID(Integer cid);
 

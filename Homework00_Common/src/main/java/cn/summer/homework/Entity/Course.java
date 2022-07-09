@@ -2,6 +2,7 @@ package cn.summer.homework.Entity;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Date;
  */
 
 @Data
-public class Course {
+public class Course implements Serializable {
     private Integer id = 0;
     private String name;
     private Integer teacher_num;

@@ -12,6 +12,7 @@ import cn.summer.homework.dao.cascade.StudentCourseDao;
 import cn.summer.homework.dao.cascade.TeacherCourseDao;
 import cn.summer.homework.exception.SQLRWException;
 import cn.summer.homework.service.CourseService;
+import cn.summer.homework.service.HomeworkService;
 import cn.summer.homework.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ public class CourseServiceImpl implements CourseService {
     private StudentCourseDao studentCourseDao;
     @Resource
     private TeacherCourseDao teacherCourseDao;
+    @Resource
+    private HomeworkService homeworkService;
 
     private List<User> getStudent(List<Integer> sc) {
         List<User> res = new ArrayList<>();
@@ -179,12 +182,13 @@ public class CourseServiceImpl implements CourseService {
                 case 2 -> logger.error("TeacherCourse 插入异常: {} ", ex.getMessage());
                 default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            setCourseOpDTO(courseOpBO,
-                    flag == 3 ? "创建 Course 完成, 但仍有异常" : "创建 Course 失败",
-                    ex.getMessage());
             if (flag == 1 || flag == 2) {
                 throw new SQLRWException("Course/TeacherCourse 插入异常");
             }
+            setCourseOpDTO(courseOpBO,
+                    flag == 3 ? "创建 Course 完成, 但仍有异常" : "创建 Course 失败",
+                    ex.getMessage());
+
         }
         return courseOpBO;
     }
@@ -197,14 +201,15 @@ public class CourseServiceImpl implements CourseService {
             case 2 -> logger.error("TeacherCourse 插入/删除异常: {}", ex.getMessage());
             default -> logger.error("其他异常: {}", ex.getMessage());
         }
+        if (flag == 1 || flag == 2) {
+            throw new SQLRWException("Course/TeacherCourse/StudentCourse 插入/删除异常");
+        }
         setCourseOpDTO(courseOpBO,
                 flag == 3 ?
                         "更新 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
                         "更新 Course/TeacherCourse/StudentCourse 失败",
                 ex.getMessage());
-        if (flag == 1 || flag == 2) {
-            throw new SQLRWException("Course/TeacherCourse/StudentCourse 插入/删除异常");
-        }
+
     }
 
     @Override
@@ -337,6 +342,15 @@ public class CourseServiceImpl implements CourseService {
             update[1] = studentCourseDao
                     .accurateDelete(new StudentCourse(sid, cid));
             flag = 3;
+            homeworkService.selectHKBySID(sid).forEach(e ->
+            {
+                try {
+                    int num = homeworkService.deleteResult(e.getResult().getId()).getInfo().size();
+                    logger.info("删除了 {} 个学生回答", num);
+                } catch (SQLRWException ex) {
+                    throw new RuntimeException("学生退课时删除 homework 失败", ex);
+                }
+            });
             logger.info("学生 UserID: {} 退课完成", sid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("StudentCourse 表删除 {} 条数据", update[1]);
@@ -366,6 +380,10 @@ public class CourseServiceImpl implements CourseService {
             Course course = courseDao.selectByID(cid);
             if (!Objects.equals(course.getId(), cid)) {
                 throw new Exception("课程不存在");
+            }
+            if (course.getTeacher_num() == 1) {
+                // 该老师为最后一个任课老师时, 直接删除课程
+                deleteCourse(cid);
             }
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -397,14 +415,14 @@ public class CourseServiceImpl implements CourseService {
             case 3 -> logger.error("Course 删除异常: {}", ex.getMessage());
             default -> logger.error("其他异常: {}", ex.getMessage());
         }
+        if (flag <= 3 && flag >= 1) {
+            throw new SQLRWException("Course/TeacherCourse/StudentCourse 删除异常");
+        }
         setCourseOpDTO(courseOpBO,
                 flag >= 4 ?
                         "删除 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
                         "删除 Course/TeacherCourse/StudentCourse 失败",
                 ex.getMessage());
-        if (flag <= 3 && flag >= 1) {
-            throw new SQLRWException("Course/TeacherCourse/StudentCourse 删除异常");
-        }
     }
 
     @Override
@@ -421,6 +439,15 @@ public class CourseServiceImpl implements CourseService {
                 throw new Exception("课程不存在");
             }
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
+            homeworkService.selectHKByCID_T(id).forEach(e
+                    -> {
+                try {
+                    int size = homeworkService.deleteQuestion(e.getQuestion().getId()).getInfo().size();
+                    logger.info("删除了 {} 个问题", size);
+                } catch (SQLRWException ex) {
+                    throw new RuntimeException("老师删除课程时删除 homework 失败", ex);
+                }
+            });
             flag = 1;
             delete[0] = teacherCourseDao.deleteByCID(id);
             flag = 2;
@@ -455,6 +482,14 @@ public class CourseServiceImpl implements CourseService {
                 throw new Exception("用户不存在/用户非老师");
             }
             List<Course> tCourse = getTCourse(teacherCourseDao.selectByTID(tid));
+            homeworkService.selectHKByTID(tid).forEach(e -> {
+                try {
+                    int size = homeworkService.deleteQuestion(e.getQuestion().getId()).getInfo().size();
+                    logger.info("删除了 {} 个问题", size);
+                } catch (SQLRWException ex) {
+                    throw new RuntimeException("老师删除课程时删除 homework 失败", ex);
+                }
+            });
             flag = 1;
             delete[0] = teacherCourseDao.deleteByTID(tid);
             flag = 2;
@@ -502,6 +537,14 @@ public class CourseServiceImpl implements CourseService {
                 throw new Exception("用户不存在/用户不是学生");
             }
             List<Course> sCourse = getSCourse(studentCourseDao.selectBySID(sid));
+            homeworkService.selectHKBySID(sid).forEach(e -> {
+                try {
+                    int size = homeworkService.deleteResult(e.getResult().getId()).getInfo().size();
+                    logger.info("删除了 {} 条回答", size);
+                } catch (SQLRWException ex) {
+                    throw new RuntimeException("学生销号时删除 homework 失败", ex);
+                }
+            });
             flag = 2;
             delete[0] = studentCourseDao.deleteBySID(sid);
             flag = 4;
@@ -525,5 +568,31 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return courseOpBO;
+    }
+
+    @Override
+    public boolean isTeachingByTeacher(Integer cid, Integer tid) {
+        List<User> teachers = getCourse(cid).getTeachers();
+        if (teachers.size() > 0) {
+            for (User teacher : teachers) {
+                if (teacher.getId().equals(tid)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isLearningByStudent(Integer cid, Integer sid) {
+        List<User> students = getCourse(cid).getStudents();
+        if (students.size() > 0) {
+            for (User student : students) {
+                if (student.getId().equals(sid)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

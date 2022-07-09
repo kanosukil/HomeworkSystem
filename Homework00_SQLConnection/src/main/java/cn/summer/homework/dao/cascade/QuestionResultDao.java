@@ -14,7 +14,7 @@ import java.util.List;
 public interface QuestionResultDao {
     List<Integer> selectByQID(Integer qid);
 
-    List<Integer> selectByRID(Integer rid);
+    Integer selectByRID(Integer rid);
 
     int accurateSelect(QuestionResult questionResult);
 

@@ -11,7 +11,7 @@ import java.util.List;
  */
 
 @Mapper
-public interface QuestionTypeDao {
+public interface Question_TypeDao {
     List<Integer> selectByQID(Integer qid);
 
     List<Integer> selectByQTID(Integer qtid);

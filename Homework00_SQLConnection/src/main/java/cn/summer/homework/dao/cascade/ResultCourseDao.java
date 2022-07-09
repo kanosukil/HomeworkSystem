@@ -12,7 +12,7 @@ import java.util.List;
 
 @Mapper
 public interface ResultCourseDao {
-    List<Integer> selectByRID(Integer rid);
+    Integer selectByRID(Integer rid);
 
     List<Integer> selectByCID(Integer cid);
 

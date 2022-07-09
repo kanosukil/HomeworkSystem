@@ -21,9 +21,9 @@ public interface UserService {
 
     boolean isExists(String name);
 
-    boolean isExists(Integer id);
+    boolean isExists(Integer id) throws NullPointerException;
 
-    boolean isEmailUsed(String email);
+    boolean isEmailUsed(String email) throws NullPointerException;
 
     List<UserRoleDTO> getAllUser();
 
@@ -31,7 +31,7 @@ public interface UserService {
 
     UserRoleDTO findUser(Integer id);
 
-    UserRoleDTO findUserByEmail(String email);
+    UserRoleDTO findUserByEmail(String email) throws NullPointerException;
 
     UserOpBO createNewUser(User user, String role) throws SQLRWException;
 

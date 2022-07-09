@@ -15,6 +15,8 @@ public interface QuestionTypeDao {
 
     String selectByID(Integer id);
 
+    Integer selectByName(String typeName);
+
     int addQuestionType(String typeName);
 
     int deleteQuestionType(String typeName);

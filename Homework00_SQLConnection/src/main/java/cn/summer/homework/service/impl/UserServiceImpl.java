@@ -89,12 +89,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean isExists(Integer id) {
+    public boolean isExists(Integer id)
+            throws NullPointerException {
         return userDao.selectByID(id).getId().equals(id);
     }
 
     @Override
-    public boolean isEmailUsed(String email) {
+    public boolean isEmailUsed(String email)
+            throws NullPointerException {
         return userDao.selectByEmail(email).getEmail().equals(email);
     }
 
@@ -120,7 +122,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserRoleDTO findUserByEmail(String email) {
+    public UserRoleDTO findUserByEmail(String email)
+            throws NullPointerException {
         User user = userDao.selectByEmail(email);
         return new UserRoleDTO(user, getRoles(user.getId()));
     }
@@ -185,12 +188,13 @@ public class UserServiceImpl implements UserService {
                 case 0 -> logger.error("Role 查询异常: {}", ex.getMessage());
                 default -> logger.error("未知异常: {}", ex.getMessage());
             }
-            setUserOpDTO(userOpBO,
-                    flag == 3 ? "插入 User 完成, 但仍有异常" : "插入 User 失败",
-                    ex.getMessage());
             if (flag == 1 || flag == 2) {
                 throw new SQLRWException("User/UseRole 插入异常");
             }
+            setUserOpDTO(userOpBO,
+                    flag == 3 ? "插入 User 完成, 但仍有异常" : "插入 User 失败",
+                    ex.getMessage());
+
         }
         return userOpBO;
     }
@@ -203,12 +207,13 @@ public class UserServiceImpl implements UserService {
             case 2 -> logger.error("User 删除失败: {}", ex.getMessage());
             default -> logger.error("未知错误: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpBO,
-                flag == 3 ? "删除 User 完成, 但仍有异常" : "删除 User 失败",
-                ex.getMessage());
         if (flag == 1 || flag == 2) {
             throw new SQLRWException("User/UserRole删除异常");
         }
+        setUserOpDTO(userOpBO,
+                flag == 3 ? "删除 User 完成, 但仍有异常" : "删除 User 失败",
+                ex.getMessage());
+
     }
 
     @Override
@@ -281,12 +286,12 @@ public class UserServiceImpl implements UserService {
             case 2 -> logger.error("UserRole 表更新异常: {}", ex.getMessage());
             default -> logger.error("未知异常: {}", ex.getMessage());
         }
-        setUserOpDTO(userOpBO,
-                flag == 3 ? "更新 User 完成, 但仍有异常" : "更新 User 失败",
-                ex.getMessage());
         if (flag == 1 || flag == 2) {
             throw new SQLRWException("User/UserRole删除异常");
         }
+        setUserOpDTO(userOpBO,
+                flag == 3 ? "更新 User 完成, 但仍有异常" : "更新 User 失败",
+                ex.getMessage());
     }
 
     @Override

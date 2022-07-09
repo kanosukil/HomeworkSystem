@@ -14,6 +14,12 @@
         from questiontype
         where id = #{id};
     </select>
+    <!--根据 TypeName 获得 id-->
+    <select id="selectByName" parameterType="string" resultType="integer">
+        select id
+        from questiontype
+        where typeName = #{typeName};
+    </select>
     <!--添加题目类型-->
     <insert id="addQuestionType" parameterType="string">
         insert into questiontype(typeName)

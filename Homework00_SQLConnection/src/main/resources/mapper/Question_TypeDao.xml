@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.summer.homework.dao.cascade.QuestionTypeDao">
+<mapper namespace="cn.summer.homework.dao.cascade.Question_TypeDao">
     <cache-ref namespace="cn.summer.homework.dao.QuestionDao"/>
     <!--查询某个问题的类型(根据 qid)-->
     <select id="selectByQID" parameterType="integer" resultType="integer">
