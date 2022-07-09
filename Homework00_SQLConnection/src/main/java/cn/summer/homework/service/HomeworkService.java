@@ -34,17 +34,23 @@ public interface HomeworkService {
     HomeworkOpBO createQuestion(Integer tid, Integer cid, Question question, String type) throws SQLRWException;
     // 创建问题
 
-    HomeworkOpBO deleteQuestion(Integer qid) throws SQLRWException;
     // 删除问题
+    HomeworkOpBO deleteQuestion(Integer tid, Integer qid)
+            throws SQLRWException;
 
-    HomeworkOpBO updateQuestion(Question question) throws SQLRWException;
     // 更新问题内容
+    HomeworkOpBO updateQuestion(Integer tid, Question question)
+            throws SQLRWException;
 
-    HomeworkOpBO updateQuestion(Integer qid, String type) throws SQLRWException;
     // 更新问题类型
+    HomeworkOpBO updateQuestion(Integer tid, Integer qid, String type)
+            throws SQLRWException;
 
-    HomeworkOpBO updateQuestion(Question question, String type) throws SQLRWException;
     // 更新问题内容+类型
+    HomeworkOpBO updateQuestion(Integer tid, Question question, String type)
+            throws SQLRWException;
+
+    HomeworkOpBO correctResult(Integer tid, Integer qid, Result result) throws SQLRWException;
 
     List<String> getAllType();
 
@@ -71,9 +77,11 @@ public interface HomeworkService {
     HomeworkOpBO answerQuestion(Integer sid, Integer cid, Integer qid, Result result) throws SQLRWException;
     // 回答问题, 创建答案
 
-    HomeworkOpBO deleteResult(Integer rid) throws SQLRWException;
     // 删除答案
+    HomeworkOpBO deleteResult(Integer sid, Integer rid)
+            throws SQLRWException;
 
-    HomeworkOpBO updateResult(Result result) throws SQLRWException;
+    HomeworkOpBO updateResult(Integer sid, Result result)
+            throws SQLRWException;
     // 更新答案
 }
