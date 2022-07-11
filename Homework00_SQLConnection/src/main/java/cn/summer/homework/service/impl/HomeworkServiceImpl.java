@@ -432,7 +432,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
             Integer qtid = questionTypeDao.selectByName(type);
             if (qtid <= 0) {
-                throw new Exception("Role 不存在");
+                throw new Exception("问题类型不存在");
             }
             QuestionResultDTO src = getQR_DTO(qid);
             flag = 2;
@@ -451,7 +451,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 put("updateQuestion", getQR_DTO(src.getQuestion()));
             }});
         } catch (Exception ex) {
-            logger.error("QuestionID: {} 更新 Type 异常", qid);
+            logger.error("QuestionID: {} 更新 问题类型 异常", qid);
             updateExLogQuestion(homeworkOpBO, flag, ex);
         }
         return homeworkOpBO;
@@ -472,7 +472,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
             Integer qtid = questionTypeDao.selectByName(type);
             if (qtid <= 0) {
-                throw new Exception("Role 不存在");
+                throw new Exception("问题类型不存在");
             }
             Question srcQuestion = selectHKByQID(qid).getQuestion();
             if (srcQuestion == null) {
@@ -515,6 +515,10 @@ public class HomeworkServiceImpl implements HomeworkService {
         int rid = result.getId();
 
         try {
+            Result srcResult = resultDao.selectByID(rid);
+            if (srcResult == null) {
+                throw new Exception("回答不存在");
+            }
             if (!result.getIsCheck()) {
                 throw new Exception("未批改");
             }
@@ -526,10 +530,6 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
             if (questionResultDao.accurateSelect(new QuestionResult(qid, rid)) <= 0) {
                 throw new Exception("答案与题不匹配");
-            }
-            Result srcResult = resultDao.selectByID(rid);
-            if (srcResult == null) {
-                throw new Exception("回答不存在");
             }
             flag = 1;
             int update = resultDao.updateResult(result);
@@ -564,20 +564,35 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
-    public boolean createType(String typeName) {
-        return questionTypeDao.addQuestionType(typeName) > 0;
+    public boolean createType(Integer uid, String typeName) {
+        if (userService.isAdmin(uid) || userService.isTeacher(uid)) {
+            return questionTypeDao.addQuestionType(typeName) > 0;
+        } else {
+            logger.error("UserID: {} 不是管理员/教师", uid);
+            return false;
+        }
     }
 
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
-    public boolean deleteType(String typeName) {
-        return questionTypeDao.deleteQuestionType(typeName) > 0;
+    public boolean deleteType(Integer uid, String typeName) {
+        if (userService.isAdmin(uid) || userService.isTeacher(uid)) {
+            return questionTypeDao.deleteQuestionType(typeName) > 0;
+        } else {
+            logger.error("UserID: {} 不是管理员/教师", uid);
+            return false;
+        }
     }
 
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
-    public boolean deleteType(Integer id) {
-        return questionTypeDao.deleteByID(id) > 0;
+    public boolean deleteType(Integer uid, Integer id) {
+        if (userService.isAdmin(uid) || userService.isTeacher(uid)) {
+            return questionTypeDao.deleteByID(id) > 0;
+        } else {
+            logger.error("UserID: {} 不是管理员/教师", uid);
+            return false;
+        }
     }
 
     /*
@@ -637,7 +652,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             flag = 1;
             insert[0] = resultDao.createNewResult(result);
             Integer rid = resultDao.getLast();
-            Result finalReslut = resultDao.selectByID(rid);
+            Result finalResult = resultDao.selectByID(rid);
             flag = 2;
             insert[1] = questionResultDao.createResultOfQuestion(new QuestionResult(qid, rid));
             flag = 3;
@@ -651,7 +666,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             logger.info("ResultCourse 插入 {} 条数据", insert[2]);
             logger.info("StudentResult 插入 {} 条数据", insert[3]);
             setHomeworkOpBO_R(homeworkOpBO, new HashMap<>(1, 1f) {{
-                put("新建Result", getRQ_DTO(finalReslut));
+                put("新建Result", getRQ_DTO(finalResult));
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 新建回答异常", sid);

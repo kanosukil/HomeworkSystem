@@ -212,6 +212,33 @@ public class CourseServiceImpl implements CourseService {
 
     }
 
+    private void judgeTeacher(Integer tid, Integer cid, Integer afterFindCID)
+            throws Exception {
+        if (!userService.isTeacher(tid)) {
+            throw new Exception("用户不存在/用户权限不够");
+        }
+        if (!Objects.equals(afterFindCID, cid)) {
+            throw new Exception("课程不存在");
+        }
+        if (teacherCourseDao.accurateSelect(new TeacherCourse(tid, cid)) <= 0) {
+            throw new Exception("用户权限不够");
+        }
+    }
+
+    private void judgeStudent(Integer sid, Integer cid, Integer afterFindCID)
+            throws Exception {
+        if (!userService.isStudent(sid)) {
+            throw new Exception("用户不存在/用户权限不够");
+        }
+        if (!Objects.equals(afterFindCID, cid)) {
+            throw new Exception("课程不存在");
+        }
+        if (studentCourseDao.accurateSelect(new StudentCourse(sid, cid)) <= 0) {
+            throw new Exception("用户权限不够");
+
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
     public CourseOpBO joinCourse(Integer cid, Integer tid)
@@ -221,13 +248,8 @@ public class CourseServiceImpl implements CourseService {
         int[] update = new int[2];
 
         try {
-            if (!userService.isTeacher(tid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
+            judgeTeacher(tid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             course.setTeacher_num(course.getTeacher_num() + 1);
@@ -258,13 +280,8 @@ public class CourseServiceImpl implements CourseService {
         int[] update = new int[2];
 
         try {
-            if (!userService.isStudent(sid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
+            judgeStudent(sid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             course.setStudent_num(course.getStudent_num() + 1);
@@ -289,16 +306,14 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpBO updateCourseName(Integer cid, String name)
+    public CourseOpBO updateCourseName(Integer uid, Integer cid, String name)
             throws SQLRWException {
         CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
 
         try {
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
+            judgeTeacher(uid, cid, course.getId());
             flag = 1;
             course.setName(name);
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -327,13 +342,8 @@ public class CourseServiceImpl implements CourseService {
         int[] update = new int[2];
 
         try {
-            if (!userService.isStudent(sid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
+            judgeStudent(sid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             course.setStudent_num(course.getStudent_num() - 1);
@@ -374,33 +384,33 @@ public class CourseServiceImpl implements CourseService {
         int[] update = new int[2];
 
         try {
-            if (!userService.isTeacher(tid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
-            if (teacherCourseDao.accurateSelect(new TeacherCourse(tid, cid)) <= 0) {
-                throw new Exception("用户权限不够");
-            }
+            judgeTeacher(tid, cid, course.getId());
+            CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
+            CourseSTDTO afterCourseSTDTO;
             if (course.getTeacher_num() == 1) {
                 // 该老师为最后一个任课老师时, 直接删除课程
-                deleteCourse(tid, cid);
+                CourseOpBO courseDelete = deleteCourse(tid, cid);
+                if (!courseDelete.getIsSuccess()) {
+                    throw new Exception("课程删除异常");
+                }
+                afterCourseSTDTO =
+                        new CourseSTDTO(null, null, null);
+            } else {
+                flag = 1;
+                course.setTeacher_num(course.getTeacher_num() - 1);
+                update[0] = courseDao.updateCourse(course);
+                flag = 2;
+                update[1] = teacherCourseDao.addNewCourse(new TeacherCourse(tid, cid));
+                flag = 3;
+                afterCourseSTDTO = getCourseSTDTO(cid);
             }
-            flag = 1;
-            CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
-            course.setTeacher_num(course.getTeacher_num() - 1);
-            update[0] = courseDao.updateCourse(course);
-            flag = 2;
-            update[1] = teacherCourseDao.addNewCourse(new TeacherCourse(tid, cid));
-            flag = 3;
             logger.info("老师 UserID: {} 退出课程完成", tid);
             logger.info("Course 表更新 {} 条数据", update[0]);
             logger.info("TeacherCourse 表删除 {} 条数据", update[1]);
             setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 put("srcCourse", srcCourseSTDTO);
-                put("updateCourse", getCourseSTDTO(cid));
+                put("updateCourse", afterCourseSTDTO);
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 从 TeacherCourse 删去异常", tid);
@@ -438,15 +448,7 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
-                throw new Exception("课程不存在");
-            }
-            if (!userService.isTeacher(uid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
-            if (teacherCourseDao.accurateSelect(new TeacherCourse(uid, cid)) <= 0) {
-                throw new Exception("用户权限不够");
-            }
+            judgeTeacher(uid, cid, course.getId());
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             homeworkService.selectHKByCID_T(cid).forEach(e
                     -> {

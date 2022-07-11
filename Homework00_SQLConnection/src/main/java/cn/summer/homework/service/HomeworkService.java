@@ -19,19 +19,24 @@ public interface HomeworkService {
      */
     List<QuestionResultDTO> selectAllHK_T();
 
-    QuestionResultDTO selectHKByQID(Integer qid) throws Exception;
+    QuestionResultDTO selectHKByQID(Integer qid)
+            throws Exception;
     // 根据问题
 
-    List<QuestionResultDTO> selectHKByTID(Integer tid) throws Exception;
+    List<QuestionResultDTO> selectHKByTID(Integer tid)
+            throws Exception;
     // 根据老师
 
-    List<QuestionResultDTO> selectHKByQuestionType(String type) throws Exception;
+    List<QuestionResultDTO> selectHKByQuestionType(String type)
+            throws Exception;
     // 根据题型
 
-    List<QuestionResultDTO> selectHKByCID_T(Integer cid) throws Exception;
+    List<QuestionResultDTO> selectHKByCID_T(Integer cid)
+            throws Exception;
     // 根据课程
 
-    HomeworkOpBO createQuestion(Integer tid, Integer cid, Question question, String type) throws SQLRWException;
+    HomeworkOpBO createQuestion(Integer tid, Integer cid, Question question, String type)
+            throws SQLRWException;
     // 创建问题
 
     // 删除问题
@@ -50,31 +55,36 @@ public interface HomeworkService {
     HomeworkOpBO updateQuestion(Integer tid, Question question, String type)
             throws SQLRWException;
 
-    HomeworkOpBO correctResult(Integer tid, Integer qid, Result result) throws SQLRWException;
+    HomeworkOpBO correctResult(Integer tid, Integer qid, Result result)
+            throws SQLRWException;
 
     List<String> getAllType();
 
-    boolean createType(String typeName);
+    boolean createType(Integer uid, String typeName);
 
-    boolean deleteType(String typeName);
+    boolean deleteType(Integer uid, String typeName);
 
-    boolean deleteType(Integer id);
+    boolean deleteType(Integer uid, Integer id);
 
     /*
     学生
      */
     List<ResultQuestionDTO> selectAllHK_S();
 
-    ResultQuestionDTO selectHKByRID(Integer rid) throws Exception;
+    ResultQuestionDTO selectHKByRID(Integer rid)
+            throws Exception;
     // 根据答案
 
-    List<ResultQuestionDTO> selectHKBySID(Integer sid) throws Exception;
+    List<ResultQuestionDTO> selectHKBySID(Integer sid)
+            throws Exception;
     // 根据学生
 
-    List<ResultQuestionDTO> selectHKByCID_S(Integer cid) throws Exception;
+    List<ResultQuestionDTO> selectHKByCID_S(Integer cid)
+            throws Exception;
     // 根据课程
 
-    HomeworkOpBO answerQuestion(Integer sid, Integer cid, Integer qid, Result result) throws SQLRWException;
+    HomeworkOpBO answerQuestion(Integer sid, Integer cid, Integer qid, Result result)
+            throws SQLRWException;
     // 回答问题, 创建答案
 
     // 删除答案

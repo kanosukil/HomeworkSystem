@@ -38,7 +38,7 @@ public interface CourseService {
     // 学生选修课程
     // Course student_num 需要修改, Student_Course 需要插入
 
-    CourseOpBO updateCourseName(Integer cid, String name) throws SQLRWException;
+    CourseOpBO updateCourseName(Integer uid, Integer cid, String name) throws SQLRWException;
     // 老师修改课程名
 
     CourseOpBO dropCourse(Integer cid, Integer sid) throws SQLRWException;
