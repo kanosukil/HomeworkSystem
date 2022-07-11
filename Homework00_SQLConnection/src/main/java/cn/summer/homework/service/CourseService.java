@@ -49,7 +49,7 @@ public interface CourseService {
     // 老师退出授课名单
     // Course teacher_num 需要修改, Teacher_Course 需要删除
 
-    CourseOpBO deleteCourse(Integer id) throws SQLRWException;
+    CourseOpBO deleteCourse(Integer uid, Integer cid) throws SQLRWException;
     // 管理员\教师删除指定课程
 
     CourseOpBO deleteTeachCourse(Integer tid) throws SQLRWException;

@@ -345,7 +345,7 @@ public class CourseServiceImpl implements CourseService {
             homeworkService.selectHKBySID(sid).forEach(e ->
             {
                 try {
-                    int num = homeworkService.deleteResult(e.getResult().getId()).getInfo().size();
+                    int num = homeworkService.deleteResult(sid, e.getResult().getId()).getInfo().size();
                     logger.info("删除了 {} 个学生回答", num);
                 } catch (SQLRWException ex) {
                     throw new RuntimeException("学生退课时删除 homework 失败", ex);
@@ -381,9 +381,12 @@ public class CourseServiceImpl implements CourseService {
             if (!Objects.equals(course.getId(), cid)) {
                 throw new Exception("课程不存在");
             }
+            if (teacherCourseDao.accurateSelect(new TeacherCourse(tid, cid)) <= 0) {
+                throw new Exception("用户权限不够");
+            }
             if (course.getTeacher_num() == 1) {
                 // 该老师为最后一个任课老师时, 直接删除课程
-                deleteCourse(cid);
+                deleteCourse(tid, cid);
             }
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -427,35 +430,41 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(rollbackFor = SQLRWException.class)
-    public CourseOpBO deleteCourse(Integer id)
+    public CourseOpBO deleteCourse(Integer uid, Integer cid)
             throws SQLRWException {
         CourseOpBO courseOpBO = new CourseOpBO();
         int flag = 0;
         int[] delete = new int[3];
 
         try {
-            Course course = courseDao.selectByID(id);
-            if (!Objects.equals(course.getId(), id)) {
+            Course course = courseDao.selectByID(cid);
+            if (!Objects.equals(course.getId(), cid)) {
                 throw new Exception("课程不存在");
             }
+            if (!userService.isTeacher(uid)) {
+                throw new Exception("用户不存在/用户权限不够");
+            }
+            if (teacherCourseDao.accurateSelect(new TeacherCourse(uid, cid)) <= 0) {
+                throw new Exception("用户权限不够");
+            }
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
-            homeworkService.selectHKByCID_T(id).forEach(e
+            homeworkService.selectHKByCID_T(cid).forEach(e
                     -> {
                 try {
-                    int size = homeworkService.deleteQuestion(e.getQuestion().getId()).getInfo().size();
+                    int size = homeworkService.deleteQuestion(uid, e.getQuestion().getId()).getInfo().size();
                     logger.info("删除了 {} 个问题", size);
                 } catch (SQLRWException ex) {
                     throw new RuntimeException("老师删除课程时删除 homework 失败", ex);
                 }
             });
             flag = 1;
-            delete[0] = teacherCourseDao.deleteByCID(id);
+            delete[0] = teacherCourseDao.deleteByCID(cid);
             flag = 2;
-            delete[1] = studentCourseDao.deleteByCID(id);
+            delete[1] = studentCourseDao.deleteByCID(cid);
             flag = 3;
-            delete[2] = courseDao.deleteCourse(id);
+            delete[2] = courseDao.deleteCourse(cid);
             flag = 5;
-            logger.info("CourseID: {} 删除完成", id);
+            logger.info("CourseID: {} 删除完成", cid);
             logger.info("Course 删除了 {} 条数据", delete[2]);
             logger.info("TeacherCourse 删除了 {} 条数据", delete[0]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[1]);
@@ -484,7 +493,7 @@ public class CourseServiceImpl implements CourseService {
             List<Course> tCourse = getTCourse(teacherCourseDao.selectByTID(tid));
             homeworkService.selectHKByTID(tid).forEach(e -> {
                 try {
-                    int size = homeworkService.deleteQuestion(e.getQuestion().getId()).getInfo().size();
+                    int size = homeworkService.deleteQuestion(tid, e.getQuestion().getId()).getInfo().size();
                     logger.info("删除了 {} 个问题", size);
                 } catch (SQLRWException ex) {
                     throw new RuntimeException("老师删除课程时删除 homework 失败", ex);
@@ -539,7 +548,7 @@ public class CourseServiceImpl implements CourseService {
             List<Course> sCourse = getSCourse(studentCourseDao.selectBySID(sid));
             homeworkService.selectHKBySID(sid).forEach(e -> {
                 try {
-                    int size = homeworkService.deleteResult(e.getResult().getId()).getInfo().size();
+                    int size = homeworkService.deleteResult(sid, e.getResult().getId()).getInfo().size();
                     logger.info("删除了 {} 条回答", size);
                 } catch (SQLRWException ex) {
                     throw new RuntimeException("学生销号时删除 homework 失败", ex);
