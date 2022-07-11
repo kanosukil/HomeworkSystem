@@ -1,8 +1,11 @@
 package cn.summer.homework.controller;
 
+import cn.summer.homework.BO.CourseOpBO;
 import cn.summer.homework.BO.UserOpBO;
+import cn.summer.homework.DTO.URoleDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Entity.User;
+import cn.summer.homework.service.CourseService;
 import cn.summer.homework.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author VHBin
@@ -25,6 +29,8 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Resource
     private UserService userService;
+    @Resource
+    private CourseService courseService;
 
     private void setRes(UserOpBO userOpBO, boolean isSuccess, String key, Object value) {
         userOpBO.setIsSuccess(isSuccess);
@@ -62,9 +68,10 @@ public class UserController {
     }
 
     @GetMapping("user-login")
-    public UserRoleDTO login(@RequestBody String email) {
+    public UserRoleDTO login(@RequestParam("email") String email) {
         return userService.findUserByEmail(email);
     }
+    // ../user-login?email=xxx
 
     @GetMapping("users-get")
     public List<UserRoleDTO> getAll() {
@@ -76,6 +83,15 @@ public class UserController {
         UserOpBO res = new UserOpBO();
         try {
             if (userService.isExists(id)) {
+                CourseOpBO course;
+                if (userService.isStudent(id)) {
+                    course = courseService.deleteLearnCourse(id);
+                } else {
+                    course = courseService.deleteTeachCourse(id);
+                }
+                if (!course.getIsSuccess()) {
+                    throw new Exception("删除选课/任课失败");
+                }
                 UserOpBO user = userService.deleteUser(id);
                 if (user.getIsSuccess()) {
                     setRes(res, true, "原信息", user.getInfo());
@@ -95,25 +111,67 @@ public class UserController {
     public UserOpBO update(@RequestBody UserRoleDTO updateUser) {
         UserOpBO res = new UserOpBO();
         try {
-            List<String> roles = updateUser.getRoles();
             User u = updateUser.getUser();
             Integer uid = u.getId();
             UserRoleDTO srcUser = userService.findUser(uid);
-            UserOpBO user =
-                    userService.updateUserInfo(u, roles.get(0));
-            if (!user.getIsSuccess()) {
-                throw new Exception("更新用户失败");
+            UserOpBO info = infoUpdate(u);
+            if (!info.getIsSuccess()) {
+                throw new Exception("用户数据更新失败");
             }
-            for (int i = 1; i < roles.size(); i++) {
-                user = userService.updateUserRole(uid, roles.get(i));
-                if (!user.getIsSuccess()) {
-                    throw new Exception("更新用户角色失败");
-                }
+            UserOpBO role = roleUpdate(new URoleDTO(uid, updateUser.getRoles()));
+            if (!role.getIsSuccess()) {
+                throw new Exception("用户角色更新失败");
             }
-            logger.info("更新");
+            logger.info("更新完成");
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户更新失败: {}", ex.getMessage());
+            setRes(res, false, "Cause", ex.getCause());
+        }
+        return res;
+    }
+
+    @PostMapping("user-info-update")
+    public UserOpBO infoUpdate(@RequestBody User user) {
+        UserOpBO res = new UserOpBO();
+        try {
+            UserRoleDTO srcUser = userService.findUser(user.getId());
+            UserOpBO update = userService.updateUserInfo(user);
+            if (!update.getIsSuccess()) {
+                throw new Exception("更新用户数据失败");
+            }
+            logger.info("更新完成");
+            setRes(res, true, "srcUser", srcUser);
+        } catch (Exception ex) {
+            logger.error("用户数据更新失败: {}", ex.getMessage());
+            setRes(res, false, "Cause", ex.getCause());
+        }
+        return res;
+    }
+
+    @PostMapping("user-role-update")
+    public UserOpBO roleUpdate(@RequestBody URoleDTO roles) {
+        UserOpBO res = new UserOpBO();
+        Integer uid = roles.getUid();
+        try {
+            UserRoleDTO srcUser = userService.findUser(uid);
+            Map<String, Boolean> map = new HashMap<>();
+            srcUser.getRoles().forEach(e -> map.put(e, true));
+            for (String role : roles.getRoles()) {
+                UserOpBO update;
+                if (map.get(role)) {
+                    update = userService.deleteUserRole(uid, role);
+                } else {
+                    update = userService.updateUserRole(uid, role);
+                }
+                if (!update.getIsSuccess()) {
+                    throw new Exception("更新用户角色失败");
+                }
+            }
+            logger.info("更新完成");
+            setRes(res, true, "srcUser", srcUser);
+        } catch (Exception ex) {
+            logger.error("用户角色更新失败: {}", ex.getMessage());
             setRes(res, false, "Cause", ex.getCause());
         }
         return res;
