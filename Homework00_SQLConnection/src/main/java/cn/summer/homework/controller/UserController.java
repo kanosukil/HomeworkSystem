@@ -16,6 +16,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author VHBin
@@ -39,13 +40,20 @@ public class UserController {
         }});
     }
 
+    /*
+        注册
+     */
     @PostMapping("user-register")
     public UserOpBO register(@RequestBody UserRoleDTO newUser) {
         UserOpBO res = new UserOpBO();
         List<String> roles = newUser.getRoles();
         try {
+            User createUser = newUser.getUser();
+            if (!userService.isEmailUsed(createUser.getEmail())) {
+                throw new Exception("邮箱已被使用");
+            }
             UserOpBO user =
-                    userService.createNewUser(newUser.getUser(), roles.get(0));
+                    userService.createNewUser(createUser, roles.get(0));
             if (!user.getIsSuccess()) {
                 throw new Exception("创建用户失败");
             }
@@ -67,26 +75,41 @@ public class UserController {
         return res;
     }
 
+    /*
+        登录获取目标用户信息
+     */
     @GetMapping("user-login")
     public UserRoleDTO login(@RequestParam("email") String email) {
         return userService.findUserByEmail(email);
     }
     // ../user-login?email=xxx
 
+    /*
+        获取所有用户
+     */
     @GetMapping("users-get")
     public List<UserRoleDTO> getAll() {
         return userService.getAllUser();
     }
 
-    @PostMapping("user-delete")
-    public UserOpBO logoff(@RequestBody Integer id) {
+    @GetMapping("user-get-id")
+    public UserRoleDTO get(@RequestParam("id") Integer id) {
+        return userService.findUser(id);
+    }
+
+    /*
+        注销
+     */
+    @PostMapping("user-delete-id")
+    public UserOpBO delete(@RequestBody Integer id) {
         UserOpBO res = new UserOpBO();
         try {
             if (userService.isExists(id)) {
-                CourseOpBO course;
+                CourseOpBO course = new CourseOpBO();
                 if (userService.isStudent(id)) {
                     course = courseService.deleteLearnCourse(id);
-                } else {
+                }
+                if (userService.isTeacher(id)) {
                     course = courseService.deleteTeachCourse(id);
                 }
                 if (!course.getIsSuccess()) {
@@ -107,6 +130,49 @@ public class UserController {
         return res;
     }
 
+    @PostMapping("user-delete")
+    public UserOpBO logoff(@RequestBody String email) {
+        UserOpBO res = new UserOpBO();
+        try {
+            if (!userService.isEmailUsed(email)) {
+                throw new Exception("用户不存在");
+            }
+            UserRoleDTO userByEmail = userService.findUserByEmail(email);
+            Integer uid = userByEmail.getUser().getId();
+            AtomicBoolean isTeacher = new AtomicBoolean(false);
+            AtomicBoolean isStudent = new AtomicBoolean(false);
+            userByEmail.getRoles().forEach(e -> {
+                if (e.equals("Teacher")) isTeacher.set(true);
+                if (e.equals("Student")) isStudent.set(true);
+            });
+            CourseOpBO course = new CourseOpBO();
+            if (isTeacher.get()) {
+                course = courseService.deleteTeachCourse(uid);
+            }
+            if (isStudent.get()) {
+                course = courseService.deleteLearnCourse(uid);
+            }
+            if (!course.getIsSuccess()) {
+                throw new Exception("删除选课/任课失败");
+            }
+            UserOpBO user = userService.deleteUser(email);
+            if (user.getIsSuccess()) {
+                setRes(res, true, "原信息", userByEmail.getUser());
+                logger.info("销号完成");
+            } else {
+                throw new Exception("销号失败");
+            }
+
+        } catch (Exception ex) {
+            logger.error("销号失败: {}", ex.getMessage());
+            setRes(res, false, "Cause", ex.getCause());
+        }
+        return res;
+    }
+
+    /*
+        数据更新
+     */
     @PostMapping("user-update")
     public UserOpBO update(@RequestBody UserRoleDTO updateUser) {
         UserOpBO res = new UserOpBO();
