@@ -13,7 +13,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 public class HomeworkOpBO {
-    private Boolean isSuccess;
+    private Boolean isSuccess = false;
     private Boolean isQuestion;
     private Map<String, Object> info;
 }

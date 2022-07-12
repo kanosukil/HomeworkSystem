@@ -13,6 +13,6 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 public class UserOpBO {
-    private Boolean isSuccess;
+    private Boolean isSuccess = false;
     private Map<String, Object> info;
 }
