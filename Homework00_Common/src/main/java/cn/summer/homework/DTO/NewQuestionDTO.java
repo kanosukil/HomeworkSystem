@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NewQuestionDTO {
     private Integer tid = 0;
-    private Integer cid = 0;
+    private Integer id = 0; // create: cid; update: qid
+    // type: create 0; delete 0/typeID
     private Question question = null;
     private String type = "";
 }
