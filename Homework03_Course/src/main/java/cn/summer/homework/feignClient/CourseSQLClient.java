@@ -20,33 +20,33 @@ import java.util.List;
 
 @FeignClient("SQLService")
 public interface CourseSQLClient {
-    @GetMapping("/course/courses-get")
+    @GetMapping("/course-sql/courses-get")
     List<CourseSTDTO> getAll();
 
-    @GetMapping("/course/course-get")
+    @GetMapping("/course-sql/course-get")
     CourseSTDTO get(@RequestParam("id") Integer id);
 
-    @GetMapping("/course/courses-get-name")
+    @GetMapping("/course-sql/courses-get-name")
     List<CourseSTDTO> getByName(@RequestParam("name") String name);
 
-    @PostMapping("/course/create-course")
+    @PostMapping("/course-sql/create-course")
     CourseOpBO createCourse(@RequestBody NewCourseDTO newCourse);
 
-    @PostMapping("/course/course-add-student")
+    @PostMapping("/course-sql/course-add-student")
     CourseOpBO addStudent(@RequestBody StudentCourse sc);
 
-    @PostMapping("/course/course-add-teacher")
+    @PostMapping("/course-sql/course-add-teacher")
     CourseOpBO addTeacher(@RequestBody TeacherCourse tc);
 
-    @PostMapping("/course/course-drop-student")
+    @PostMapping("/course-sql/course-drop-student")
     CourseOpBO dropStudent(@RequestBody StudentCourse sc);
 
-    @PostMapping("/course/course-drop-teacher")
+    @PostMapping("/course-sql/course-drop-teacher")
     CourseOpBO dropTeacher(@RequestBody TeacherCourse tc);
 
-    @PostMapping("/course/course-update-name")
+    @PostMapping("/course-sql/course-update-name")
     CourseOpBO update(@RequestBody NewCourseDTO updateCourse);
 
-    @PostMapping("/course/course-delete")
+    @PostMapping("/course-sql/course-delete")
     CourseOpBO delete(@RequestBody TeacherCourse tc);
 }

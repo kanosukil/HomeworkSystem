@@ -24,7 +24,7 @@ import java.util.List;
 
 @RefreshScope
 @RestController
-@RequestMapping("homework")
+@RequestMapping("homework-sql")
 public class HomeworkController {
     private static final Logger logger = LoggerFactory.getLogger(HomeworkController.class);
     @Resource

@@ -20,39 +20,39 @@ import java.util.List;
 
 @FeignClient("SQLService")
 public interface QuestionSQLClient {
-    @GetMapping("/homework/questions-get")
+    @GetMapping("/homework-sql/questions-get")
     List<QuestionResultDTO> getAQuestion();
 
-    @GetMapping("/homework/question-get")
+    @GetMapping("/homework-sql/question-get")
     QuestionResultDTO getQuestion(@RequestParam("qid") Integer qid);
 
-    @GetMapping("/homework/questions-get-tid")
+    @GetMapping("/homework-sql/questions-get-tid")
     List<QuestionResultDTO> getTeacherQuestion(@RequestParam("tid") Integer tid);
 
-    @GetMapping("/homework/question-get-type")
+    @GetMapping("/homework-sql/question-get-type")
     List<QuestionResultDTO> getTypeQuestion(@RequestParam("type") String type);
 
-    @GetMapping("/homework/question-get-course")
+    @GetMapping("/homework-sql/question-get-course")
     List<QuestionResultDTO> getCourseQuestion(@RequestParam("cid") Integer cid);
 
-    @PostMapping("/homework/question-create")
+    @PostMapping("/homework-sql/question-create")
     HomeworkOpBO createNewQuestion(@RequestBody NewQuestionDTO newQuestion);
 
-    @PostMapping("/homework/question-update")
+    @PostMapping("/homework-sql/question-update")
     HomeworkOpBO updateQuestion(@RequestBody NewQuestionDTO updateQuestion);
 
-    @PostMapping("/homework/question-delete")
+    @PostMapping("/homework-sql/question-delete")
     HomeworkOpBO deleteQuestion(@RequestBody TeacherQuestion tq);
 
-    @PostMapping("/homework/result-correct")
+    @PostMapping("/homework-sql/result-correct")
     HomeworkOpBO correctResult(@RequestBody NewResultDTO correctResult);
 
-    @GetMapping("/homework/question-types-get")
+    @GetMapping("/homework-sql/question-types-get")
     List<String> getAType();
 
-    @PostMapping("/homework/question-type-add")
+    @PostMapping("/homework-sql/question-type-add")
     Boolean createType(@RequestBody NewQuestionDTO questionType);
 
-    @PostMapping("/homework/question-type-delete")
+    @PostMapping("/homework-sql/question-type-delete")
     Boolean deleteType(@RequestBody NewQuestionDTO questionType);
 }

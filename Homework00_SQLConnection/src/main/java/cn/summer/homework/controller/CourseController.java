@@ -23,7 +23,7 @@ import java.util.List;
 
 @RefreshScope
 @RestController
-@RequestMapping("course")
+@RequestMapping("course-sql")
 public class CourseController {
     private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
     @Resource

@@ -18,21 +18,21 @@ import java.util.List;
 
 @FeignClient("SQLService")
 public interface ResultSQLClient {
-    @GetMapping("/homework/results-get")
+    @GetMapping("/homework-sql/results-get")
     List<ResultQuestionDTO> getAResult();
 
-    @GetMapping("/homework/result-get")
+    @GetMapping("/homework-sql/result-get")
     ResultQuestionDTO getResult(@RequestParam("rid") Integer rid);
 
-    @GetMapping("/homework/result-get-course")
+    @GetMapping("/homework-sql/result-get-course")
     List<ResultQuestionDTO> getCourseResult(@RequestParam("cid") Integer cid);
 
-    @PostMapping("/homework/result-create")
+    @PostMapping("/homework-sql/result-create")
     HomeworkOpBO insertResult(@RequestBody NewResultDTO newResult);
 
-    @PostMapping("/homework/result-update")
+    @PostMapping("/homework-sql/result-update")
     HomeworkOpBO updateResult(@RequestBody NewResultDTO updateResult);
 
-    @PostMapping("/homework/result-delete")
+    @PostMapping("/homework-sql/result-delete")
     HomeworkOpBO deleteResult(@RequestBody NewResultDTO deleteResult);
 }

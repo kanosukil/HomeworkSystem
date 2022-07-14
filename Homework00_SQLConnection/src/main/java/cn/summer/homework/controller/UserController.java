@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @RestController
 @RefreshScope
-@RequestMapping("user")
+@RequestMapping("user-sql")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Resource

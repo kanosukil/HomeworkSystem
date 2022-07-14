@@ -19,30 +19,30 @@ import java.util.List;
 
 @FeignClient("SQLService")
 public interface UserSQLClient {
-    @PostMapping("/user/user-register")
+    @PostMapping("/user-sql/user-register")
     UserOpBO register(@RequestBody UserRoleDTO newUser);
 
-    @GetMapping("/user/user-login")
+    @GetMapping("/user-sql/user-login")
     UserRoleDTO login(@RequestParam("email") String email);
 
-    @GetMapping("/user/users-get")
+    @GetMapping("/user-sql/users-get")
     List<UserRoleDTO> getAll();
 
-    @GetMapping("/user/user-get-id")
+    @GetMapping("/user-sql/user-get-id")
     UserRoleDTO get(@RequestParam("id") Integer id);
 
-    @PostMapping("/user/user-delete-id")
+    @PostMapping("/user-sql/user-delete-id")
     UserOpBO delete(@RequestBody Integer id);
 
-    @PostMapping("/user/user-delete")
+    @PostMapping("/user-sql/user-delete")
     UserOpBO logoff(@RequestBody String email);
 
-    @PostMapping("/user/user-update")
+    @PostMapping("/user-sql/user-update")
     UserOpBO update(@RequestBody UserRoleDTO updateUser);
 
-    @PostMapping("/user/user-info-update")
+    @PostMapping("/user-sql/user-info-update")
     UserOpBO infoUpdate(@RequestBody User user);
 
-    @PostMapping("/user/user-role-update")
+    @PostMapping("/user-sql/user-role-update")
     UserOpBO roleUpdate(@RequestBody URoleDTO roles);
 }
