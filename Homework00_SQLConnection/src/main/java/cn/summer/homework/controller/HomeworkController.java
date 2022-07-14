@@ -34,12 +34,12 @@ public class HomeworkController {
         老师
      */
     // 查询
-    @GetMapping("homework-questions-get")
+    @GetMapping("questions-get")
     public List<QuestionResultDTO> getAQuestion() {
         return homeworkService.selectAllHK_T();
     }
 
-    @GetMapping("homework-question-get")
+    @GetMapping("question-get")
     public QuestionResultDTO getQuestion(@RequestParam("qid") Integer qid) {
         try {
             return homeworkService.selectHKByQID(qid);
@@ -49,7 +49,7 @@ public class HomeworkController {
         }
     }
 
-    @GetMapping("homework-questions-get-tid")
+    @GetMapping("questions-get-tid")
     public List<QuestionResultDTO> getTeacherQuestion(@RequestParam("tid") Integer tid) {
         try {
             return homeworkService.selectHKByTID(tid);
@@ -59,7 +59,7 @@ public class HomeworkController {
         }
     }
 
-    @GetMapping("homework-question-get-type")
+    @GetMapping("question-get-type")
     public List<QuestionResultDTO> getTypeQuestion(@RequestParam("type") String type) {
         try {
             return homeworkService.selectHKByQuestionType(type);
@@ -69,7 +69,7 @@ public class HomeworkController {
         }
     }
 
-    @GetMapping("homework-question-get-course")
+    @GetMapping("question-get-course")
     public List<QuestionResultDTO> getCourseQuestion(@RequestParam("cid") Integer cid) {
         try {
             return homeworkService.selectHKByCID_T(cid);
@@ -88,7 +88,7 @@ public class HomeworkController {
     }
 
     // 插入
-    @PostMapping("homework-question-create")
+    @PostMapping("question-create")
     public HomeworkOpBO createNewQuestion(@RequestBody NewQuestionDTO newQuestion) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -111,7 +111,7 @@ public class HomeworkController {
     }
 
     // 更新
-    @PostMapping("homework-question-update")
+    @PostMapping("question-update")
     public HomeworkOpBO updateQuestion(@RequestBody NewQuestionDTO updateQuestion) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -141,7 +141,7 @@ public class HomeworkController {
     }
 
     // 删除
-    @PostMapping("homework-question-delete")
+    @PostMapping("question-delete")
     public HomeworkOpBO deleteQuestion(@RequestBody TeacherQuestion tq) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -161,7 +161,7 @@ public class HomeworkController {
     }
 
     // 老师批改
-    @PostMapping("homework-result-correct")
+    @PostMapping("result-correct")
     public HomeworkOpBO correctResult(@RequestBody NewResultDTO correctResult) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -183,18 +183,18 @@ public class HomeworkController {
     }
 
     // 类型操作
-    @GetMapping("homework-question-types-get")
+    @GetMapping("question-types-get")
     public List<String> getAType() {
         return homeworkService.getAllType();
     }
 
-    @PostMapping("homework-question-type-add")
+    @PostMapping("question-type-add")
     public Boolean createType(@RequestBody NewQuestionDTO questionType) {
         return homeworkService.createType(questionType.getTid(),
                 questionType.getType());
     }
 
-    @PostMapping("homework-question-type-delete")
+    @PostMapping("question-type-delete")
     public Boolean deleteType(@RequestBody NewQuestionDTO questionType) {
         if (questionType.getId() == 0) {
             return homeworkService.deleteType(questionType.getTid(),
@@ -209,12 +209,12 @@ public class HomeworkController {
         学生
      */
     // 查询
-    @GetMapping("homework-result-get")
+    @GetMapping("results-get")
     public List<ResultQuestionDTO> getAResult() {
         return homeworkService.selectAllHK_S();
     }
 
-    @GetMapping("homework-result-get")
+    @GetMapping("result-get")
     public ResultQuestionDTO getResult(@RequestParam("rid") Integer rid) {
         try {
             return homeworkService.selectHKByRID(rid);
@@ -223,7 +223,7 @@ public class HomeworkController {
         }
     }
 
-    @GetMapping("homework-result-get-course")
+    @GetMapping("result-get-course")
     public List<ResultQuestionDTO> getCourseResult(@RequestParam("cid") Integer cid) {
         try {
             return homeworkService.selectHKByCID_S(cid);
@@ -241,7 +241,7 @@ public class HomeworkController {
     }
 
     // 插入
-    @PostMapping("homework-result-create")
+    @PostMapping("result-create")
     public HomeworkOpBO insertResult(@RequestBody NewResultDTO newResult) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -264,7 +264,7 @@ public class HomeworkController {
     }
 
     // 更新
-    @PostMapping("homework-result-update")
+    @PostMapping("result-update")
     public HomeworkOpBO updateResult(@RequestBody NewResultDTO updateResult) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
@@ -284,7 +284,7 @@ public class HomeworkController {
     }
 
     // 删除
-    @PostMapping("homework-result-delete")
+    @PostMapping("result-delete")
     public HomeworkOpBO deleteResult(@RequestBody NewResultDTO deleteResult) {
         HomeworkOpBO res = new HomeworkOpBO();
         try {
