@@ -10,7 +10,7 @@ spring:
     nacos:
       server-addr: 127.0.0.1:8800
       config:
-        namespace: Homework-System
+        namespace: d0174e23-6532-48a9-95f2-bf9df7f2327c
         group: Homework_System-Config
         name: register-config
         file-extension: yml

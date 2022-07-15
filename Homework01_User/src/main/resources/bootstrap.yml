@@ -13,4 +13,4 @@ spring:
         group: Homework_System-Config
         name: user-config
         file-extension: yml
-        namespace: Homework-System
+        namespace: d0174e23-6532-48a9-95f2-bf9df7f2327c
