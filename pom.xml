@@ -23,6 +23,7 @@
         <module>Homework10_Register</module>
         <module>Homework11_Gateway</module>
         <module>Homework00_SQLConnection</module>
+        <module>Homework00_ElasticSearch</module>
     </modules>
 
     <!--设定版本-->
