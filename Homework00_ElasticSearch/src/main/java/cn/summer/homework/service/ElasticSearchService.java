@@ -2,6 +2,7 @@ package cn.summer.homework.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author VHBin
@@ -43,9 +44,15 @@ public interface ElasticSearchService {
     /*
         搜索
      */
-    String termSearch(String index_name, String value);
+    Map<String, String> termSearch(String index_name, String value) throws IOException;
 
-    String wildCardSearch(String index_name, String value);
+    Map<String, String> wildCardSearch(String index_name, String value) throws IOException;
 
-    String matchSearch(String index_nane, String value);
+    Map<String, String> matchSearch(String index_nane, String value) throws IOException;
+
+    Map<String, String> termSearch(String index_name, String value, int from, int size) throws IOException;
+
+    Map<String, String> wildCardSearch(String index_name, String value, int from, int size) throws IOException;
+
+    Map<String, String> matchSearch(String index_nane, String value, int from, int size) throws IOException;
 }
