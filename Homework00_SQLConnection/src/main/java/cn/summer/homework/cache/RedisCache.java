@@ -52,8 +52,14 @@ public class RedisCache implements Cache {
                 .put(id, getMD5Key(o.toString()), o1);
         // 设置超时时间
         // 这样设置将可能导致所有的缓存同一时间全部过期, 从而引发缓存雪崩或缓存穿透
-        template.expire(id, 30, TimeUnit.MINUTES);
-
+        switch (id) {
+            case "cn.summer.homework.dao.CourseDao",
+                    "cn.summer.homework.dao.QuestionTypeDao",
+                    "cn.summer.homework.dao.RoleDao" -> template.expire(id, 30, TimeUnit.DAYS);
+            case "cn.summer.homework.dao.QuestionDao" -> template.expire(id, 7, TimeUnit.DAYS);
+            case "cn.summer.homework.dao.ResultDao" -> template.expire(id, 8, TimeUnit.HOURS);
+            case "cn.summer.homework.dao.UserDao" -> template.expire(id, 30, TimeUnit.MINUTES);
+        }
     }
 
     @Override
