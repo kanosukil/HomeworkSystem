@@ -55,4 +55,8 @@ public interface ElasticSearchService {
     Map<String, String> wildCardSearch(String index_name, String value, int from, int size) throws IOException;
 
     Map<String, String> matchSearch(String index_nane, String value, int from, int size) throws IOException;
+
+    Map<String, String> matchAll(String index_name) throws IOException;
+
+    Map<String, String> matchAll(String index_name, int from, int size) throws IOException;
 }

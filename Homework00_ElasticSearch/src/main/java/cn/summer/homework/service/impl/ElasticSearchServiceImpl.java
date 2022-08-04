@@ -5,11 +5,11 @@ import cn.summer.homework.QO.ElasticSearchQO;
 import cn.summer.homework.service.ElasticSearchService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
@@ -42,8 +42,8 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         try {
             CreateIndexResponse response = client.indices().create(
                     e -> e.index(index_name));
-            logger.info("创建 ES index 结果: {}", response.toString());
             res = Boolean.TRUE.equals(response.acknowledged());
+            logger.info("创建 ES index 结果: {}", res);
         } catch (ElasticsearchException ese) {
             logger.error("创建 ES index 失败: {}", ese.toString());
         }
@@ -58,8 +58,8 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
             DeleteIndexResponse response
                     = client.indices().delete(
                     e -> e.index(index_name));
-            logger.info("删除 ES index 结果: {}", response.toString());
             res = response.acknowledged();
+            logger.info("删除 ES index 结果: {}", res);
         } catch (ElasticsearchException ese) {
             logger.error("删除 ES index 失败: {}", ese.toString());
         }
@@ -71,8 +71,9 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
             throws IOException {
         BooleanResponse res = client.indices()
                 .exists(e -> e.index(index_name));
-        logger.info("ES Index {} 是否存在: {}", index_name, res.toString());
-        return res.value();
+        boolean result = res.value();
+        logger.info("ES Index {} 是否存在: {}", index_name, result);
+        return result;
     }
 
     /*
@@ -244,31 +245,29 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         return matchSearch(index_nane, value, 0, 10);
     }
 
-    private Map<String, String> resultOp(HitsMetadata<ElasticSearchQO> hits) {
-        logger.info("查询完毕");
-        if (hits.total() == null) {
-            logger.debug("查询无结果");
+    private Map<String, String> resultOp(List<Hit<ElasticSearchQO>> hits) {
+        if (hits.size() == 0) {
             return null;
-        } else {
-            Map<String, String> res = new HashMap<>();
-            for (Hit<ElasticSearchQO> hit : hits.hits()) {
-                String id = hit.id();
-                if (hit.source() == null) {
-                    logger.debug("ID={} 无内容", id);
-                    res.put(id, null);
-                } else {
-                    res.put(id, hit.source().getValue());
-                }
-                logger.info("查询处理完毕");
-            }
-            return res;
         }
+        logger.info("查询结果数量: {}", hits.size());
+        Map<String, String> res = new HashMap<>();
+        for (Hit<ElasticSearchQO> hit : hits) {
+            String id = hit.id();
+            if (hit.source() == null) {
+                logger.debug("ID={} 无内容", id);
+                res.put(id, null);
+            } else {
+                res.put(id, hit.source().getValue());
+            }
+            logger.info("查询处理完毕");
+        }
+        return res;
     }
 
     @Override
     public Map<String, String> termSearch(String index_name, String value, int from, int size)
             throws IOException {
-        HitsMetadata<ElasticSearchQO> hits = client.search(_1 -> _1.index(index_name)
+        List<Hit<ElasticSearchQO>> hits = client.search(_1 -> _1.index(index_name)
                         .query(_2 -> _2
                                 .term(_3 -> _3
                                         .field("value")
@@ -276,38 +275,55 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
                                                 .stringValue(value))))
                         .from(from)
                         .size(size),
-                ElasticSearchQO.class).hits();
-        logger.info("Term 查询完成. Index={}, Value={}", index_name, value);
+                ElasticSearchQO.class).hits().hits();
+        logger.info("Term 查询完成. Index={}, Value={}, Size={}", index_name, value, hits.size());
         return resultOp(hits);
     }
 
     @Override
     public Map<String, String> wildCardSearch(String index_name, String value, int from, int size)
             throws IOException {
-        HitsMetadata<ElasticSearchQO> hits = client.search(_1 -> _1.index(index_name)
+        List<Hit<ElasticSearchQO>> hits = client.search(_1 -> _1.index(index_name)
                         .query(_2 -> _2
                                 .wildcard(_3 -> _3
                                         .field("value.keyword")
+//                                        .field("value")
                                         .value("*" + value + "*")))
                         .from(from)
                         .size(size),
-                ElasticSearchQO.class).hits();
-        logger.info("WildCard 查询完成. Index={}, Value={}", index_name, value);
+                ElasticSearchQO.class).hits().hits();
+        logger.info("WildCard 查询完成. Index={}, Value={}, Size={}", index_name, value, hits.size());
         return resultOp(hits);
     }
 
     @Override
     public Map<String, String> matchSearch(String index_name, String value, int from, int size)
             throws IOException {
-        HitsMetadata<ElasticSearchQO> hits = client.search(_1 -> _1.index(index_name)
+        List<Hit<ElasticSearchQO>> hits = client.search(_1 -> _1.index(index_name)
                         .query(_2 -> _2
                                 .match(_3 -> _3
                                         .field("value")
                                         .query(value)))
                         .from(from)
                         .size(size),
-                ElasticSearchQO.class).hits();
-        logger.info("Match 查询完成. Index={}, Value={}", index_name, value);
+                ElasticSearchQO.class).hits().hits();
+        logger.info("Match 查询完成. Index={}, Value={}, Size={}", index_name, value, hits.size());
+        return resultOp(hits);
+    }
+
+    @Override
+    public Map<String, String> matchAll(String index_name) throws IOException {
+        return matchAll(index_name, 0, 10);
+    }
+
+    @Override
+    public Map<String, String> matchAll(String index_name, int from, int size) throws IOException {
+        List<Hit<ElasticSearchQO>> hits = client.search(_1 -> _1.index(index_name)
+                        .query(_2 -> _2.matchAll(QueryBuilders.matchAll().build()))
+                        .from(from)
+                        .size(size),
+                ElasticSearchQO.class).hits().hits();
+        logger.info("MatchAll 查询完成. Index={}, Size={}", index_name, hits.size());
         return resultOp(hits);
     }
 }
