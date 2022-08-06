@@ -1,13 +1,14 @@
 package cn.summer.homework.controller;
 
+import cn.summer.homework.BO.UserOpBO;
 import cn.summer.homework.DTO.LoginDTO;
+import cn.summer.homework.DTO.RegisterDTO;
 import cn.summer.homework.DTO.UserDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.Util.TokenUtil;
 import cn.summer.homework.VO.UserVO;
 import cn.summer.homework.service.UserIOService;
-import cn.summer.homework.service.UserSearchService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,8 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LoginController {
     @Resource
     private UserIOService userIOService;
-    @Resource
-    private UserSearchService userSearchService;
 
     @PostMapping("login")
     public UserVO<String> login(@RequestBody LoginDTO login) {
@@ -58,6 +59,35 @@ public class LoginController {
                             new UserDTO(user.getId(), user.getEmail(), user.getPassword_hash()),
                             roles));
         }
+    }
 
+    @PostMapping("register")
+    public UserVO<String> register(@RequestBody RegisterDTO register) {
+        String email = register.getEmail();
+        if (register.getName() == null ||
+                register.getPassword() == null || email == null) {
+            return new UserVO<>(400, "注册数据为空", null);
+        }
+        User newUser = new User();
+        newUser.setName(register.getName());
+        newUser.setPassword_hash(
+                Base64.getEncoder()
+                        .encodeToString(
+                                register.getPassword()
+                                        .getBytes(StandardCharsets.UTF_8)));
+        newUser.setEmail(register.getEmail());
+        newUser.setCreate_time(new Date());
+        ArrayList<String> role = new ArrayList<>();
+        role.add("Student");
+        UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, role));
+        if (!reg.getIsSuccess()) {
+            return new UserVO<>(400, reg.getInfo().get("Cause").toString(), "");
+        } else {
+            return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
+                    new UserDTO(
+                            Integer.parseInt(reg.getInfo().get("uid").toString()),
+                            newUser.getName(),
+                            newUser.getPassword_hash()), role));
+        }
     }
 }

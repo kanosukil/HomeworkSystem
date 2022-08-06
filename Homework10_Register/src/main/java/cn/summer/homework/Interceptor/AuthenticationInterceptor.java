@@ -38,8 +38,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         try {
             String token = request.getHeader("token");
             if (token == null) {
-                logger.error("Token 不存在");
-                throw new Exception("无 Token 请重新登录");
+                token = request.getParameter("token");
+                if (token == null) {
+                    logger.error("Token 不存在");
+                    throw new Exception("无 Token 请重新登录");
+                }
             }
             Map<String, String> map = TokenUtil.checkJWToken(token);
             if (map == null) {
