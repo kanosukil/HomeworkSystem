@@ -2,6 +2,7 @@ package cn.summer.homework.service;
 
 import cn.summer.homework.DTO.QuestionResultDTO;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -11,13 +12,13 @@ import java.util.List;
 public interface QuestionSelectService {
     List<QuestionResultDTO> getAQuestion();
 
-    QuestionResultDTO getQuestion(Integer qid);
+    QuestionResultDTO getQuestion(Integer qid) throws IOException;
 
-    List<QuestionResultDTO> getTeacherQuestion(Integer tid);
+    List<QuestionResultDTO> getTeacherQuestion(Integer tid) throws IOException;
 
-    List<QuestionResultDTO> getTypeQuestion(String type);
+    List<QuestionResultDTO> getTypeQuestion(String type) throws IOException;
 
-    List<QuestionResultDTO> getCourseQuestion(Integer cid);
+    List<QuestionResultDTO> getCourseQuestion(Integer cid) throws IOException;
 
     List<String> getAType();
 }
