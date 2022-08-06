@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewResultDTO {
-    private Integer uid; // Student: sid; TeacherCorrect: tid
-    private Integer cid;
-    private Integer qid; // insert/update: questionID; delete: resultID
-    private Result result;
+    private Integer uid = 0; // Student: sid; TeacherCorrect: tid
+    private Integer cid = 0;
+    private Integer qid = 0; // insert/update: questionID; delete: resultID
+    private Result result = null;
 }
