@@ -15,5 +15,4 @@ import lombok.NoArgsConstructor;
 public class UserDTO {
     private Integer id = 0;
     private String account = "";
-    private String password = "";
 }

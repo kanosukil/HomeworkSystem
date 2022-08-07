@@ -1,5 +1,6 @@
 package cn.summer.homework.Interceptor;
 
+import cn.summer.homework.DTO.UserDTO;
 import cn.summer.homework.Util.TokenUtil;
 import com.alibaba.fastjson2.JSONObject;
 import org.slf4j.Logger;
@@ -37,21 +38,27 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         }
         try {
             String token = request.getHeader("token");
-            if (token == null) {
+            if (token == null || token.trim().equals("")) {
                 token = request.getParameter("token");
-                if (token == null) {
+                if (token == null || token.trim().equals("")) {
                     logger.error("Token 不存在");
                     throw new Exception("无 Token 请重新登录");
                 }
             }
+            logger.info("Token={}", token);
             Map<String, String> map = TokenUtil.checkJWToken(token);
             if (map == null) {
                 logger.error("Token 有误");
                 throw new Exception("Token 被篡改");
             }
-            request.setAttribute("userid", map.get("userid"));
-            request.setAttribute("account", map.get("account"));
-            request.setAttribute("roles", map.get("roles"));
+            // 活跃用户刷新 Token
+            long now = Long.parseLong(map.get("now"));
+            if (System.currentTimeMillis() - now >= 1000 * 60 * 60 * 4) {
+                response.setHeader("token", TokenUtil.generateJWToken(
+                        new UserDTO(Integer.parseInt(map.get("userid")),
+                                map.get("account")),
+                        map.get("roles")));
+            }
             return true;
         } catch (Exception ex) {
             logger.error("Exception!", ex);

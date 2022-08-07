@@ -10,7 +10,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,17 +22,20 @@ public class TokenUtil {
     private static final String id = "userid";
     private static final String account = "account";
     private static final String role = "roles";
+    private static final String now = "now";
 
-    public static String generateJWToken(UserDTO user, List<String> roles) {
-        if (user == null || user.getId() == 0 || user.getAccount().equals("")
-                || user.getPassword().equals("") || roles.size() <= 0) {
+    public static String generateJWToken(UserDTO user, String roles) {
+        if (user == null || user.getId() == 0 ||
+                user.getAccount().equals("") ||
+                roles == null || roles.equals("")) {
             return null;
         }
         try {
             return JWT.create().withSubject(SaltUtil.getSubject())
                     .withClaim(id, user.getId())
                     .withClaim(account, user.getAccount())
-                    .withArrayClaim(role, roles.toArray(new String[0]))
+                    .withClaim(now, System.currentTimeMillis())
+                    .withClaim(role, roles)
                     .withIssuedAt(new Date())
                     .withExpiresAt(new Date(System.currentTimeMillis() + expire))
                     .sign(Algorithm.HMAC256(SaltUtil.getSalt().getBytes(StandardCharsets.UTF_8)));
@@ -52,6 +54,7 @@ public class TokenUtil {
                 put(id, verify.getClaim(id).asString());
                 put(account, verify.getClaim(account).asString());
                 put(role, verify.getClaim(role).asString());
+                put(now, verify.getClaim(now).asString());
             }};
         } catch (JWTVerificationException exception) {
             System.out.printf("JWTVerificationException:%s\nToken 验证失败,Token:%s\n",

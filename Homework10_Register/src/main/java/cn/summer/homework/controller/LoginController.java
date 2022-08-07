@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -41,24 +40,25 @@ public class LoginController {
         try {
             UserRoleDTO lo = userIOService.login(login.getAccount());
             User user = lo.getUser();
-            List<String> roles = lo.getRoles();
+            StringBuilder roles = new StringBuilder();
             AtomicBoolean isAdmin = new AtomicBoolean(false);
-            if (user == null || roles == null) {
-                return new UserVO<>(400, "未找到指定用户", "");
-            }
-            roles.forEach(e -> {
+            lo.getRoles().forEach(e -> {
+                roles.append(e).append(" ");
                 if (e.equals("Admin")) {
                     isAdmin.set(true);
                 }
             });
+            if (user == null || roles.toString().equals("")) {
+                return new UserVO<>(400, "未找到指定用户", "");
+            }
+
             if (!Base64.getEncoder().encodeToString(login.getPassword().getBytes(StandardCharsets.UTF_8))
                     .equals(user.getPassword_hash())) {
                 return new UserVO<>(200, "密码错误", "");
             } else {
                 return new UserVO<>(200, "登录成功", isAdmin.get(),
                         TokenUtil.generateJWToken(
-                                new UserDTO(user.getId(), user.getEmail(), user.getPassword_hash()),
-                                roles));
+                                new UserDTO(user.getId(), user.getEmail()), roles.toString()));
             }
         } catch (Exception ex) {
             return new UserVO<>(500, "登录异常", ex.getMessage());
@@ -82,17 +82,16 @@ public class LoginController {
                                         .getBytes(StandardCharsets.UTF_8)));
         newUser.setEmail(register.getEmail());
         newUser.setCreate_time(new Date());
-        ArrayList<String> role = new ArrayList<>();
-        role.add("Student");
-        UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, role));
+        UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, new ArrayList<>(1) {{
+            add("Student");
+        }}));
         if (!reg.getIsSuccess()) {
             return new UserVO<>(400, reg.getInfo().get("Cause").toString(), "");
         } else {
             return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
                     new UserDTO(
                             Integer.parseInt(reg.getInfo().get("uid").toString()),
-                            newUser.getName(),
-                            newUser.getPassword_hash()), role));
+                            newUser.getName()), "Student"));
         }
     }
 }
