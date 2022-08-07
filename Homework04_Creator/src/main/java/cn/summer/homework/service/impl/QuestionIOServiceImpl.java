@@ -34,11 +34,8 @@ public class QuestionIOServiceImpl implements QuestionIOService {
                 newQuestion.getId() == 0 || newQuestion.getTid() == 0) {
             return OpBOUtil.generateHOBq("新创建问题的传入数据不能为空");
         }
-        if (question.getTitle() == null) {
-            return OpBOUtil.generateHOBq("新创建问题的标题不能为空");
-        }
-        if (question.getScore() == null) {
-            return OpBOUtil.generateHOBq("新创建问题的分数不能为空");
+        if (question.getTitle() == null || question.getScore() == null) {
+            return OpBOUtil.generateHOBq("新创建问题的数据不能为空");
         }
         question.setCreate_time(new Date());
         newQuestion.setQuestion(question);
@@ -79,7 +76,7 @@ public class QuestionIOServiceImpl implements QuestionIOService {
                 correctResult.getCid() == 0 || correctResult.getUid() == 0) {
             return OpBOUtil.generateHOBq("批改时传入的数据不能为空");
         }
-        if (result.getId() == null || result.getIsCheck() == null ||
+        if (result.getId() == 0 || result.getIsCheck() == null ||
                 result.getIsFile() == null || result.getComment() == null ||
                 result.getScore() == null || result.getContent() == null) {
             return OpBOUtil.generateHOBq("批改的答案数据不能为空");

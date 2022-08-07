@@ -6,6 +6,7 @@ import cn.summer.homework.service.CourseSelectService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -20,16 +21,24 @@ public class CourseSelectServiceImpl implements CourseSelectService {
 
     @Override
     public List<CourseSTDTO> getAll() {
-        return null;
+        return client.getAll();
     }
 
     @Override
-    public CourseSTDTO get(Integer id) {
-        return null;
+    public CourseSTDTO get(Integer id)
+            throws IOException {
+        if (id == null) {
+            throw new IOException("输入 CourseID 为空");
+        }
+        return client.get(id);
     }
 
     @Override
-    public List<CourseSTDTO> getByName(String name) {
-        return null;
+    public List<CourseSTDTO> getByName(String name)
+            throws IOException {
+        if (name == null || name.equals("")) {
+            throw new IOException("输入 Name 不符要求");
+        }
+        return client.getByName(name);
     }
 }

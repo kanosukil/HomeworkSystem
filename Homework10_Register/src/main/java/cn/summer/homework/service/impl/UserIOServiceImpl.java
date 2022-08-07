@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * @author VHBin
@@ -25,6 +26,19 @@ public class UserIOServiceImpl implements UserIOService {
 
     @Override
     public UserOpBO register(UserRoleDTO newUser) {
+        User user = newUser.getUser();
+        if (user == null || newUser.getRoles() == null
+                || newUser.getRoles().size() == 0) {
+            return OpBOUtil.generateUOB("注册用户传入数据无效");
+        }
+        if (user.getName() == null || user.getEmail() == null
+                || user.getPassword_hash() == null) {
+            return OpBOUtil.generateUOB("注册用户信息不全");
+        }
+        user.setIntroduction("还没有填写个人介绍哟~");
+        user.setHead_image("default");
+        user.setCreate_time(new Date());
+        newUser.setUser(user);
         return client.register(newUser);
     }
 
@@ -84,7 +98,7 @@ public class UserIOServiceImpl implements UserIOService {
     }
 
     private boolean IsUserNull(User user) {
-        return user.getId() == null || user.getEmail().equals("")
+        return user.getId() == 0 || user.getEmail().equals("")
                 || !user.getEmail().matches("(.*)@(.*)\\.(.*)")
                 || user.getEmail() == null || user.getName().equals("")
                 || user.getName().matches("\\w{16}") || user.getName() == null

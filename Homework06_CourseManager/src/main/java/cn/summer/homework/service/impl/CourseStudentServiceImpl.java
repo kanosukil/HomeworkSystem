@@ -2,6 +2,7 @@ package cn.summer.homework.service.impl;
 
 import cn.summer.homework.BO.CourseOpBO;
 import cn.summer.homework.PO.StudentCourse;
+import cn.summer.homework.Util.OpBOUtil;
 import cn.summer.homework.feignClient.CourseClient;
 import cn.summer.homework.service.CourseStudentService;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,17 @@ public class CourseStudentServiceImpl implements CourseStudentService {
 
     @Override
     public CourseOpBO dropStudent(StudentCourse sc) {
-        return null;
+        if (sc == null || sc.getCid() == null || sc.getSid() == null) {
+            return OpBOUtil.generateCOB("学生退课传入数据无效");
+        }
+        return client.dropStudent(sc);
     }
 
     @Override
     public CourseOpBO addStudent(StudentCourse sc) {
-        return null;
+        if (sc == null || sc.getCid() == null || sc.getSid() == null) {
+            return OpBOUtil.generateCOB("学生选课传入数据无效");
+        }
+        return client.addStudent(sc);
     }
 }

@@ -2,6 +2,7 @@ package cn.summer.homework.service;
 
 import cn.summer.homework.DTO.CourseSTDTO;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
 public interface CourseSelectService {
     List<CourseSTDTO> getAll();
 
-    CourseSTDTO get(Integer id);
+    CourseSTDTO get(Integer id) throws IOException;
 
-    List<CourseSTDTO> getByName(String name);
+    List<CourseSTDTO> getByName(String name) throws IOException;
 }

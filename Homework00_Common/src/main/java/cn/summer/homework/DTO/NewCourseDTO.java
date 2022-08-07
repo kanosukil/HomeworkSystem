@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NewCourseDTO {
     private Course course;
-    private Integer tid;
+    private Integer tid = 0;
 }

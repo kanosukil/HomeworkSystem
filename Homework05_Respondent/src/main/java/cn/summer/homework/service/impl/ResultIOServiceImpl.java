@@ -9,6 +9,7 @@ import cn.summer.homework.service.ResultIOService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * @author VHBin
@@ -25,18 +26,46 @@ public class ResultIOServiceImpl implements ResultIOService {
         Result result = newResult.getResult();
         if (result == null || newResult.getUid() == 0 ||
                 newResult.getCid() == 0 || newResult.getQid() == 0) {
-            return OpBOUtil.generateHOBr("");
+            return OpBOUtil.generateHOBr("新建回答传入数据不能为空");
         }
-        return null;
+        if (result.getId() == 0 || result.getIsFile() == null
+                || result.getContent() == null || result.getCreate_time() == null) {
+            return OpBOUtil.generateHOBr("新建回答的数据不能空");
+        }
+        result.setCreate_time(new Date());
+        result.setIsCheck(false);
+        result.setScore(0);
+        result.setComment("");
+        newResult.setResult(result);
+        return client.insertResult(newResult);
     }
 
     @Override
     public HomeworkOpBO updateResult(NewResultDTO updateResult) {
-        return null;
+        Result result = updateResult.getResult();
+        if (result == null || updateResult.getUid() == 0 ||
+                updateResult.getCid() == 0 || updateResult.getQid() == 0) {
+            return OpBOUtil.generateHOBr("更新回答传入数据不能为空");
+        }
+        if (result.getId() == 0 || result.getIsCheck() == null ||
+                result.getIsFile() == null || result.getComment() == null ||
+                result.getScore() == null || result.getContent() == null) {
+            return OpBOUtil.generateHOBr("更新回答的传入数据不能为空");
+        }
+        Result before = client.getResult(result.getId()).getResult();
+        result.setCreate_time(before.getCreate_time());
+        if (result.getScore() < before.getScore()) {
+            result.setScore(before.getScore());
+        }
+        updateResult.setResult(result);
+        return client.updateResult(updateResult);
     }
 
     @Override
     public HomeworkOpBO deleteResult(NewResultDTO deleteResult) {
-        return null;
+        if (deleteResult.getUid() == 0 || deleteResult.getQid() == 0) {
+            return OpBOUtil.generateHOBr("删除回答的传入数据不能为空");
+        }
+        return client.deleteResult(deleteResult);
     }
 }

@@ -6,6 +6,7 @@ import cn.summer.homework.service.ResultSelectService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -20,16 +21,24 @@ public class ResultSelectServiceImpl implements ResultSelectService {
 
     @Override
     public List<ResultQuestionDTO> getAResult() {
-        return null;
+        return client.getAResult();
     }
 
     @Override
-    public ResultQuestionDTO getResult(Integer rid) {
-        return null;
+    public ResultQuestionDTO getResult(Integer rid)
+            throws IOException {
+        if (rid == null) {
+            throw new IOException("传入 ResultID 为空");
+        }
+        return client.getResult(rid);
     }
 
     @Override
-    public List<ResultQuestionDTO> getCourseResult(Integer cid) {
-        return null;
+    public List<ResultQuestionDTO> getCourseResult(Integer cid)
+            throws IOException {
+        if (cid == null) {
+            throw new IOException("传入 CourseID 为空");
+        }
+        return client.getCourseResult(cid);
     }
 }
