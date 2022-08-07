@@ -5,6 +5,8 @@ import cn.summer.homework.DTO.URoleDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Entity.User;
 
+import java.io.IOException;
+
 /**
  * @author VHBin
  * @date 2022/7/15-18:31
@@ -12,8 +14,8 @@ import cn.summer.homework.Entity.User;
 public interface UserIOService {
     UserOpBO register(UserRoleDTO newUser);
 
-    UserRoleDTO login(String email);
-    
+    UserRoleDTO login(String email) throws IOException;
+
     UserOpBO delete(Integer id);
 
     UserOpBO logoff(String email);

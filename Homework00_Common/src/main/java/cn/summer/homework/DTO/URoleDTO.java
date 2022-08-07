@@ -15,6 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class URoleDTO {
-    private Integer uid;
-    private List<String> roles;
+    private Integer uid = 0;
+    private List<String> roles = null;
 }

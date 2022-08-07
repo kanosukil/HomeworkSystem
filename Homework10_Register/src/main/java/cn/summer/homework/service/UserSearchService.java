@@ -2,6 +2,7 @@ package cn.summer.homework.service;
 
 import cn.summer.homework.DTO.UserRoleDTO;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -11,5 +12,5 @@ import java.util.List;
 public interface UserSearchService {
     List<UserRoleDTO> getAll();
 
-    UserRoleDTO get(Integer id);
+    UserRoleDTO get(Integer id) throws IOException;
 }

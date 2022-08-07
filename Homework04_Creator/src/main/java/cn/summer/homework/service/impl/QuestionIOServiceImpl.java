@@ -6,6 +6,7 @@ import cn.summer.homework.DTO.NewResultDTO;
 import cn.summer.homework.Entity.Question;
 import cn.summer.homework.Entity.Result;
 import cn.summer.homework.PO.TeacherQuestion;
+import cn.summer.homework.Util.OpBOUtil;
 import cn.summer.homework.feignClient.QuestionClient;
 import cn.summer.homework.service.QuestionIOService;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,28 +26,19 @@ public class QuestionIOServiceImpl implements QuestionIOService {
     @Resource
     private QuestionClient client;
 
-    private HomeworkOpBO generateHomeworkOpBO(String value) {
-        HomeworkOpBO res = new HomeworkOpBO();
-        res.setIsQuestion(true);
-        res.setIsSuccess(false);
-        res.setInfo(new HashMap<>(1, 1f) {{
-            put("Cause", value);
-        }});
-        return res;
-    }
 
     @Override
     public HomeworkOpBO createNewQuestion(NewQuestionDTO newQuestion) {
         Question question = newQuestion.getQuestion();
         if (question == null || newQuestion.getType().equals("") ||
                 newQuestion.getId() == 0 || newQuestion.getTid() == 0) {
-            return generateHomeworkOpBO("新创建问题的传入数据不能为空");
+            return OpBOUtil.generateHOBq("新创建问题的传入数据不能为空");
         }
         if (question.getTitle() == null) {
-            return generateHomeworkOpBO("新创建问题的标题不能为空");
+            return OpBOUtil.generateHOBq("新创建问题的标题不能为空");
         }
         if (question.getScore() == null) {
-            return generateHomeworkOpBO("新创建问题的分数不能为空");
+            return OpBOUtil.generateHOBq("新创建问题的分数不能为空");
         }
         question.setCreate_time(new Date());
         newQuestion.setQuestion(question);
@@ -59,13 +50,13 @@ public class QuestionIOServiceImpl implements QuestionIOService {
         Question question = updateQuestion.getQuestion();
         if (question == null || updateQuestion.getType().equals("") ||
                 updateQuestion.getId() == 0 || updateQuestion.getTid() == 0) {
-            return generateHomeworkOpBO("更新问题的传入数据不能为空");
+            return OpBOUtil.generateHOBq("更新问题的传入数据不能为空");
         }
         if (question.getTitle() == null || question.getId() == 0 ||
                 question.getIsFile() == null || question.getScore() == null ||
                 question.getAnswer() == null || question.getComment() == null ||
                 question.getExtension() == null) {
-            return generateHomeworkOpBO("更新问题的数据不能为空");
+            return OpBOUtil.generateHOBq("更新问题的数据不能为空");
         }
         question.setCreate_time(client.getQuestion(question.getId())
                 .getQuestion().getCreate_time());
@@ -76,7 +67,7 @@ public class QuestionIOServiceImpl implements QuestionIOService {
     @Override
     public HomeworkOpBO deleteQuestion(TeacherQuestion tq) {
         if (tq == null || tq.getTid() == null || tq.getQid() == null) {
-            return generateHomeworkOpBO("删除问题的传入数据不能为空");
+            return OpBOUtil.generateHOBq("删除问题的传入数据不能为空");
         }
         return client.deleteQuestion(tq);
     }
@@ -86,20 +77,20 @@ public class QuestionIOServiceImpl implements QuestionIOService {
         Result result = correctResult.getResult();
         if (result == null || correctResult.getQid() == 0 ||
                 correctResult.getCid() == 0 || correctResult.getUid() == 0) {
-            return generateHomeworkOpBO("批改时传入的数据不能为空");
+            return OpBOUtil.generateHOBq("批改时传入的数据不能为空");
         }
         if (result.getId() == null || result.getIsCheck() == null ||
                 result.getIsFile() == null || result.getComment() == null ||
                 result.getScore() == null || result.getContent() == null) {
-            return generateHomeworkOpBO("批改的答案数据不能为空");
+            return OpBOUtil.generateHOBq("批改的答案数据不能为空");
         }
         if (!result.getIsCheck()) {
-            return generateHomeworkOpBO("批改标识未修改");
+            return OpBOUtil.generateHOBq("批改标识未修改");
         }
         if (result.getScore() < 0
                 || result.getScore() > client.getQuestion(correctResult.getQid())
                 .getQuestion().getScore()) {
-            return generateHomeworkOpBO("批改分数不符规定");
+            return OpBOUtil.generateHOBq("批改分数不符规定");
         }
         return client.correctResult(correctResult);
     }

@@ -6,6 +6,7 @@ import cn.summer.homework.service.UserSearchService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -24,7 +25,11 @@ public class UserSearchServiceImpl implements UserSearchService {
     }
 
     @Override
-    public UserRoleDTO get(Integer id) {
+    public UserRoleDTO get(Integer id)
+            throws IOException {
+        if (id == null) {
+            throw new IOException("传入数据不能为空");
+        }
         return client.get(id);
     }
 }

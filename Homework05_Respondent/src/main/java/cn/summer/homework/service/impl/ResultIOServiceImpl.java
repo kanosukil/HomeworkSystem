@@ -2,6 +2,8 @@ package cn.summer.homework.service.impl;
 
 import cn.summer.homework.BO.HomeworkOpBO;
 import cn.summer.homework.DTO.NewResultDTO;
+import cn.summer.homework.Entity.Result;
+import cn.summer.homework.Util.OpBOUtil;
 import cn.summer.homework.feignClient.ResultClient;
 import cn.summer.homework.service.ResultIOService;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,11 @@ public class ResultIOServiceImpl implements ResultIOService {
 
     @Override
     public HomeworkOpBO insertResult(NewResultDTO newResult) {
+        Result result = newResult.getResult();
+        if (result == null || newResult.getUid() == 0 ||
+                newResult.getCid() == 0 || newResult.getQid() == 0) {
+            return OpBOUtil.generateHOBr("");
+        }
         return null;
     }
 

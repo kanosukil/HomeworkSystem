@@ -38,27 +38,32 @@ public class LoginController {
         if (login == null || login.getAccount() == null || login.getPassword() == null) {
             return new UserVO<>(400, "登录数据为空", null);
         }
-        UserRoleDTO lo = userIOService.login(login.getAccount());
-        User user = lo.getUser();
-        List<String> roles = lo.getRoles();
-        AtomicBoolean isAdmin = new AtomicBoolean(false);
-        if (user == null || roles == null) {
-            return new UserVO<>(400, "未找到指定用户", "");
-        }
-        roles.forEach(e -> {
-            if (e.equals("Admin")) {
-                isAdmin.set(true);
+        try {
+            UserRoleDTO lo = userIOService.login(login.getAccount());
+            User user = lo.getUser();
+            List<String> roles = lo.getRoles();
+            AtomicBoolean isAdmin = new AtomicBoolean(false);
+            if (user == null || roles == null) {
+                return new UserVO<>(400, "未找到指定用户", "");
             }
-        });
-        if (!Base64.getEncoder().encodeToString(login.getPassword().getBytes(StandardCharsets.UTF_8))
-                .equals(user.getPassword_hash())) {
-            return new UserVO<>(200, "密码错误", "");
-        } else {
-            return new UserVO<>(200, "登录成功", isAdmin.get(),
-                    TokenUtil.generateJWToken(
-                            new UserDTO(user.getId(), user.getEmail(), user.getPassword_hash()),
-                            roles));
+            roles.forEach(e -> {
+                if (e.equals("Admin")) {
+                    isAdmin.set(true);
+                }
+            });
+            if (!Base64.getEncoder().encodeToString(login.getPassword().getBytes(StandardCharsets.UTF_8))
+                    .equals(user.getPassword_hash())) {
+                return new UserVO<>(200, "密码错误", "");
+            } else {
+                return new UserVO<>(200, "登录成功", isAdmin.get(),
+                        TokenUtil.generateJWToken(
+                                new UserDTO(user.getId(), user.getEmail(), user.getPassword_hash()),
+                                roles));
+            }
+        } catch (Exception ex) {
+            return new UserVO<>(500, "登录异常", ex.getMessage());
         }
+
     }
 
     @PostMapping("register")

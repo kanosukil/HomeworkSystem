@@ -25,8 +25,8 @@ public class TokenUtil {
     private static final String role = "roles";
 
     public static String generateJWToken(UserDTO user, List<String> roles) {
-        if (user == null || user.getAccount() == null
-                || user.getPassword() == null || roles.size() <= 0) {
+        if (user == null || user.getId() == 0 || user.getAccount().equals("")
+                || user.getPassword().equals("") || roles.size() <= 0) {
             return null;
         }
         try {
