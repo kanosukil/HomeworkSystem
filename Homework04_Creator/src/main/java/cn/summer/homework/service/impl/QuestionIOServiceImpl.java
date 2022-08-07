@@ -25,7 +25,7 @@ import java.util.List;
 public class QuestionIOServiceImpl implements QuestionIOService {
     @Resource
     private QuestionClient client;
-    
+
     @Override
     public HomeworkOpBO createNewQuestion(NewQuestionDTO newQuestion) {
         Question question = newQuestion.getQuestion();
