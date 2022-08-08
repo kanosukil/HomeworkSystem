@@ -1,6 +1,9 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.DTO.*;
+import cn.summer.homework.DTO.CourseSTDTO;
+import cn.summer.homework.DTO.QuestionResultDTO;
+import cn.summer.homework.DTO.ResultQuestionDTO;
+import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.QO.ElasticSearchQO;
 import cn.summer.homework.service.ElasticSearchService;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -109,33 +112,26 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
     public boolean createDocs(String index_name, List<Object> docs)
             throws IOException {
         List<BulkOperation> bulk = new ArrayList<>();
-        String id;
-        Object o = docs.get(0);
-        if (o instanceof CourseSTDTO) {
-            id = ((CourseSTDTO) o).getCourse().getId().toString();
-        } else if (o instanceof NewCourseDTO) {
-            id = ((NewCourseDTO) o).getCourse().getId().toString();
-        } else if (o instanceof NewQuestionDTO) {
-            id = ((NewQuestionDTO) o).getQuestion().getId().toString();
-        } else if (o instanceof NewResultDTO) {
-            id = ((NewResultDTO) o).getResult().getId().toString();
-        } else if (o instanceof QuestionResultDTO) {
-            id = ((QuestionResultDTO) o).getQuestion().getId().toString();
-        } else if (o instanceof ResultQuestionDTO) {
-            id = ((ResultQuestionDTO) o).getResult().getId().toString();
-        } else if (o instanceof URoleDTO) {
-            id = ((URoleDTO) o).getUid().toString();
-        } else if (o instanceof UserRoleDTO) {
-            id = ((UserRoleDTO) o).getUser().getId().toString();
-        } else {
-            throw new IOException("未知对象<文档批量插入>");
-        }
-        String finalId = id;
-        docs.forEach(e -> bulk.add(
-                BulkOperation.of(
-                        _1 -> _1.index(
-                                _2 -> _2.id(finalId)
-                                        .document(new ElasticSearchQO(e.toString()))))));
+        docs.forEach(e -> {
+            String id;
+            if (e instanceof CourseSTDTO) {
+                id = ((CourseSTDTO) e).getCourse().getId().toString();
+            } else if (e instanceof QuestionResultDTO) {
+                id = ((QuestionResultDTO) e).getQuestion().getId().toString();
+            } else if (e instanceof ResultQuestionDTO) {
+                id = ((ResultQuestionDTO) e).getResult().getId().toString();
+            } else if (e instanceof UserRoleDTO) {
+                id = ((UserRoleDTO) e).getUser().getId().toString();
+            } else {
+                throw new RuntimeException("未知对象<文档批量插入>");
+            }
+            bulk.add(
+                    BulkOperation.of(
+                            _1 -> _1.index(
+                                    _2 -> _2.id(id)
+                                            .document(
+                                                    new ElasticSearchQO(e.toString())))));
+        });
         BulkResponse res = client
                 .bulk(e -> e.index(index_name).operations(bulk));
         logger.info("批量插入文档是否出错: {}", res.errors());

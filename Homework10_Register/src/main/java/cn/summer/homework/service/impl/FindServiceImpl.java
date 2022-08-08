@@ -97,7 +97,7 @@ public class FindServiceImpl implements FindService {
     }
 
     @Override
-    public List<String> type() {
+    public List<String> types() {
         return question.getAType();
     }
 

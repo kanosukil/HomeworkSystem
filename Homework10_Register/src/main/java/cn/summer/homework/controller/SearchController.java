@@ -1,6 +1,7 @@
 package cn.summer.homework.controller;
 
-import cn.summer.homework.feignClient.*;
+import cn.summer.homework.feignClient.ESReadClient;
+import cn.summer.homework.service.FindService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,13 +16,7 @@ import javax.annotation.Resource;
 @RequestMapping("search")
 public class SearchController {
     @Resource
-    private CourseFindClient course;
-    @Resource
-    private QuestionFindClient question;
-    @Resource
-    private ResultFindClient result;
-    @Resource
-    private UserClient user;
+    private FindService find;
     @Resource
     private ESReadClient es;
 }

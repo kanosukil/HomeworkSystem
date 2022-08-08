@@ -40,7 +40,7 @@ public interface FindService {
 
     List<QuestionResultDTO> questionBCourse(Integer cid) throws IOException;
 
-    List<String> type();
+    List<String> types();
 
     List<ResultQuestionDTO> results();
 
