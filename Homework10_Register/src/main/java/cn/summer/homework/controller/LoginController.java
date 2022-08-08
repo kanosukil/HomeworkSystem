@@ -32,6 +32,12 @@ public class LoginController {
     @Resource
     private UserIOService userIOService;
 
+    /**
+     * 登录
+     *
+     * @param login{user`s email, user`s password}
+     * @return code, message, token/Cause of Error
+     */
     @PostMapping("login")
     public UserVO<String> login(@RequestBody LoginDTO login) {
         if (login == null || login.getAccount() == null || login.getPassword() == null) {
@@ -66,6 +72,12 @@ public class LoginController {
 
     }
 
+    /**
+     * 注册
+     *
+     * @param register{name, password, email}
+     * @return code, message, token/Cause of Error
+     */
     @PostMapping("register")
     public UserVO<String> register(@RequestBody RegisterDTO register) {
         String email = register.getEmail();
