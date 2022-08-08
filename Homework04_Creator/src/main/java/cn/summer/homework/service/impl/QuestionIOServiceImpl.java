@@ -110,7 +110,8 @@ public class QuestionIOServiceImpl implements QuestionIOService {
     @Override
     public Boolean deleteType(NewQuestionDTO questionType)
             throws IOException {
-        if (questionType.getType().equals("") || questionType.getTid() == 0) {
+        if (questionType.getTid() == 0 ||
+                (questionType.getId() == 0 && questionType.getType().equals(""))) {
             throw new IOException("删除问题类型传入数据无效");
         }
         return client.deleteType(questionType);
