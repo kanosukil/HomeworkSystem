@@ -110,4 +110,10 @@ public class FindServiceImpl implements FindService {
     public List<ResultQuestionDTO> resultBCourse(Integer cid) throws IOException {
         return result.getCourseResult(cid);
     }
+
+    @Override
+    public List<ResultQuestionDTO> resultBStudent(Integer sid) throws IOException {
+        return result.getStudentResult(sid);
+    }
+
 }

@@ -25,4 +25,8 @@ public interface ResultFindClient {
     @GetMapping("/query/result/course")
     List<ResultQuestionDTO> getCourseResult(@RequestParam("cid") Integer cid)
             throws IOException;
+
+    @GetMapping("/query/result/student")
+    List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid)
+            throws IOException;
 }

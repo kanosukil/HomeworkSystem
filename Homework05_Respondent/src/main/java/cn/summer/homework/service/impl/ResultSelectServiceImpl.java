@@ -41,4 +41,13 @@ public class ResultSelectServiceImpl implements ResultSelectService {
         }
         return client.getCourseResult(cid);
     }
+
+    @Override
+    public List<ResultQuestionDTO> getStudentResult(Integer sid)
+            throws IOException {
+        if (sid == null) {
+            throw new IOException("传入 StudentID 为空");
+        }
+        return client.getStudentResult(sid);
+    }
 }

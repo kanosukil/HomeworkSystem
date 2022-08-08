@@ -223,6 +223,15 @@ public class HomeworkController {
         }
     }
 
+    @GetMapping("result-get-student")
+    public List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid) {
+        try {
+            return homeworkService.selectHKBySID(sid);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     @GetMapping("result-get-course")
     public List<ResultQuestionDTO> getCourseResult(@RequestParam("cid") Integer cid) {
         try {

@@ -38,4 +38,10 @@ public class ResultFindController {
             throws IOException {
         return service.getCourseResult(cid);
     }
+
+    @GetMapping("student")
+    public List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid)
+            throws IOException {
+        return service.getStudentResult(sid);
+    }
 }

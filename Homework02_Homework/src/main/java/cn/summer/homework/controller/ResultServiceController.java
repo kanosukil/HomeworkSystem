@@ -37,6 +37,11 @@ public class ResultServiceController {
         return sqlClient.getCourseResult(cid);
     }
 
+    @GetMapping("result-get-student")
+    public List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid) {
+        return sqlClient.getStudentResult(sid);
+    }
+
     @PostMapping("result-create")
     public HomeworkOpBO insertResult(@RequestBody NewResultDTO newResult) {
         return sqlClient.insertResult(newResult);

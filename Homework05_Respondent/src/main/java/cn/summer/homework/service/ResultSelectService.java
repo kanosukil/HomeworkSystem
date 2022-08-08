@@ -15,4 +15,6 @@ public interface ResultSelectService {
     ResultQuestionDTO getResult(Integer rid) throws IOException;
 
     List<ResultQuestionDTO> getCourseResult(Integer cid) throws IOException;
+
+    List<ResultQuestionDTO> getStudentResult(Integer sid) throws IOException;
 }
