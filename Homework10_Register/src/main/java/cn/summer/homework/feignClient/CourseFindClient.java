@@ -25,4 +25,12 @@ public interface CourseFindClient {
     @GetMapping("/query/course/name")
     List<CourseSTDTO> getn(@RequestParam("name") String name)
             throws IOException;
+
+    @GetMapping("/query/course/teacher")
+    List<CourseSTDTO> gett(@RequestParam("tid") Integer tid)
+            throws IOException;
+
+    @GetMapping("/query/course/student")
+    List<CourseSTDTO> gets(@RequestParam("sid") Integer sid)
+            throws IOException;
 }

@@ -15,4 +15,8 @@ public interface CourseSelectService {
     CourseSTDTO get(Integer id) throws IOException;
 
     List<CourseSTDTO> getByName(String name) throws IOException;
+
+    List<CourseSTDTO> getByTeacher(Integer tid) throws IOException;
+
+    List<CourseSTDTO> getByStudent(Integer sid) throws IOException;
 }

@@ -29,6 +29,12 @@ public interface CourseClient {
     @GetMapping("/course/courses-get-name")
     List<CourseSTDTO> getByName(@RequestParam("name") String name);
 
+    @GetMapping("/course/courses-get-teacher")
+    List<CourseSTDTO> getByTeacher(@RequestParam("tid") Integer tid);
+
+    @GetMapping("/course/courses-get-student")
+    List<CourseSTDTO> getByStudent(@RequestParam("sid") Integer sid);
+
     @PostMapping("/course/create-course")
     CourseOpBO createCourse(@RequestBody NewCourseDTO newCourse);
 

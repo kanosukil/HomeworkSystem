@@ -41,4 +41,24 @@ public class CourseSelectServiceImpl implements CourseSelectService {
         }
         return client.getByName(name);
     }
+
+    @Override
+    public List<CourseSTDTO> getByTeacher(Integer tid)
+            throws IOException {
+        if (tid == null || tid == 0) {
+            throw new IOException("输入 TeacherID 不符要求");
+        }
+        return client.getByTeacher(tid);
+    }
+
+    @Override
+    public List<CourseSTDTO> getByStudent(Integer sid)
+            throws IOException {
+        if (sid == null || sid == 0) {
+            throw new IOException("输入 StudentID 不符要求");
+        }
+        return client.getByStudent(sid);
+    }
+
+
 }

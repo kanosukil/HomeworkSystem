@@ -47,6 +47,16 @@ public class CourseController {
         return courseService.getCourse(name);
     }
 
+    @GetMapping("courses-get-teacher")
+    public List<CourseSTDTO> getByTeacher(@RequestParam("tid") Integer tid) {
+        return courseService.getCoursesByTeacher(tid);
+    }
+
+    @GetMapping("courses-get-student")
+    public List<CourseSTDTO> getByStudent(@RequestParam("sid") Integer sid) {
+        return courseService.getCoursesByStudent(sid);
+    }
+
     private void setRes(CourseOpBO res, Boolean isSuccess, String key, Object value) {
         res.setIsSuccess(isSuccess);
         res.setMap(new HashMap<>(1, 1f) {{

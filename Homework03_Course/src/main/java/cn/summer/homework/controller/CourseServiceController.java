@@ -39,6 +39,16 @@ public class CourseServiceController {
         return sqlClient.getByName(name);
     }
 
+    @GetMapping("courses-get-teacher")
+    public List<CourseSTDTO> getByTeacher(@RequestParam("tid") Integer tid) {
+        return sqlClient.getByTeacher(tid);
+    }
+
+    @GetMapping("courses-get-student")
+    public List<CourseSTDTO> getByStudent(@RequestParam("sid") Integer sid) {
+        return sqlClient.getByStudent(sid);
+    }
+
     @PostMapping("create-course")
     public CourseOpBO createCourse(@RequestBody NewCourseDTO newCourse) {
         return sqlClient.createCourse(newCourse);

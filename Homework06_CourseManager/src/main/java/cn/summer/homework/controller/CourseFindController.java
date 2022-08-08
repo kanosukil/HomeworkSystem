@@ -38,4 +38,16 @@ public class CourseFindController {
             throws IOException {
         return service.getByName(name);
     }
+
+    @GetMapping("teacher")
+    public List<CourseSTDTO> gett(@RequestParam("tid") Integer tid)
+            throws IOException {
+        return service.getByTeacher(tid);
+    }
+
+    @GetMapping("student")
+    public List<CourseSTDTO> gets(@RequestParam("sid") Integer sid)
+            throws IOException {
+        return service.getByStudent(sid);
+    }
 }
