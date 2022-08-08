@@ -18,6 +18,8 @@ public interface FindService {
 
     UserRoleDTO user(Integer uid) throws IOException;
 
+    UserRoleDTO user(String email) throws IOException;
+
     List<CourseSTDTO> courses();
 
     CourseSTDTO course(Integer cid) throws IOException;

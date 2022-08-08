@@ -13,4 +13,6 @@ public interface UserSearchService {
     List<UserRoleDTO> getAll();
 
     UserRoleDTO get(Integer id) throws IOException;
+
+    UserRoleDTO get(String email) throws IOException;
 }

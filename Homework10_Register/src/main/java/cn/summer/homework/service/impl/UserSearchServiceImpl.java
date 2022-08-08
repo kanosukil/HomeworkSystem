@@ -32,4 +32,16 @@ public class UserSearchServiceImpl implements UserSearchService {
         }
         return client.get(id);
     }
+
+    @Override
+    public UserRoleDTO get(String email)
+            throws IOException {
+        if (email == null || email.equals("")) {
+            throw new IOException("传入数据不能为空");
+        }
+        if (!email.matches("(.*)@(.*)\\.(.*)")) {
+            throw new IOException("传入数据不符要求");
+        }
+        return client.login(email);
+    }
 }

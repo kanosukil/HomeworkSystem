@@ -42,6 +42,11 @@ public class FindServiceImpl implements FindService {
     }
 
     @Override
+    public UserRoleDTO user(String email) throws IOException {
+        return user.get(email);
+    }
+
+    @Override
     public List<CourseSTDTO> courses() {
         return course.getAll();
     }
