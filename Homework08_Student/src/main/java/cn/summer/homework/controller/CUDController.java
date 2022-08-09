@@ -47,7 +47,7 @@ public class CUDController {
     @PostMapping("/u/result")
     public StudentVO updateResult(@RequestBody ResultInDTO in) {
         HomeworkOpBO res = result.update(new NewResultDTO(
-                in.getSid(), in.getCid(), in.getQid(), in.getResult()));
+                in.getSid(), 0, 0, in.getResult()));
         if (res.getIsQuestion()) {
             return new StudentVO(500, "更新回答异常", "问题标识:true");
         } else {
@@ -63,7 +63,7 @@ public class CUDController {
     @PostMapping("/d/result")
     public StudentVO deleteResult(@RequestBody ResultInDTO in) {
         HomeworkOpBO res = result.delete(
-                new NewResultDTO(in.getSid(), 0, in.getQid(), null));
+                new NewResultDTO(in.getSid(), 0, in.getRid(), null));
         if (res.getIsQuestion()) {
             return new StudentVO(500, "删除回答异常", "问题标识:true");
         } else {

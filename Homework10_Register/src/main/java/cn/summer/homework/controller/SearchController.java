@@ -82,6 +82,12 @@ public class SearchController {
         return false;
     }
 
+    /**
+     * 获取全部用户信息
+     *
+     * @param s 可为空, 也可以设定 from & size
+     * @return SearchUserVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/user/all")
     public SearchUserVO allUsers(@RequestBody SearchDTO s) {
         List<Integer> uidList = esFindAll(IndexUtil.USER, s);
@@ -119,6 +125,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 查找符合条件的用户
+     *
+     * @param s value 为条件(关键字), 可设定 from & size
+     * @return SearchUserVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/user/find")
     public SearchUserVO findUser(@RequestBody SearchDTO s) {
         List<Integer> uidList = esFind(IndexUtil.USER, s);
@@ -141,6 +153,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定用户
+     *
+     * @param uid 用户id
+     * @return SearchUserVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/user/get")
     public SearchUserVO getUser(@RequestParam("uid") Integer uid) {
         try {
@@ -153,6 +171,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取全部课程信息
+     *
+     * @param s 可为空, 也可以设定 from & size
+     * @return SearchCourseVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/course/all")
     public SearchCourseVO allCourse(@RequestBody SearchDTO s) {
         List<Integer> cidList = esFindAll(IndexUtil.COURSE, s);
@@ -189,6 +213,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 查找符合条件的课程
+     *
+     * @param s value 为条件(关键字), 可设定 from & size
+     * @return SearchCourseVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/course/find")
     public SearchCourseVO findCourse(@RequestBody SearchDTO s) {
         List<Integer> cidList = esFind(IndexUtil.COURSE, s);
@@ -211,6 +241,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定课程
+     *
+     * @param cid 课程id
+     * @return SearchCourseVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/course/get")
     public SearchCourseVO getCourse(@RequestParam("cid") Integer cid) {
         try {
@@ -223,6 +259,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取全部问题信息
+     *
+     * @param s 可为空, 也可以设定 from & size
+     * @return SearchQuestionVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/question/all")
     public SearchQuestionVO allQuestion(@RequestBody SearchDTO s) {
         List<Integer> qidList = esFindAll(IndexUtil.QUESTION, s);
@@ -259,6 +301,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 查找符合条件的问题
+     *
+     * @param s value 为条件(关键字), 可设定 from & size
+     * @return SearchQuestionVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/question/find")
     public SearchQuestionVO findQuestion(@RequestBody SearchDTO s) {
         List<Integer> qidList = esFind(IndexUtil.QUESTION, s);
@@ -281,6 +329,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定问题
+     *
+     * @param qid 课程id
+     * @return SearchQuestionVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/question/get")
     public SearchQuestionVO getQuestion(@RequestParam("qid") Integer qid) {
         try {
@@ -293,6 +347,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取全部回答信息
+     *
+     * @param s 可为空, 也可以设定 from & size
+     * @return SearchResultVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/result/all")
     public SearchResultVO allResult(@RequestBody SearchDTO s) {
         List<Integer> ridList = esFindAll(IndexUtil.RESULT, s);
@@ -329,6 +389,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 查找符合条件的回答
+     *
+     * @param s value 为条件(关键字), 可设定 from & size
+     * @return SearchResultVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/result/find")
     public SearchResultVO findResult(@RequestBody SearchDTO s) {
         List<Integer> ridList = esFind(IndexUtil.RESULT, s);
@@ -351,6 +417,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定回答
+     *
+     * @param rid 课程id
+     * @return SearchResultVO 状态码, 消息, 用户信息
+     */
     @GetMapping("/result/get")
     public SearchResultVO getResult(@RequestParam("rid") Integer rid) {
         try {

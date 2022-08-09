@@ -9,6 +9,12 @@ import java.util.List;
  */
 
 public class TypeUtil {
+    /**
+     * Object 转 List&lt;Object&gt;
+     *
+     * @param obj 可能是 List 对象的 Object 对象
+     * @return List&lt;Object&lt;
+     */
     public static List<Object> objToList(Object obj) {
         if (obj instanceof List<?>) {
             return new ArrayList<>((List<?>) obj);
@@ -17,6 +23,13 @@ public class TypeUtil {
         }
     }
 
+    /**
+     * Object 转 List&lt;classT&gt;
+     *
+     * @param obj    可能是 List 对象的 Object 对象
+     * @param classT 转换的内元素类型
+     * @return List&lt;classT&gt;
+     */
     public static <T> List<T> objToList(Object obj, Class<T> classT) {
         if (obj instanceof List<?>) {
             ArrayList<T> list = new ArrayList<>();

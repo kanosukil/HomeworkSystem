@@ -71,8 +71,7 @@ public class QuestionIOServiceImpl implements QuestionIOService {
     @Override
     public HomeworkOpBO correctResult(NewResultDTO correctResult) {
         Result result = correctResult.getResult();
-        if (result == null || correctResult.getQid() == 0 ||
-                correctResult.getCid() == 0 || correctResult.getUid() == 0) {
+        if (result == null || correctResult.getUid() == 0) {
             return OpBOUtil.generateHOBq("批改时传入的数据不能为空");
         }
         if (result.getId() == 0 || result.getIsCheck() == null ||

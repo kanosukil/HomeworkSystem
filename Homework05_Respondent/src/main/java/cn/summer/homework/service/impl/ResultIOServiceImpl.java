@@ -43,8 +43,7 @@ public class ResultIOServiceImpl implements ResultIOService {
     @Override
     public HomeworkOpBO updateResult(NewResultDTO updateResult) {
         Result result = updateResult.getResult();
-        if (result == null || updateResult.getUid() == 0 ||
-                updateResult.getCid() == 0 || updateResult.getQid() == 0) {
+        if (result == null || updateResult.getUid() == 0) {
             return OpBOUtil.generateHOBr("更新回答传入数据不能为空");
         }
         if (result.getId() == 0 || result.getIsCheck() == null ||

@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResultInDTO {
-    private Integer qid = 0; // correct create update delete
+    private Integer rid = 0; // delete
+    private Integer qid = 0; // correct create update
     private Integer cid = 0; // correct create update
     private Integer sid = 0; // create update delete
     private Integer tid = 0; // correct

@@ -66,8 +66,8 @@ public class TeacherController {
             }
             return course;
         } catch (IOException io) {
-            logger.error("SQL Course 获取异常", io);
-            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+            logger.error("[Create Course]SQL Course 获取异常", io);
+            return new TeacherVO(500, "CreateCourse: SQL Course 获取异常", io.toString());
         }
     }
 
@@ -86,8 +86,8 @@ public class TeacherController {
             }
             return course;
         } catch (IOException io) {
-            logger.error("SQL Course 获取异常", io);
-            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+            logger.error("[Update Course]SQL Course 获取异常", io);
+            return new TeacherVO(500, "UpdateCourse: SQL Course 获取异常", io.toString());
         }
     }
 
@@ -125,8 +125,8 @@ public class TeacherController {
             }
             return question;
         } catch (IOException io) {
-            logger.error("SQL Question 获取异常", io);
-            return new TeacherVO(500, "SQL Question 获取异常", io.toString());
+            logger.error("[Create Question]SQL Question 获取异常", io);
+            return new TeacherVO(500, "CreateQuestion: SQL Question 获取异常", io.toString());
         }
     }
 
@@ -145,8 +145,8 @@ public class TeacherController {
             }
             return question;
         } catch (IOException io) {
-            logger.error("SQL Question 获取异常", io);
-            return new TeacherVO(500, "SQL Question 获取异常", io.toString());
+            logger.error("[Update Question]SQL Question 获取异常", io);
+            return new TeacherVO(500, "UpdateQuestion: SQL Question 获取异常", io.toString());
         }
     }
 
@@ -180,6 +180,9 @@ public class TeacherController {
         return teacher.deleteType(in);
     }
 
+    /*
+        AddOption
+     */
     @PostMapping("/ao/correct/question")
     public TeacherVO correct(@RequestBody ResultInDTO in) {
         TeacherVO correct = teacher.correct(in);
@@ -195,8 +198,8 @@ public class TeacherController {
             }
             return correct;
         } catch (IOException io) {
-            logger.error("SQL Result 获取异常", io);
-            return new TeacherVO(500, "SQL Result 获取异常", io.toString());
+            logger.error("[Correct Result]SQL Result 获取异常", io);
+            return new TeacherVO(500, "CorrectQuestion: SQL Result 获取异常", io.toString());
         }
     }
 
@@ -215,8 +218,8 @@ public class TeacherController {
             }
             return course;
         } catch (IOException io) {
-            logger.error("SQL Course 获取异常", io);
-            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+            logger.error("[Add Course]SQL Course 获取异常", io);
+            return new TeacherVO(500, "AddCourse: SQL Course 获取异常", io.toString());
         }
     }
 
@@ -235,8 +238,8 @@ public class TeacherController {
             }
             return course;
         } catch (IOException io) {
-            logger.error("SQL Course 获取异常", io);
-            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+            logger.error("[Drop Course]SQL Course 获取异常", io);
+            return new TeacherVO(500, "DropCourse: SQL Course 获取异常", io.toString());
         }
     }
 }
