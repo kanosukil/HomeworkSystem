@@ -697,16 +697,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int[] delete = new int[4];
 
         try {
-            if (!userService.isStudent(sid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
-            Result srcResult = resultDao.selectByID(rid);
-            if (srcResult == null) {
-                throw new Exception("回答不存在");
-            }
-            if (studentResultDao.accurateSelect(new StudentResult(sid, rid)) <= 0) {
-                throw new Exception("用户权限不够");
-            }
+            Result srcResult = checkResult(sid, rid);
             flag = 1;
             delete[3] = studentResultDao.accurateDelete(new StudentResult(sid, rid));
             flag = 2;
@@ -744,6 +735,20 @@ public class HomeworkServiceImpl implements HomeworkService {
         return homeworkOpBO;
     }
 
+    private Result checkResult(Integer sid, Integer rid) throws Exception {
+        if (!userService.isStudent(sid)) {
+            throw new Exception("用户不存在/用户权限不够");
+        }
+        Result srcResult = resultDao.selectByID(rid);
+        if (srcResult == null) {
+            throw new Exception("回答不存在");
+        }
+        if (studentResultDao.accurateSelect(new StudentResult(sid, rid)) <= 0) {
+            throw new Exception("用户权限不够");
+        }
+        return srcResult;
+    }
+
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
     public HomeworkOpBO updateResult(Integer sid, Result result)
@@ -753,17 +758,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         Integer rid = result.getId();
 
         try {
-            if (!userService.isStudent(sid)) {
-                throw new Exception("用户不存在/用户权限不够");
-            }
-            Result srcResult = resultDao.selectByID(rid);
-            if (srcResult == null) {
-                throw new Exception("回答不存在");
-            }
-            if (studentResultDao.accurateSelect(new StudentResult(sid, rid)) <= 0) {
-                throw new Exception("用户权限不够");
-            }
-            ResultQuestionDTO rq_dto = getRQ_DTO(srcResult);
+            ResultQuestionDTO rq_dto = getRQ_DTO(checkResult(sid, rid));
             flag = 1;
             int update = resultDao.updateResult(result);
             flag = 2;
