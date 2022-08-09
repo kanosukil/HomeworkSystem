@@ -6,5 +6,9 @@ package cn.summer.homework.service;
  */
 
 public interface ElasticSearchDirectExchangeService {
-    Boolean sendMessage(Object doc);
+    Boolean save(Object doc);
+
+    Boolean delete(Object doc);
+
+    Boolean update(Object doc);
 }

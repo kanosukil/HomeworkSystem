@@ -22,15 +22,43 @@ public class ElasticSearchDirectExchangeServiceImpl
     private RabbitTemplate template;
 
     @Override
-    public Boolean sendMessage(Object doc) {
+    public Boolean save(Object doc) {
         try {
             template.convertAndSend(
-                    RabbitMQUtil.RabbitDirectExchange,
-                    RabbitMQUtil.RabbitDirectRouting,
+                    RabbitMQUtil.SAVE_EXCHANGE,
+                    RabbitMQUtil.SAVE_ROUTING,
                     doc);
             return true;
         } catch (Exception ex) {
-            logger.error("RabbitMQException: {}", ex.getMessage());
+            logger.error("RabbitMQ ElasticSearch Save Exception: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean delete(Object doc) {
+        try {
+            template.convertAndSend(
+                    RabbitMQUtil.DELETE_EXCHANGE,
+                    RabbitMQUtil.DELETE_ROUTING,
+                    doc);
+            return true;
+        } catch (Exception ex) {
+            logger.error("RabbitMQ ElasticSearch Delete Exception: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean update(Object doc) {
+        try {
+            template.convertAndSend(
+                    RabbitMQUtil.UPDATE_EXCHANGE,
+                    RabbitMQUtil.UPDATE_ROUTING,
+                    doc);
+            return true;
+        } catch (Exception ex) {
+            logger.error("RabbitMQ ElasticSearch Save Exception: {}", ex.getMessage());
             return false;
         }
     }

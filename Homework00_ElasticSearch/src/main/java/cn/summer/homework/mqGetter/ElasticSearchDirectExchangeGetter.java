@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author VHBin
@@ -22,38 +24,93 @@ import java.io.IOException;
  */
 
 @Component
-@RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.RabbitDirectQueue))
 public class ElasticSearchDirectExchangeGetter {
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDirectExchangeGetter.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ElasticSearchDirectExchangeGetter.class);
     @Resource
     private ElasticSearchService ess;
 
-    @RabbitHandler
-    public void get(Object obj) {
-        logger.info("ElasticSearch 服务接收对象: {}", obj);
+    private Map<String, Object> getInfo(Object obj) {
+        String index;
         Integer id;
+        if (obj instanceof CourseSTDTO) {
+            id = ((CourseSTDTO) obj).getCourse().getId();
+            index = "course";
+        } else if (obj instanceof QuestionResultDTO) {
+            id = ((QuestionResultDTO) obj).getQuestion().getId();
+            index = "question";
+        } else if (obj instanceof ResultQuestionDTO) {
+            id = ((ResultQuestionDTO) obj).getResult().getId();
+            index = "result";
+        } else if (obj instanceof UserRoleDTO) {
+            id = ((UserRoleDTO) obj).getUser().getId();
+            index = "user";
+        } else {
+            throw new RuntimeException("未知对象<RabbitMQ文档插入>");
+        }
+        return new HashMap<>(2, 1f) {{
+            put("index", index);
+            put("id", id);
+        }};
+    }
+
+    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.SAVE_QUEUE))
+    @RabbitHandler
+    public void save(Object obj) {
+        logger.info("ElasticSearch 服务接收对象: {}", obj);
+        int id;
         String index;
         try {
-            if (obj instanceof CourseSTDTO) {
-                id = ((CourseSTDTO) obj).getCourse().getId();
-                index = "course";
-            } else if (obj instanceof QuestionResultDTO) {
-                id = ((QuestionResultDTO) obj).getQuestion().getId();
-                index = "question";
-            } else if (obj instanceof ResultQuestionDTO) {
-                id = ((ResultQuestionDTO) obj).getResult().getId();
-                index = "result";
-            } else if (obj instanceof UserRoleDTO) {
-                id = ((UserRoleDTO) obj).getUser().getId();
-                index = "user";
-            } else {
-                throw new RuntimeException("未知对象<RabbitMQ文档插入>");
-            }
+            Map<String, Object> map = getInfo(obj);
+            index = map.get("index").toString();
+            id = Integer.parseInt(map.get("id").toString());
             ess.createDoc(index, id, obj);
-        } catch (IOException ex) {
-            logger.error("RabbitMQ ES 插入异常", ex);
+        } catch (IOException io) {
+            logger.error("RabbitMQ ES 插入异常", io);
         } catch (RuntimeException run) {
             logger.error("Runtime 异常", run);
+        } catch (Exception ex) {
+            logger.error("其他异常", ex);
+        }
+    }
+
+    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.DELETE_QUEUE))
+    @RabbitHandler
+    public void delete(Object obj) {
+        logger.info("ElasticSearch 服务接收对象: {}", obj);
+        int id;
+        String index;
+        try {
+            Map<String, Object> map = getInfo(obj);
+            index = map.get("index").toString();
+            id = Integer.parseInt(map.get("id").toString());
+            ess.deleteDoc(index, id);
+        } catch (IOException io) {
+            logger.error("RabbitMQ ES 删除异常", io);
+        } catch (RuntimeException run) {
+            logger.error("Runtime 异常", run);
+        } catch (Exception ex) {
+            logger.error("其他异常", ex);
+        }
+    }
+
+    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.UPDATE_QUEUE))
+    @RabbitHandler
+    public void update(Object obj) {
+        logger.info("ElasticSearch 服务接收对象: {}", obj);
+        int id;
+        String index;
+        try {
+            Map<String, Object> map = getInfo(obj);
+            index = map.get("index").toString();
+            id = Integer.parseInt(map.get("id").toString());
+            ess.updateDoc(index, id, obj);
+        } catch (IOException io) {
+            logger.error("RabbitMQ ES 更新异常", io);
+        } catch (RuntimeException run) {
+            logger.error("Runtime 异常", run);
+        } catch (Exception ex) {
+            logger.error("其他异常", ex);
         }
     }
 }
