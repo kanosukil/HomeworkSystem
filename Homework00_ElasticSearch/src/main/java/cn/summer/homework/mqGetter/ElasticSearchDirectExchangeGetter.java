@@ -5,6 +5,7 @@ import cn.summer.homework.DTO.QuestionResultDTO;
 import cn.summer.homework.DTO.ResultQuestionDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Util.RabbitMQUtil;
+import cn.summer.homework.Util.TypeUtil;
 import cn.summer.homework.service.ElasticSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,11 +62,18 @@ public class ElasticSearchDirectExchangeGetter {
         logger.info("ElasticSearch 服务接收对象: {}", obj);
         int id;
         String index;
+        Map<String, Object> map;
         try {
-            Map<String, Object> map = getInfo(obj);
-            index = map.get("index").toString();
-            id = Integer.parseInt(map.get("id").toString());
-            ess.createDoc(index, id, obj);
+            if (obj instanceof List) {
+                List<Object> objects = TypeUtil.objToList(obj);
+                index = getInfo(objects.get(0)).get("index").toString();
+                ess.createDocs(index, objects);
+            } else {
+                map = getInfo(obj);
+                index = map.get("index").toString();
+                id = Integer.parseInt(map.get("id").toString());
+                ess.createDoc(index, id, obj);
+            }
         } catch (IOException io) {
             logger.error("RabbitMQ ES 插入异常", io);
         } catch (RuntimeException run) {
