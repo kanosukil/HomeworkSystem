@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseInDTO {
-    private Integer tid = 0; // create update delete add drop
-    private Integer cid = 0; // add-teacher drop-teacher delete
+    private Integer tid = 0; // create update delete add drop add-teacher drop-teacher
+    private Integer cid = 0; // delete add-teacher drop-teacher add-student drop-student
     private Integer sid = 0; // add-student drop-student
     private Course course = null; // create update
 }

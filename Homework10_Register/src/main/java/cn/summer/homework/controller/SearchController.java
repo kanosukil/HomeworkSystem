@@ -82,19 +82,24 @@ public class SearchController {
         return false;
     }
 
-
-    private List<UserRoleDTO> getUR(List<Integer> uidList, SearchDTO s) {
+    @GetMapping("/user/all")
+    public SearchUserVO allUsers(@RequestBody SearchDTO s) {
+        List<Integer> uidList = esFindAll(IndexUtil.USER, s);
+        if (isException(uidList)) {
+            return new SearchUserVO(500, "User-Search:Error", null);
+        }
         List<UserRoleDTO> users;
         if (uidList.size() == 0) {
             Map<String, Integer> page = getPage(s);
             int from, size;
             from = page.get("from");
             size = page.get("size");
-            users = find.users().subList(
-                    from,
-                    from + size);
+            users = find.users();
             if (users.size() > 0) {
                 mq.save(users);
+                users = users.subList(
+                        from,
+                        from + size);
             }
         } else {
             users = new ArrayList<>();
@@ -107,16 +112,6 @@ public class SearchController {
                 users = null;
             }
         }
-        return users;
-    }
-
-    @GetMapping("/user/all")
-    public SearchUserVO allUsers(@RequestBody SearchDTO s) {
-        List<Integer> uidList = esFindAll(IndexUtil.USER, s);
-        if (isException(uidList)) {
-            return new SearchUserVO(500, "User-Search:Error", null);
-        }
-        List<UserRoleDTO> users = getUR(uidList, s);
         if (users == null) {
             return new SearchUserVO(500, "User-Search:Error", null);
         } else {
@@ -130,11 +125,19 @@ public class SearchController {
         if (isException(uidList)) {
             return new SearchUserVO(500, "User-Search:Error", null);
         }
-        List<UserRoleDTO> users = getUR(uidList, s);
-        if (users == null) {
-            return new SearchUserVO(500, "User-Search:Error", null);
-        } else {
+        List<UserRoleDTO> users = new ArrayList<>();
+        try {
+            if (uidList.size() == 0) {
+                mq.save(find.users());
+                uidList = esFind(IndexUtil.USER, s);
+            }
+            for (Integer uid : uidList) {
+                users.add(find.user(uid));
+            }
             return new SearchUserVO(200, "OK", users);
+        } catch (IOException ex) {
+            logger.error("SQL User 查询异常", ex);
+            return new SearchUserVO(500, "User-Search:Error", null);
         }
     }
 
@@ -150,15 +153,23 @@ public class SearchController {
         }
     }
 
-    private List<CourseSTDTO> getC(List<Integer> cidList, SearchDTO s) {
+    @GetMapping("/course/all")
+    public SearchCourseVO allCourse(@RequestBody SearchDTO s) {
+        List<Integer> cidList = esFindAll(IndexUtil.COURSE, s);
+        if (isException(cidList)) {
+            return new SearchCourseVO(500, "Course-Search:Error", null);
+        }
         List<CourseSTDTO> courses;
         if (cidList.size() == 0) {
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
-            courses = find.courses().subList(from, from + size);
+            courses = find.courses();
             if (courses.size() > 0) {
                 mq.save(courses);
+                courses = courses.subList(
+                        from,
+                        from + size);
             }
         } else {
             courses = new ArrayList<>();
@@ -171,16 +182,6 @@ public class SearchController {
                 courses = null;
             }
         }
-        return courses;
-    }
-
-    @GetMapping("/course/all")
-    public SearchCourseVO allCourse(@RequestBody SearchDTO s) {
-        List<Integer> cidList = esFindAll(IndexUtil.COURSE, s);
-        if (isException(cidList)) {
-            return new SearchCourseVO(500, "Course-Search:Error", null);
-        }
-        List<CourseSTDTO> courses = getC(cidList, s);
         if (courses != null) {
             return new SearchCourseVO(200, "OK", courses);
         } else {
@@ -194,10 +195,18 @@ public class SearchController {
         if (isException(cidList)) {
             return new SearchCourseVO(500, "Course-Search:Error", null);
         }
-        List<CourseSTDTO> courses = getC(cidList, s);
-        if (courses != null) {
+        List<CourseSTDTO> courses = new ArrayList<>();
+        try {
+            if (cidList.size() == 0) {
+                mq.save(find.courses());
+                cidList = esFind(IndexUtil.COURSE, s);
+            }
+            for (Integer cid : cidList) {
+                courses.add(find.course(cid));
+            }
             return new SearchCourseVO(200, "OK", courses);
-        } else {
+        } catch (IOException io) {
+            logger.error("SQL Course 查询异常", io);
             return new SearchCourseVO(500, "Course-Search:Error", null);
         }
     }
@@ -214,15 +223,23 @@ public class SearchController {
         }
     }
 
-    private List<QuestionResultDTO> getQR(List<Integer> qidList, SearchDTO s) {
+    @GetMapping("/question/all")
+    public SearchQuestionVO allQuestion(@RequestBody SearchDTO s) {
+        List<Integer> qidList = esFindAll(IndexUtil.QUESTION, s);
+        if (isException(qidList)) {
+            return new SearchQuestionVO(500, "Question-Search:Error", null);
+        }
         List<QuestionResultDTO> questions;
         if (qidList.size() == 0) {
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
-            questions = find.questions().subList(from, from + size);
+            questions = find.questions();
             if (questions.size() > 0) {
                 mq.save(questions);
+                questions = questions.subList(
+                        from,
+                        from + size);
             }
         } else {
             questions = new ArrayList<>();
@@ -235,16 +252,6 @@ public class SearchController {
                 questions = null;
             }
         }
-        return questions;
-    }
-
-    @GetMapping("/question/all")
-    public SearchQuestionVO allQuestion(@RequestBody SearchDTO s) {
-        List<Integer> qidList = esFindAll(IndexUtil.QUESTION, s);
-        if (isException(qidList)) {
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
-        }
-        List<QuestionResultDTO> questions = getQR(qidList, s);
         if (questions != null) {
             return new SearchQuestionVO(200, "OK", questions);
         } else {
@@ -258,10 +265,18 @@ public class SearchController {
         if (isException(qidList)) {
             return new SearchQuestionVO(500, "Question-Search:Error", null);
         }
-        List<QuestionResultDTO> questions = getQR(qidList, s);
-        if (questions != null) {
+        List<QuestionResultDTO> questions = new ArrayList<>();
+        try {
+            if (qidList.size() == 0) {
+                mq.save(find.questions());
+                qidList = esFind(IndexUtil.QUESTION, s);
+            }
+            for (Integer qid : qidList) {
+                questions.add(find.question(qid));
+            }
             return new SearchQuestionVO(200, "OK", questions);
-        } else {
+        } catch (IOException ex) {
+            logger.error("SQL Question 查询异常", ex);
             return new SearchQuestionVO(500, "Question-Search:Error", null);
         }
     }
@@ -278,15 +293,23 @@ public class SearchController {
         }
     }
 
-    private List<ResultQuestionDTO> getRQ(List<Integer> ridList, SearchDTO s) {
+    @GetMapping("/result/all")
+    public SearchResultVO allResult(@RequestBody SearchDTO s) {
+        List<Integer> ridList = esFindAll(IndexUtil.RESULT, s);
+        if (isException(ridList)) {
+            return new SearchResultVO(500, "Result-Search:Error", null);
+        }
         List<ResultQuestionDTO> results;
         if (ridList.size() == 0) {
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
-            results = find.results().subList(from, from + size);
+            results = find.results();
             if (results.size() > 0) {
                 mq.save(results);
+                results = results.subList(
+                        from,
+                        from + size);
             }
         } else {
             results = new ArrayList<>();
@@ -299,16 +322,6 @@ public class SearchController {
                 results = null;
             }
         }
-        return results;
-    }
-
-    @GetMapping("/result/all")
-    public SearchResultVO allResult(@RequestBody SearchDTO s) {
-        List<Integer> ridList = esFindAll(IndexUtil.RESULT, s);
-        if (isException(ridList)) {
-            return new SearchResultVO(500, "Result-Search:Error", null);
-        }
-        List<ResultQuestionDTO> results = getRQ(ridList, s);
         if (results != null) {
             return new SearchResultVO(200, "OK", results);
         } else {
@@ -322,10 +335,18 @@ public class SearchController {
         if (isException(ridList)) {
             return new SearchResultVO(500, "Result-Search:Error", null);
         }
-        List<ResultQuestionDTO> results = getRQ(ridList, s);
-        if (results != null) {
+        List<ResultQuestionDTO> results = new ArrayList<>();
+        try {
+            if (ridList.size() == 0) {
+                mq.save(find.results());
+                ridList = esFind(IndexUtil.RESULT, s);
+            }
+            for (Integer rid : ridList) {
+                results.add(find.result(rid));
+            }
             return new SearchResultVO(200, "OK", results);
-        } else {
+        } catch (IOException ex) {
+            logger.error("SQL Result 查询异常", ex);
             return new SearchResultVO(500, "Result-Search:Error", null);
         }
     }

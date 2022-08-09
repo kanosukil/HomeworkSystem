@@ -1,7 +1,24 @@
 package cn.summer.homework.controller;
 
+import cn.summer.homework.BO.ESOpBO;
+import cn.summer.homework.DTO.*;
+import cn.summer.homework.Entity.Course;
+import cn.summer.homework.Entity.Question;
+import cn.summer.homework.Util.IndexUtil;
+import cn.summer.homework.VO.TeacherVO;
+import cn.summer.homework.feignClient.ESCreateUpdateDeleteClient;
+import cn.summer.homework.feignClient.TeacherClient;
+import cn.summer.homework.service.ElasticSearchDirectExchangeService;
+import cn.summer.homework.service.FindService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import java.io.IOException;
 
 /**
  * @author VHBin
@@ -11,4 +28,215 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/operation/teacher")
 public class TeacherController {
+    private static final Logger logger = LoggerFactory.getLogger(TeacherController.class);
+    @Resource
+    private ElasticSearchDirectExchangeService es;
+    @Resource
+    private TeacherClient teacher;
+    @Resource
+    private FindService find;
+    @Resource
+    private ESCreateUpdateDeleteClient esCUD;
+
+    private void esIndexDelete(String index) {
+        ElasticSearchDTO dto = new ElasticSearchDTO();
+        dto.setOption(4);
+        dto.setIndex(index);
+        ESOpBO esOpBO = esCUD.indexDelete(dto);
+        if (!esOpBO.getIsSuccess()) {
+            logger.warn("ES 删除目录{}失败", index);
+        }
+    }
+
+    /*
+        course
+     */
+    @PostMapping("/c/course")
+    public TeacherVO createCourse(@RequestBody CourseInDTO in) {
+        try {
+            TeacherVO course = teacher.createCourse(in);
+            if (course.getCode() == 200) {
+                CourseSTDTO cInSQL = find.course(Integer.parseInt(course.getInfo()));
+                if (!es.save(cInSQL)) {
+                    logger.warn("<course>MQ ES Save 异常, 未存入 ES 中");
+                    esIndexDelete(IndexUtil.COURSE);
+                } else {
+                    logger.info("<course>MQ ES Save 成功");
+                }
+            }
+            return course;
+        } catch (IOException io) {
+            logger.error("SQL Course 获取异常", io);
+            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/u/course")
+    public TeacherVO updateCourse(@RequestBody CourseInDTO in) {
+        try {
+            TeacherVO course = teacher.updateCourse(in);
+            if (course.getCode() == 200) {
+                CourseSTDTO after = find.course(in.getCourse().getId());
+                if (!es.update(after)) {
+                    logger.warn("<course>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.COURSE);
+                } else {
+                    logger.info("<course>MQ ES Update 成功");
+                }
+            }
+            return course;
+        } catch (IOException io) {
+            logger.error("SQL Course 获取异常", io);
+            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/d/course")
+    public TeacherVO deleteCourse(@RequestBody CourseInDTO in) {
+        TeacherVO course = teacher.deleteCourse(in);
+        if (course.getCode() == 200) {
+            Course before = new Course();
+            before.setId(in.getCid());
+            if (es.delete(new CourseSTDTO(before, null, null))) {
+                logger.info("<course>MQ ES Delete 成功");
+            } else {
+                logger.warn("<course>MQ ES delete 异常, 未删除指定 ES 文档");
+                esIndexDelete(IndexUtil.COURSE);
+            }
+        }
+        return course;
+    }
+
+    /*
+        question
+     */
+    @PostMapping("/c/question")
+    public TeacherVO createQuestion(@RequestBody QuestionInDTO in) {
+        try {
+            TeacherVO question = teacher.createQuestion(in);
+            if (question.getCode() == 200) {
+                QuestionResultDTO qInSQL = find.question(Integer.parseInt(question.getInfo()));
+                if (es.save(qInSQL)) {
+                    logger.info("<question>MQ ES Save 成功");
+                } else {
+                    logger.warn("<question>MQ ES Save 异常, 未存入 ES 中");
+                    esIndexDelete(IndexUtil.QUESTION);
+                }
+            }
+            return question;
+        } catch (IOException io) {
+            logger.error("SQL Question 获取异常", io);
+            return new TeacherVO(500, "SQL Question 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/u/question")
+    public TeacherVO updateQuestion(@RequestBody QuestionInDTO in) {
+        try {
+            TeacherVO question = teacher.updateQuestion(in);
+            if (question.getCode() == 200) {
+                QuestionResultDTO after = find.question(in.getQid());
+                if (es.update(after)) {
+                    logger.info("<question>MQ ES Update 成功");
+                } else {
+                    logger.warn("<question>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.QUESTION);
+                }
+            }
+            return question;
+        } catch (IOException io) {
+            logger.error("SQL Question 获取异常", io);
+            return new TeacherVO(500, "SQL Question 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/d/question")
+    public TeacherVO deleteQuestion(@RequestBody QuestionInDTO in) {
+        TeacherVO question = teacher.deleteQuestion(in);
+        if (question.getCode() == 200) {
+            Question before = new Question();
+            before.setId(in.getQid());
+            if (es.delete(new QuestionResultDTO(before,
+                    null, null, null))) {
+                logger.info("<question>MQ ES Delete 成功");
+            } else {
+                logger.warn("<question>MQ ES delete 异常, 未删除指定 ES 文档");
+                esIndexDelete(IndexUtil.QUESTION);
+            }
+        }
+        return question;
+    }
+
+    /*
+        type
+     */
+    @PostMapping("/c/type")
+    public TeacherVO createType(@RequestBody QuestionInDTO in) {
+        return teacher.createType(in);
+    }
+
+    @PostMapping("/d/type")
+    public TeacherVO deleteType(@RequestBody QuestionInDTO in) {
+        return teacher.deleteType(in);
+    }
+
+    @PostMapping("/ao/correct/question")
+    public TeacherVO correct(@RequestBody ResultInDTO in) {
+        TeacherVO correct = teacher.correct(in);
+        try {
+            if (correct.getCode() == 200) {
+                ResultQuestionDTO after = find.result(in.getResult().getId());
+                if (es.update(after)) {
+                    logger.info("<question-result>MQ ES Update 成功");
+                } else {
+                    logger.warn("<question-result>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.RESULT);
+                }
+            }
+            return correct;
+        } catch (IOException io) {
+            logger.error("SQL Result 获取异常", io);
+            return new TeacherVO(500, "SQL Result 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/ao/add/course")
+    public TeacherVO addCourse(@RequestBody CourseInDTO in) {
+        try {
+            TeacherVO course = teacher.addCourse(in);
+            if (course.getCode() == 200) {
+                CourseSTDTO after = find.course(in.getCid());
+                if (es.update(after)) {
+                    logger.info("<course-tadd>MQ ES Update 成功");
+                } else {
+                    logger.warn("<course-tadd>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.COURSE);
+                }
+            }
+            return course;
+        } catch (IOException io) {
+            logger.error("SQL Course 获取异常", io);
+            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+        }
+    }
+
+    @PostMapping("/ao/drop/course")
+    public TeacherVO dropCourse(@RequestBody CourseInDTO in) {
+        try {
+            TeacherVO course = teacher.dropCourse(in);
+            if (course.getCode() == 200) {
+                CourseSTDTO after = find.course(in.getCid());
+                if (es.update(after)) {
+                    logger.info("<course-tdrop>MQ ES Update 成功");
+                } else {
+                    logger.warn("<course-tdrop>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.COURSE);
+                }
+            }
+            return course;
+        } catch (IOException io) {
+            logger.error("SQL Course 获取异常", io);
+            return new TeacherVO(500, "SQL Course 获取异常", io.toString());
+        }
+    }
 }
