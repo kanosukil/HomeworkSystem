@@ -188,7 +188,7 @@ public class TeacherController {
         TeacherVO correct = teacher.correct(in);
         try {
             if (correct.getCode() == 200) {
-                ResultQuestionDTO after = find.result(in.getResult().getId());
+                ResultQuestionDTO after = find.result(in.getRid());
                 if (es.update(after)) {
                     logger.info("<question-result>MQ ES Update 成功");
                 } else {
