@@ -36,13 +36,9 @@ public class ElasticSearchDTO {
     /*
     Object 只能是:
         1. CourseSTDTO
-        2. NewCourseDTO
-        3. NewQuestionDTO
-        4. NewResultDTO
-        5. QuestionResultDTO
-        6. ResultQuestionDTO
-        7. URoleDTO
-        8. UserRoleDTO
+        2. QuestionResultDTO
+        3. ResultQuestionDTO
+        4. UserRoleDTO
      */
     private List<Object> objects = null;
     private Integer from = null;

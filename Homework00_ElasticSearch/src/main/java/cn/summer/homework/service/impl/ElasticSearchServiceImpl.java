@@ -313,7 +313,8 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
     }
 
     @Override
-    public Map<String, String> matchAll(String index_name, int from, int size) throws IOException {
+    public Map<String, String> matchAll(String index_name, int from, int size)
+            throws IOException {
         List<Hit<ElasticSearchQO>> hits = client.search(_1 -> _1.index(index_name)
                         .query(_2 -> _2.matchAll(QueryBuilders.matchAll().build()))
                         .from(from)

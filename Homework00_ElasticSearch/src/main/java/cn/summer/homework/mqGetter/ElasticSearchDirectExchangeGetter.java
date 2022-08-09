@@ -4,6 +4,7 @@ import cn.summer.homework.DTO.CourseSTDTO;
 import cn.summer.homework.DTO.QuestionResultDTO;
 import cn.summer.homework.DTO.ResultQuestionDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
+import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.Util.RabbitMQUtil;
 import cn.summer.homework.Util.TypeUtil;
 import cn.summer.homework.service.ElasticSearchService;
@@ -37,16 +38,16 @@ public class ElasticSearchDirectExchangeGetter {
         Integer id;
         if (obj instanceof CourseSTDTO) {
             id = ((CourseSTDTO) obj).getCourse().getId();
-            index = "course";
+            index = IndexUtil.COURSE;
         } else if (obj instanceof QuestionResultDTO) {
             id = ((QuestionResultDTO) obj).getQuestion().getId();
-            index = "question";
+            index = IndexUtil.QUESTION;
         } else if (obj instanceof ResultQuestionDTO) {
             id = ((ResultQuestionDTO) obj).getResult().getId();
-            index = "result";
+            index = IndexUtil.RESULT;
         } else if (obj instanceof UserRoleDTO) {
             id = ((UserRoleDTO) obj).getUser().getId();
-            index = "user";
+            index = IndexUtil.USER;
         } else {
             throw new RuntimeException("未知对象<RabbitMQ文档插入>");
         }
