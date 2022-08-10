@@ -2,10 +2,7 @@ package cn.summer.homework.controller;
 
 import cn.summer.homework.DTO.*;
 import cn.summer.homework.Util.IndexUtil;
-import cn.summer.homework.VO.SearchCourseVO;
-import cn.summer.homework.VO.SearchQuestionVO;
-import cn.summer.homework.VO.SearchResultVO;
-import cn.summer.homework.VO.SearchUserVO;
+import cn.summer.homework.VO.SearchVO;
 import cn.summer.homework.feignClient.ESReadClient;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
@@ -89,10 +86,10 @@ public class SearchController {
      * @return SearchUserVO 状态码, 消息, 用户信息
      */
     @GetMapping("/user/all")
-    public SearchUserVO allUsers(@RequestBody SearchDTO s) {
+    public SearchVO<UserRoleDTO> allUsers(@RequestBody SearchDTO s) {
         List<Integer> uidList = esFindAll(IndexUtil.USER, s);
         if (isException(uidList)) {
-            return new SearchUserVO(500, "User-Search:Error", null);
+            return new SearchVO<>(500, "User-Search:Error", null);
         }
         List<UserRoleDTO> users;
         if (uidList.size() == 0) {
@@ -119,9 +116,9 @@ public class SearchController {
             }
         }
         if (users == null) {
-            return new SearchUserVO(500, "User-Search:Error", null);
+            return new SearchVO<>(500, "User-Search:Error", null);
         } else {
-            return new SearchUserVO(200, "OK", users);
+            return new SearchVO<>(200, "OK", users);
         }
     }
 
@@ -132,10 +129,10 @@ public class SearchController {
      * @return SearchUserVO 状态码, 消息, 用户信息
      */
     @GetMapping("/user/find")
-    public SearchUserVO findUser(@RequestBody SearchDTO s) {
+    public SearchVO<UserRoleDTO> findUser(@RequestBody SearchDTO s) {
         List<Integer> uidList = esFind(IndexUtil.USER, s);
         if (isException(uidList)) {
-            return new SearchUserVO(500, "User-Search:Error", null);
+            return new SearchVO<>(500, "User-Search:Error", null);
         }
         List<UserRoleDTO> users = new ArrayList<>();
         try {
@@ -146,10 +143,10 @@ public class SearchController {
             for (Integer uid : uidList) {
                 users.add(find.user(uid));
             }
-            return new SearchUserVO(200, "OK", users);
+            return new SearchVO<>(200, "OK", users);
         } catch (IOException ex) {
             logger.error("SQL User 查询异常", ex);
-            return new SearchUserVO(500, "User-Search:Error", null);
+            return new SearchVO<>(500, "User-Search:Error", null);
         }
     }
 
@@ -160,14 +157,14 @@ public class SearchController {
      * @return SearchUserVO 状态码, 消息, 用户信息
      */
     @GetMapping("/user/get")
-    public SearchUserVO getUser(@RequestParam("uid") Integer uid) {
+    public SearchVO<UserRoleDTO> getUser(@RequestParam("uid") Integer uid) {
         try {
             UserRoleDTO user = find.user(uid);
-            return new SearchUserVO(200, "OK",
+            return new SearchVO<>(200, "OK",
                     Collections.singletonList(user));
         } catch (IOException ex) {
             logger.error("SQL User 获取异常", ex);
-            return new SearchUserVO(500, "User-Search:Error", null);
+            return new SearchVO<>(500, "User-Search:Error", null);
         }
     }
 
@@ -178,10 +175,10 @@ public class SearchController {
      * @return SearchCourseVO 状态码, 消息, 用户信息
      */
     @GetMapping("/course/all")
-    public SearchCourseVO allCourse(@RequestBody SearchDTO s) {
+    public SearchVO<CourseSTDTO> allCourse(@RequestBody SearchDTO s) {
         List<Integer> cidList = esFindAll(IndexUtil.COURSE, s);
         if (isException(cidList)) {
-            return new SearchCourseVO(500, "Course-Search:Error", null);
+            return new SearchVO<>(500, "Course-Search:Error", null);
         }
         List<CourseSTDTO> courses;
         if (cidList.size() == 0) {
@@ -207,9 +204,9 @@ public class SearchController {
             }
         }
         if (courses != null) {
-            return new SearchCourseVO(200, "OK", courses);
+            return new SearchVO<>(200, "OK", courses);
         } else {
-            return new SearchCourseVO(500, "Course-Search:Error", null);
+            return new SearchVO<>(500, "Course-Search:Error", null);
         }
     }
 
@@ -220,10 +217,10 @@ public class SearchController {
      * @return SearchCourseVO 状态码, 消息, 用户信息
      */
     @GetMapping("/course/find")
-    public SearchCourseVO findCourse(@RequestBody SearchDTO s) {
+    public SearchVO<CourseSTDTO> findCourse(@RequestBody SearchDTO s) {
         List<Integer> cidList = esFind(IndexUtil.COURSE, s);
         if (isException(cidList)) {
-            return new SearchCourseVO(500, "Course-Search:Error", null);
+            return new SearchVO<>(500, "Course-Search:Error", null);
         }
         List<CourseSTDTO> courses = new ArrayList<>();
         try {
@@ -234,10 +231,10 @@ public class SearchController {
             for (Integer cid : cidList) {
                 courses.add(find.course(cid));
             }
-            return new SearchCourseVO(200, "OK", courses);
+            return new SearchVO<>(200, "OK", courses);
         } catch (IOException io) {
             logger.error("SQL Course 查询异常", io);
-            return new SearchCourseVO(500, "Course-Search:Error", null);
+            return new SearchVO<>(500, "Course-Search:Error", null);
         }
     }
 
@@ -248,14 +245,14 @@ public class SearchController {
      * @return SearchCourseVO 状态码, 消息, 用户信息
      */
     @GetMapping("/course/get")
-    public SearchCourseVO getCourse(@RequestParam("cid") Integer cid) {
+    public SearchVO<CourseSTDTO> getCourse(@RequestParam("cid") Integer cid) {
         try {
             CourseSTDTO course = find.course(cid);
-            return new SearchCourseVO(200, "OK",
+            return new SearchVO<>(200, "OK",
                     Collections.singletonList(course));
         } catch (IOException ex) {
             logger.error("SQL Course 获取异常", ex);
-            return new SearchCourseVO(500, "Course-Search:Error", null);
+            return new SearchVO<>(500, "Course-Search:Error", null);
         }
     }
 
@@ -266,10 +263,10 @@ public class SearchController {
      * @return SearchQuestionVO 状态码, 消息, 用户信息
      */
     @GetMapping("/question/all")
-    public SearchQuestionVO allQuestion(@RequestBody SearchDTO s) {
+    public SearchVO<QuestionResultDTO> allQuestion(@RequestBody SearchDTO s) {
         List<Integer> qidList = esFindAll(IndexUtil.QUESTION, s);
         if (isException(qidList)) {
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
+            return new SearchVO<>(500, "Question-Search:Error", null);
         }
         List<QuestionResultDTO> questions;
         if (qidList.size() == 0) {
@@ -295,9 +292,9 @@ public class SearchController {
             }
         }
         if (questions != null) {
-            return new SearchQuestionVO(200, "OK", questions);
+            return new SearchVO<>(200, "OK", questions);
         } else {
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
+            return new SearchVO<>(500, "Question-Search:Error", null);
         }
     }
 
@@ -308,10 +305,10 @@ public class SearchController {
      * @return SearchQuestionVO 状态码, 消息, 用户信息
      */
     @GetMapping("/question/find")
-    public SearchQuestionVO findQuestion(@RequestBody SearchDTO s) {
+    public SearchVO<QuestionResultDTO> findQuestion(@RequestBody SearchDTO s) {
         List<Integer> qidList = esFind(IndexUtil.QUESTION, s);
         if (isException(qidList)) {
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
+            return new SearchVO<>(500, "Question-Search:Error", null);
         }
         List<QuestionResultDTO> questions = new ArrayList<>();
         try {
@@ -322,10 +319,10 @@ public class SearchController {
             for (Integer qid : qidList) {
                 questions.add(find.question(qid));
             }
-            return new SearchQuestionVO(200, "OK", questions);
+            return new SearchVO<>(200, "OK", questions);
         } catch (IOException ex) {
             logger.error("SQL Question 查询异常", ex);
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
+            return new SearchVO<>(500, "Question-Search:Error", null);
         }
     }
 
@@ -336,14 +333,14 @@ public class SearchController {
      * @return SearchQuestionVO 状态码, 消息, 用户信息
      */
     @GetMapping("/question/get")
-    public SearchQuestionVO getQuestion(@RequestParam("qid") Integer qid) {
+    public SearchVO<QuestionResultDTO> getQuestion(@RequestParam("qid") Integer qid) {
         try {
             QuestionResultDTO question = find.question(qid);
-            return new SearchQuestionVO(200, "OK",
+            return new SearchVO<>(200, "OK",
                     Collections.singletonList(question));
         } catch (IOException ex) {
             logger.error("SQL Question 获取异常", ex);
-            return new SearchQuestionVO(500, "Question-Search:Error", null);
+            return new SearchVO<>(500, "Question-Search:Error", null);
         }
     }
 
@@ -354,10 +351,10 @@ public class SearchController {
      * @return SearchResultVO 状态码, 消息, 用户信息
      */
     @GetMapping("/result/all")
-    public SearchResultVO allResult(@RequestBody SearchDTO s) {
+    public SearchVO<ResultQuestionDTO> allResult(@RequestBody SearchDTO s) {
         List<Integer> ridList = esFindAll(IndexUtil.RESULT, s);
         if (isException(ridList)) {
-            return new SearchResultVO(500, "Result-Search:Error", null);
+            return new SearchVO<>(500, "Result-Search:Error", null);
         }
         List<ResultQuestionDTO> results;
         if (ridList.size() == 0) {
@@ -383,9 +380,9 @@ public class SearchController {
             }
         }
         if (results != null) {
-            return new SearchResultVO(200, "OK", results);
+            return new SearchVO<>(200, "OK", results);
         } else {
-            return new SearchResultVO(500, "Result-Search:Error", null);
+            return new SearchVO<>(500, "Result-Search:Error", null);
         }
     }
 
@@ -396,10 +393,10 @@ public class SearchController {
      * @return SearchResultVO 状态码, 消息, 用户信息
      */
     @GetMapping("/result/find")
-    public SearchResultVO findResult(@RequestBody SearchDTO s) {
+    public SearchVO<ResultQuestionDTO> findResult(@RequestBody SearchDTO s) {
         List<Integer> ridList = esFind(IndexUtil.RESULT, s);
         if (isException(ridList)) {
-            return new SearchResultVO(500, "Result-Search:Error", null);
+            return new SearchVO<>(500, "Result-Search:Error", null);
         }
         List<ResultQuestionDTO> results = new ArrayList<>();
         try {
@@ -410,10 +407,10 @@ public class SearchController {
             for (Integer rid : ridList) {
                 results.add(find.result(rid));
             }
-            return new SearchResultVO(200, "OK", results);
+            return new SearchVO<>(200, "OK", results);
         } catch (IOException ex) {
             logger.error("SQL Result 查询异常", ex);
-            return new SearchResultVO(500, "Result-Search:Error", null);
+            return new SearchVO<>(500, "Result-Search:Error", null);
         }
     }
 
@@ -424,14 +421,14 @@ public class SearchController {
      * @return SearchResultVO 状态码, 消息, 用户信息
      */
     @GetMapping("/result/get")
-    public SearchResultVO getResult(@RequestParam("rid") Integer rid) {
+    public SearchVO<ResultQuestionDTO> getResult(@RequestParam("rid") Integer rid) {
         try {
             ResultQuestionDTO result = find.result(rid);
-            return new SearchResultVO(200, "OK",
+            return new SearchVO<>(200, "OK",
                     Collections.singletonList(result));
         } catch (IOException ex) {
             logger.error("SQL Result 获取异常", ex);
-            return new SearchResultVO(500, "Result-Search:Error", null);
+            return new SearchVO<>(500, "Result-Search:Error", null);
         }
     }
 }

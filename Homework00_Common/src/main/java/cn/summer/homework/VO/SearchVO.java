@@ -1,6 +1,5 @@
 package cn.summer.homework.VO;
 
-import cn.summer.homework.DTO.QuestionResultDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,14 +8,13 @@ import java.util.List;
 
 /**
  * @author VHBin
- * @date 2022/8/9-15:30
+ * @date 2022/8/10-23:57
  */
-
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class SearchQuestionVO {
+public class SearchVO<T> {
     private Integer code;
     private String message;
-    private List<QuestionResultDTO> questions;
+    private List<T> courses;
 }
