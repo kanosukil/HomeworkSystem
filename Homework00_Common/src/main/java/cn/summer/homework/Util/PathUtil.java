@@ -11,4 +11,12 @@ public class PathUtil {
         }
         return origin;
     }
+
+    public static String pathCombine(String name, String path) {
+        return pathJudge(path).concat(name);
+    }
+
+    public static boolean isPath(String path) {
+        return path.contains("/") || path.contains("\\");
+    }
 }

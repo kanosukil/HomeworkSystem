@@ -1,20 +1,16 @@
 package cn.summer.homework.controller;
 
 import cn.summer.homework.VO.FileVO;
+import cn.summer.homework.feignClient.FileStoreClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.ServletOutputStream;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 
 /**
  * @author VHBin
@@ -25,83 +21,30 @@ import java.io.IOException;
 @RequestMapping("download")
 public class DownloadController {
     private static final Logger logger = LoggerFactory.getLogger(DownloadController.class);
-    @Value("{path.img}")
-    private String imagePath;
-    @Value("{path.file}")
-    private String filePath;
+    @Resource
+    private FileStoreClient client;
 
-    @PostMapping("file")
-    public FileVO fileDownload(@RequestParam("file-name") String fileName,
-                               HttpServletResponse response) {
-        File file = new File(fileName);
-        if (!file.exists()) {
-            return new FileVO(400, "Error", "文件不存在");
+    private FileVO getRes(String res) {
+        if (res == null) {
+            return new FileVO(400, "Error", "文件/图片不存在");
+        } else if (res.equals("")) {
+            return new FileVO(500, "Exception", "文件/图片获取异常");
+        } else if (res.equals("no")) {
+            return new FileVO(400, "Error", "不能显示非图片文件");
+        } else {
+            return new FileVO(200, "OK", res);
         }
-        response.reset();
-        response.setContentType("application/octet-stream");
-//        response.setContentType("application/force-download");
-        response.setCharacterEncoding("utf-8");
-        response.setContentLengthLong(file.length());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + fileName);
-        try (
-                BufferedInputStream in
-                        = new BufferedInputStream(new FileInputStream(file));
-                ServletOutputStream out
-                        = response.getOutputStream()
-        ) {
-
-            byte[] bytes = new byte[1024];
-            int i;
-            while ((i = in.read(bytes)) != -1) {
-                out.write(bytes, 0, i);
-                out.flush();
-            }
-        } catch (IOException e) {
-            logger.error("文件读取/传输异常", e);
-            return new FileVO(500, "Exception", e.toString());
-        }
-        return new FileVO(200, "OK", fileName);
     }
 
-    @PostMapping("/show/image")
+    @GetMapping("download")
+    public FileVO fileDownload(@RequestParam("name") String name,
+                               HttpServletResponse response) {
+        return getRes(client.download(name, response));
+    }
+
+    @GetMapping("/show/image")
     public FileVO imageShow(@RequestParam("image-name") String imageName,
                             HttpServletResponse response) {
-        File image = new File(imageName);
-        if (!image.exists()) {
-            return new FileVO(400, "Error", "图片不存在");
-        }
-        response.reset();
-        String suffix = imageName.substring(imageName.lastIndexOf(".")).trim();
-        switch (suffix) {
-            case ".jpg":
-                suffix = "image/jpeg";
-                break;
-            case ".gif":
-                suffix = "image/gif";
-                break;
-            case ".png":
-                suffix = "image/png";
-                break;
-            default:
-                return new FileVO(500, "Exception", "图片格式不支持");
-        }
-        response.setContentType(suffix);
-        response.setContentLengthLong(image.length());
-        try (
-                BufferedInputStream in
-                        = new BufferedInputStream(new FileInputStream(image));
-                ServletOutputStream out
-                        = response.getOutputStream()
-        ) {
-            byte[] bytes = new byte[(int) image.length()];
-            int i = in.read(bytes);
-            out.write(bytes);
-            out.flush();
-        } catch (IOException e) {
-            logger.error("文件读取/传输异常", e);
-            return new FileVO(500, "Exception", e.toString());
-        }
-        return new FileVO(200, "OK", imageName);
+        return getRes(client.show(imageName, response));
     }
 }
