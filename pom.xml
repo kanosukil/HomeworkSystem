@@ -24,6 +24,7 @@
         <module>Homework11_Gateway</module>
         <module>Homework00_SQLConnection</module>
         <module>Homework00_ElasticSearch</module>
+        <module>Homework00_FileStore</module>
     </modules>
 
     <!--设定版本-->

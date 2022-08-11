@@ -95,7 +95,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>cn.summer.homework.UserApplication</mainClass>
+                    <mainClass>cn.summer.homework.AdminApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

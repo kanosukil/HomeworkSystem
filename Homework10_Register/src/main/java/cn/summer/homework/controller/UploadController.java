@@ -33,6 +33,7 @@ public class UploadController {
             return new FileVO(400, "Error", "请重新上传文件/图片");
         }
         try {
+//            BufferedImage image = ImageIO.read(file.getInputStream()); // 检测图片
             String beforeName = file.getOriginalFilename();
             if (beforeName == null) {
                 throw new Exception("传入文件/图片名为空");
