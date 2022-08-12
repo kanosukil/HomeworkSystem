@@ -32,26 +32,56 @@ public class CourseController {
     /*
         查询
      */
+
+    /**
+     * 获取全部课程信息
+     *
+     * @return List&lt;CourseSTDTO&gt; course+teachers+students
+     */
     @GetMapping("courses-get")
     public List<CourseSTDTO> getAll() {
         return courseService.getAllCourse();
     }
 
+    /**
+     * 获取指定id课程信息
+     *
+     * @param id 课程id
+     * @return CourseSTDTO course+teachers+students
+     */
     @GetMapping("course-get")
     public CourseSTDTO get(@RequestParam("id") Integer id) {
         return courseService.getCourse(id);
     }
 
+    /**
+     * 获取指定名称的课程
+     *
+     * @param name 课程名
+     * @return List&lt;CourseSTDTO&gt; course+teachers+students
+     */
     @GetMapping("courses-get-name")
     public List<CourseSTDTO> getByName(@RequestParam("name") String name) {
         return courseService.getCourse(name);
     }
 
+    /**
+     * 获取指定教师的教授课程
+     *
+     * @param tid 教师ID
+     * @return List&lt;CourseSTDTO&gt; course+teachers+students
+     */
     @GetMapping("courses-get-teacher")
     public List<CourseSTDTO> getByTeacher(@RequestParam("tid") Integer tid) {
         return courseService.getCoursesByTeacher(tid);
     }
 
+    /**
+     * 获取指定学生的学习课程
+     *
+     * @param sid 学生id
+     * @return List&lt;CourseSTDTO&gt; course+teachers+students
+     */
     @GetMapping("courses-get-student")
     public List<CourseSTDTO> getByStudent(@RequestParam("sid") Integer sid) {
         return courseService.getCoursesByStudent(sid);
@@ -83,7 +113,7 @@ public class CourseController {
                             .getId());
         } catch (Exception ex) {
             logger.error("创建课程异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -104,7 +134,7 @@ public class CourseController {
                     studentAdd.getMap().get("updateCourse"));
         } catch (Exception ex) {
             logger.error("课程添加学生异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -122,7 +152,7 @@ public class CourseController {
                     teacherAdd.getMap().get("updateCourse"));
         } catch (Exception ex) {
             logger.error("课程添加教师异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -140,7 +170,7 @@ public class CourseController {
                     studentDrop.getMap().get("updateCourse"));
         } catch (Exception ex) {
             logger.error("课程移除学生异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -158,7 +188,7 @@ public class CourseController {
                     teacherDrop.getMap().get("updateCourse"));
         } catch (Exception ex) {
             logger.error("课程移除教师异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -185,7 +215,7 @@ public class CourseController {
                     updateName.getMap().get("updateCourse"));
         } catch (Exception ex) {
             logger.error("课程更新课程名异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -208,9 +238,8 @@ public class CourseController {
                     courseDelete.getMap().get("被删除课程"));
         } catch (Exception ex) {
             logger.error("课程删除异常: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
-
         return res;
     }
 }

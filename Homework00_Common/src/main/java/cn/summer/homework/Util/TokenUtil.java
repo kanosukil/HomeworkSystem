@@ -32,9 +32,9 @@ public class TokenUtil {
         }
         try {
             return JWT.create().withSubject(SaltUtil.getSubject())
-                    .withClaim(id, user.getId())
+                    .withClaim(id, user.getId().toString())
                     .withClaim(account, user.getAccount())
-                    .withClaim(now, System.currentTimeMillis())
+                    .withClaim(now, String.valueOf(System.currentTimeMillis()))
                     .withClaim(role, roles)
                     .withIssuedAt(new Date())
                     .withExpiresAt(new Date(System.currentTimeMillis() + expire))
@@ -46,7 +46,7 @@ public class TokenUtil {
         }
     }
 
-    public static Map<String, String> checkJWToken(String token) {
+    public static Map<String, Object> checkJWToken(String token) {
         try {
             DecodedJWT verify = JWT.require(Algorithm.HMAC256(SaltUtil.getSalt().getBytes(StandardCharsets.UTF_8)))
                     .build().verify(token);

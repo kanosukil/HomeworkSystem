@@ -9,6 +9,8 @@ import cn.summer.homework.Entity.User;
 import cn.summer.homework.Util.TokenUtil;
 import cn.summer.homework.VO.UserVO;
 import cn.summer.homework.service.UserIOService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RestController
 @RequestMapping("api")
 public class LoginController {
+    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
     @Resource
     private UserIOService userIOService;
 
@@ -57,7 +60,7 @@ public class LoginController {
             if (user == null || roles.toString().equals("")) {
                 return new UserVO<>(400, "未找到指定用户", "");
             }
-
+            logger.info("Result: {}", lo);
             if (!Base64.getEncoder().encodeToString(login.getPassword().getBytes(StandardCharsets.UTF_8))
                     .equals(user.getPassword_hash())) {
                 return new UserVO<>(200, "密码错误", "");
@@ -97,6 +100,7 @@ public class LoginController {
         UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, new ArrayList<>(1) {{
             add("Student");
         }}));
+        logger.info("Result: {}", reg);
         if (!reg.getIsSuccess()) {
             return new UserVO<>(400, reg.getInfo().get("Cause").toString(), "");
         } else {

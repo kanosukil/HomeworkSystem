@@ -70,7 +70,7 @@ public class UserController {
             setRes(res, true, "uid", uid);
         } catch (Exception ex) {
             logger.error("用户创建失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -125,7 +125,7 @@ public class UserController {
             }
         } catch (Exception ex) {
             logger.error("销号失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -165,7 +165,7 @@ public class UserController {
 
         } catch (Exception ex) {
             logger.error("销号失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -192,7 +192,7 @@ public class UserController {
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户更新失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -210,7 +210,7 @@ public class UserController {
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户数据更新失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -238,7 +238,7 @@ public class UserController {
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户角色更新失败: {}", ex.getMessage());
-            setRes(res, false, "Cause", ex.getCause());
+            setRes(res, false, "Cause", ex.getMessage());
         }
         return res;
     }

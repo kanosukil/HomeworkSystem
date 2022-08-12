@@ -105,7 +105,7 @@ public class HomeworkController {
                     ((QuestionResultDTO) question.getInfo().get("新建问题")).getQuestion().getId());
         } catch (Exception ex) {
             logger.error("问题新建异常: {}", ex.getMessage());
-            setRes_Q(res, false, "Cause", ex.getCause());
+            setRes_Q(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -135,7 +135,7 @@ public class HomeworkController {
                     op.getInfo().get("updateQuestion"));
         } catch (Exception ex) {
             logger.error("更新问题异常: {}", ex.getMessage());
-            setRes_Q(res, false, "Cause", ex.getCause());
+            setRes_Q(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -155,7 +155,7 @@ public class HomeworkController {
                     question.getInfo().get("Question".concat(tq.getQid().toString())));
         } catch (Exception ex) {
             logger.error("删除问题异常: {}", ex.getMessage());
-            setRes_Q(res, false, "Cause", ex.getCause());
+            setRes_Q(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -177,7 +177,7 @@ public class HomeworkController {
                     resultCorrect.getInfo().get("updateResult"));
         } catch (Exception ex) {
             logger.error("教师批改异常: {}", ex.getMessage());
-            setRes_R(res, false, "Cause", ex.getCause());
+            setRes_R(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -267,7 +267,7 @@ public class HomeworkController {
                     ((ResultQuestionDTO) resultAdd.getInfo().get("新建Result")).getResult().getId());
         } catch (Exception ex) {
             logger.error("回答创建异常: {}", ex.getMessage());
-            setRes_R(res, false, "Cause", ex.getCause());
+            setRes_R(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -287,7 +287,7 @@ public class HomeworkController {
                     update.getInfo().get("updateResult"));
         } catch (Exception ex) {
             logger.error("更新问题异常: {}", ex.getMessage());
-            setRes_R(res, false, "Cause", ex.getCause());
+            setRes_R(res, false, "Cause", ex.getMessage());
         }
         return res;
     }
@@ -307,7 +307,7 @@ public class HomeworkController {
                     delete.getInfo().get("srcResult"));
         } catch (Exception ex) {
             logger.error("删除问题异常: {}", ex.getMessage());
-            setRes_R(res, false, "Cause", ex.getCause());
+            setRes_R(res, false, "Cause", ex.getMessage());
         }
         return res;
     }

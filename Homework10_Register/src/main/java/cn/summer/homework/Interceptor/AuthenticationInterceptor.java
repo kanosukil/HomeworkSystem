@@ -47,18 +47,20 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 }
             }
             logger.info("Token={}", token);
-            Map<String, String> map = TokenUtil.checkJWToken(token);
+            Map<String, Object> map = TokenUtil.checkJWToken(token);
             if (map == null) {
                 logger.error("Token 有误");
                 throw new Exception("Token 被篡改");
             }
+            logger.info("Map:{}", map);
             // 活跃用户刷新 Token
-            long now = Long.parseLong(map.get("now"));
+            long now = Long.parseLong(map.get("now").toString());
             if (System.currentTimeMillis() - now >= 1000 * 60 * 60 * 4) {
                 response.setHeader("token", TokenUtil.generateJWToken(
-                        new UserDTO(Integer.parseInt(map.get("userid")),
-                                map.get("account")),
-                        map.get("roles")));
+                        new UserDTO(Integer.parseInt(
+                                map.get("userid").toString()),
+                                map.get("account").toString()),
+                        map.get("roles").toString()));
             }
             return true;
         } catch (Exception ex) {

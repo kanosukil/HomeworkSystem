@@ -3,6 +3,7 @@ package cn.summer.homework.feignClient;
 import cn.summer.homework.BO.ESOpBO;
 import cn.summer.homework.DTO.ElasticSearchDTO;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,19 +18,19 @@ import java.util.List;
 @FeignClient("ESService")
 public interface ESCRUDClient {
     @GetMapping("/es-search/match-all")
-    List<Integer> matchAll(@RequestBody ElasticSearchDTO es);
+    List<Integer> matchAll(@SpringQueryMap ElasticSearchDTO es);
 
     @GetMapping("/es-search/search-all")
-    List<Integer> searchAll(@RequestBody ElasticSearchDTO es);
+    List<Integer> searchAll(@SpringQueryMap ElasticSearchDTO es);
 
     @GetMapping("/es-search/term-search")
-    List<Integer> termSearch(@RequestBody ElasticSearchDTO es);
+    List<Integer> termSearch(@SpringQueryMap ElasticSearchDTO es);
 
     @GetMapping("/es-search/wildCard-search")
-    List<Integer> wildCardSearch(@RequestBody ElasticSearchDTO es);
+    List<Integer> wildCardSearch(@SpringQueryMap ElasticSearchDTO es);
 
     @GetMapping("/es-search/match-search")
-    List<Integer> matchSearch(@RequestBody ElasticSearchDTO es);
+    List<Integer> matchSearch(@SpringQueryMap ElasticSearchDTO es);
 
     @PostMapping("/es-data/index-create")
     ESOpBO indexCreate(@RequestBody ElasticSearchDTO es);
