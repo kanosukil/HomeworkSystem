@@ -97,7 +97,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean isEmailUsed(String email)
             throws NullPointerException {
-        return userDao.selectByEmail(email).getEmail().equals(email);
+        User user = userDao.selectByEmail(email);
+        return user != null && user.getEmail().equals(email);
     }
 
     @Override
@@ -125,7 +126,11 @@ public class UserServiceImpl implements UserService {
     public UserRoleDTO findUserByEmail(String email)
             throws NullPointerException {
         User user = userDao.selectByEmail(email);
-        return new UserRoleDTO(user, getRoles(user.getId()));
+        if (user == null) {
+            return null;
+        } else {
+            return new UserRoleDTO(user, getRoles(user.getId()));
+        }
     }
 
     private void setUserOpDTO(@Nonnull UserOpBO userOpBO,

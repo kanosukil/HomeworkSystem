@@ -49,7 +49,7 @@ public class UserController {
         List<String> roles = newUser.getRoles();
         try {
             User createUser = newUser.getUser();
-            if (!userService.isEmailUsed(createUser.getEmail())) {
+            if (userService.isEmailUsed(createUser.getEmail())) {
                 throw new Exception("邮箱已被使用");
             }
             UserOpBO user =
