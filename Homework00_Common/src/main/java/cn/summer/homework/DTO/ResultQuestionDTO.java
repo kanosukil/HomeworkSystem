@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResultQuestionDTO {
+public class ResultQuestionDTO implements Serializable {
     private Result result;
     private User student;
     private Map<User, Map<String, Question>> question;

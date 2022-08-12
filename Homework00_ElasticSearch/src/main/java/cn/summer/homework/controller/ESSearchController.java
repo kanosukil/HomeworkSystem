@@ -5,7 +5,6 @@ import cn.summer.homework.service.ElasticSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,17 +26,20 @@ public class ESSearchController {
     private ElasticSearchService elasticSearchService;
 
     @GetMapping("match-all")
-    public List<Integer> matchAll(@RequestBody ElasticSearchDTO es) {
+    public List<Integer> matchAll(ElasticSearchDTO es) {
         return searchAll(es);
     }
 
     @GetMapping("search-all")
-    public List<Integer> searchAll(@RequestBody ElasticSearchDTO es) {
+    public List<Integer> searchAll(ElasticSearchDTO es) {
         List<Integer> res = new ArrayList<>();
         try {
             if (es.getOption() != 7) {
                 logger.error("操作码错误");
                 throw new IOException("ElasticSearchDTO Option 与操作不符(SearchAll)");
+            }
+            if (!elasticSearchService.isExistIndex(es.getIndex())) {
+                return res;
             }
             if (es.getFrom() == null) {
                 elasticSearchService.matchAll(es.getIndex())
@@ -63,12 +65,15 @@ public class ESSearchController {
     }
 
     @GetMapping("term-search")
-    public List<Integer> termSearch(@RequestBody ElasticSearchDTO es) {
+    public List<Integer> termSearch(ElasticSearchDTO es) {
         List<Integer> res = new ArrayList<>();
         try {
             if (es.getOption() != 7) {
                 logger.error("操作码错误");
                 throw new IOException("ElasticSearchDTO Option 与操作不符(TermSearch)");
+            }
+            if (!elasticSearchService.isExistIndex(es.getIndex())) {
+                return res;
             }
             if (es.getFrom() == null) {
                 elasticSearchService.termSearch(es.getIndex(), es.getValue())
@@ -95,12 +100,15 @@ public class ESSearchController {
     }
 
     @GetMapping("wildCard-search")
-    public List<Integer> wildCardSearch(@RequestBody ElasticSearchDTO es) {
+    public List<Integer> wildCardSearch(ElasticSearchDTO es) {
         List<Integer> res = new ArrayList<>();
         try {
             if (es.getOption() != 7) {
                 logger.error("操作码错误");
                 throw new IOException("ElasticSearchDTO Option 与操作不符(WildCardSearch");
+            }
+            if (!elasticSearchService.isExistIndex(es.getIndex())) {
+                return res;
             }
             if (es.getFrom() == null) {
                 elasticSearchService.wildCardSearch(es.getIndex(), es.getValue())
@@ -127,12 +135,15 @@ public class ESSearchController {
     }
 
     @GetMapping("match-search")
-    public List<Integer> matchSearch(@RequestBody ElasticSearchDTO es) {
+    public List<Integer> matchSearch(ElasticSearchDTO es) {
         List<Integer> res = new ArrayList<>();
         try {
             if (es.getOption() != 7) {
                 logger.error("操作码错误");
                 throw new IOException("ElasticSearchDTO Option 与操作不符(MatchSearch)");
+            }
+            if (!elasticSearchService.isExistIndex(es.getIndex())) {
+                return res;
             }
             if (es.getFrom() == null) {
                 elasticSearchService.matchSearch(es.getIndex(), es.getValue())

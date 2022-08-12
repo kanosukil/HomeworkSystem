@@ -69,10 +69,10 @@ public class SearchController {
     }
 
     private boolean isException(List<Integer> list) {
-        if (list.get(0) == -1) {
+        if (list.size() > 0 && list.get(0) == -1) {
             logger.error("ES 查询异常");
             return true;
-        } else if (list.get(0) == -2) {
+        } else if (list.size() > 0 && list.get(0) == -2) {
             logger.error("传入数据无效");
             return true;
         }
@@ -93,18 +93,21 @@ public class SearchController {
         }
         List<UserRoleDTO> users;
         if (uidList.size() == 0) {
+            logger.info("新建");
             Map<String, Integer> page = getPage(s);
             int from, size;
             from = page.get("from");
             size = page.get("size");
             users = find.users();
+            logger.info("Users: {}", users);
             if (users.size() > 0) {
                 mq.save(users);
                 users = users.subList(
                         from,
-                        from + size);
+                        Math.min(from + size, users.size()));
             }
         } else {
+            logger.info("从 ES");
             users = new ArrayList<>();
             try {
                 for (Integer uid : uidList) {
@@ -137,12 +140,14 @@ public class SearchController {
         List<UserRoleDTO> users = new ArrayList<>();
         try {
             if (uidList.size() == 0) {
+                logger.info("新建");
                 mq.save(find.users());
                 uidList = esFind(IndexUtil.USER, s);
             }
             for (Integer uid : uidList) {
                 users.add(find.user(uid));
             }
+            logger.info("Users: {}", users);
             return new SearchVO<>(200, "OK", users);
         } catch (IOException ex) {
             logger.error("SQL User 查询异常", ex);
@@ -160,6 +165,7 @@ public class SearchController {
     public SearchVO<UserRoleDTO> getUser(@RequestParam("uid") Integer uid) {
         try {
             UserRoleDTO user = find.user(uid);
+            logger.info("User: {}", user);
             return new SearchVO<>(200, "OK",
                     Collections.singletonList(user));
         } catch (IOException ex) {
@@ -182,17 +188,20 @@ public class SearchController {
         }
         List<CourseSTDTO> courses;
         if (cidList.size() == 0) {
+            logger.info("新建");
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
             courses = find.courses();
+            logger.info("Courses: {}", courses);
             if (courses.size() > 0) {
                 mq.save(courses);
                 courses = courses.subList(
                         from,
-                        from + size);
+                        Math.min(from + size, courses.size()));
             }
         } else {
+            logger.info("从 ES");
             courses = new ArrayList<>();
             try {
                 for (Integer cid : cidList) {
@@ -225,12 +234,14 @@ public class SearchController {
         List<CourseSTDTO> courses = new ArrayList<>();
         try {
             if (cidList.size() == 0) {
+                logger.info("新建");
                 mq.save(find.courses());
                 cidList = esFind(IndexUtil.COURSE, s);
             }
             for (Integer cid : cidList) {
                 courses.add(find.course(cid));
             }
+            logger.info("Courses: {}", courses);
             return new SearchVO<>(200, "OK", courses);
         } catch (IOException io) {
             logger.error("SQL Course 查询异常", io);
@@ -248,6 +259,7 @@ public class SearchController {
     public SearchVO<CourseSTDTO> getCourse(@RequestParam("cid") Integer cid) {
         try {
             CourseSTDTO course = find.course(cid);
+            logger.info("course: {}", course);
             return new SearchVO<>(200, "OK",
                     Collections.singletonList(course));
         } catch (IOException ex) {
@@ -270,17 +282,20 @@ public class SearchController {
         }
         List<QuestionResultDTO> questions;
         if (qidList.size() == 0) {
+            logger.info("新建");
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
             questions = find.questions();
+            logger.info("questions: {}", questions);
             if (questions.size() > 0) {
                 mq.save(questions);
                 questions = questions.subList(
                         from,
-                        from + size);
+                        Math.min(from + size, questions.size()));
             }
         } else {
+            logger.info("从 ES");
             questions = new ArrayList<>();
             try {
                 for (Integer qid : qidList) {
@@ -313,12 +328,14 @@ public class SearchController {
         List<QuestionResultDTO> questions = new ArrayList<>();
         try {
             if (qidList.size() == 0) {
+                logger.info("新建");
                 mq.save(find.questions());
                 qidList = esFind(IndexUtil.QUESTION, s);
             }
             for (Integer qid : qidList) {
                 questions.add(find.question(qid));
             }
+            logger.info("questions: {}", questions);
             return new SearchVO<>(200, "OK", questions);
         } catch (IOException ex) {
             logger.error("SQL Question 查询异常", ex);
@@ -336,6 +353,7 @@ public class SearchController {
     public SearchVO<QuestionResultDTO> getQuestion(@RequestParam("qid") Integer qid) {
         try {
             QuestionResultDTO question = find.question(qid);
+            logger.info("question: {}", question);
             return new SearchVO<>(200, "OK",
                     Collections.singletonList(question));
         } catch (IOException ex) {
@@ -358,17 +376,20 @@ public class SearchController {
         }
         List<ResultQuestionDTO> results;
         if (ridList.size() == 0) {
+            logger.info("新建");
             Map<String, Integer> page = getPage(s);
             int from = page.get("from");
             int size = page.get("size");
             results = find.results();
+            logger.info("results: {}", results);
             if (results.size() > 0) {
                 mq.save(results);
                 results = results.subList(
                         from,
-                        from + size);
+                        Math.min(from + size, results.size()));
             }
         } else {
+            logger.info("从 ES");
             results = new ArrayList<>();
             try {
                 for (Integer rid : ridList) {
@@ -401,12 +422,14 @@ public class SearchController {
         List<ResultQuestionDTO> results = new ArrayList<>();
         try {
             if (ridList.size() == 0) {
+                logger.info("新建");
                 mq.save(find.results());
                 ridList = esFind(IndexUtil.RESULT, s);
             }
             for (Integer rid : ridList) {
                 results.add(find.result(rid));
             }
+            logger.info("results: {}", results);
             return new SearchVO<>(200, "OK", results);
         } catch (IOException ex) {
             logger.error("SQL Result 查询异常", ex);
@@ -424,6 +447,7 @@ public class SearchController {
     public SearchVO<ResultQuestionDTO> getResult(@RequestParam("rid") Integer rid) {
         try {
             ResultQuestionDTO result = find.result(rid);
+            logger.info("result: {}", result);
             return new SearchVO<>(200, "OK",
                     Collections.singletonList(result));
         } catch (IOException ex) {

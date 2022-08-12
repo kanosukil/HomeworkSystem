@@ -1,8 +1,14 @@
 package cn.summer.homework.service.impl;
 
+import cn.summer.homework.DTO.CourseSTDTO;
+import cn.summer.homework.DTO.QuestionResultDTO;
+import cn.summer.homework.DTO.ResultQuestionDTO;
+import cn.summer.homework.DTO.UserRoleDTO;
+import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.Util.RabbitMQUtil;
 import cn.summer.homework.config.OutputChannelProcessor;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
+import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.annotation.EnableBinding;
@@ -16,6 +22,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author VHBin
@@ -35,15 +43,63 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     @Output(RabbitMQUtil.UPDATE_OUT)
     private MessageChannel updateChannel;
 
+
+    //    private <T> Message<T> getMessage(T doc, String index, String id, Integer isList) {
+    private <T> Message<String> getMessage(T doc, String index, String id, Integer isList) {
+        logger.info("Doc: {}", doc);
+        logger.info("Doc: {}", JSON.toJSONString(doc));
+        MessageHeaders header = new MessageHeaders(new HashMap<>(6, 1f) {{
+            put("content-type", "UTF-8");
+            put("send-time", new Date().toString());
+            put("isList", isList.toString());
+            put("class", isList == 1 ?
+                    ((List<?>) doc).get(0).getClass().toString() :
+                    doc.getClass().toString());
+//            put("class", doc.getClass().toString());
+            put("index", index);
+            put("out-id", id);
+        }});
+        return MessageBuilder.createMessage(JSON.toJSONString(doc), header);
+//        return MessageBuilder.createMessage(doc, header);
+    }
+
+    private Map<String, String> getInfo(Object obj) {
+        String index;
+        Integer id;
+        if (obj instanceof CourseSTDTO) {
+            id = ((CourseSTDTO) obj).getCourse().getId();
+            index = IndexUtil.COURSE;
+        } else if (obj instanceof QuestionResultDTO) {
+            id = ((QuestionResultDTO) obj).getQuestion().getId();
+            index = IndexUtil.QUESTION;
+        } else if (obj instanceof ResultQuestionDTO) {
+            id = ((ResultQuestionDTO) obj).getResult().getId();
+            index = IndexUtil.RESULT;
+        } else if (obj instanceof UserRoleDTO) {
+            id = ((UserRoleDTO) obj).getUser().getId();
+            index = IndexUtil.USER;
+        } else {
+            throw new RuntimeException("未知对象<RabbitMQ文档插入>");
+        }
+        return new HashMap<>(2, 1f) {{
+            put("index", index);
+            put("id", id.toString());
+        }};
+    }
+
     @Override
-    public Boolean save(Object doc) {
+    public <T> Boolean save(T doc) {
         try {
-            MessageHeaders header = new MessageHeaders(new HashMap<>(3, 1f) {{
-                put("content-type", "UTF-8");
-                put("send-time", new Date().toString());
-                put("type", "save");
-            }});
-            Message<Object> message = MessageBuilder.createMessage(doc, header);
+            Map<String, String> info;
+            int isList = 0;
+            if (doc instanceof List) {
+                info = getInfo(((List<?>) doc).get(0));
+                isList = 1;
+            } else {
+                info = getInfo(doc);
+            }
+            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), isList);
+//            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
             if (saveChannel.send(message)) {
                 logger.info("Save Message 发送成功");
                 return true;
@@ -58,14 +114,11 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     }
 
     @Override
-    public Boolean delete(Object doc) {
+    public <T> Boolean delete(T doc) {
         try {
-            MessageHeaders header = new MessageHeaders(new HashMap<>(3, 1f) {{
-                put("content-type", "UTF-8");
-                put("send-time", new Date().toString());
-                put("type", "delete");
-            }});
-            Message<Object> message = MessageBuilder.createMessage(doc, header);
+            Map<String, String> info = getInfo(doc);
+            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), 0);
+//            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
             if (deleteChannel.send(message)) {
                 logger.info("delete Message 发送成功");
                 return true;
@@ -80,14 +133,11 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     }
 
     @Override
-    public Boolean update(Object doc) {
+    public <T> Boolean update(T doc) {
         try {
-            MessageHeaders header = new MessageHeaders(new HashMap<>(3, 1f) {{
-                put("content-type", "UTF-8");
-                put("send-time", new Date().toString());
-                put("type", "update");
-            }});
-            Message<Object> message = MessageBuilder.createMessage(doc, header);
+            Map<String, String> info = getInfo(doc);
+            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), 0);
+//            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
             if (updateChannel.send(message)) {
                 logger.info("update Message 发送成功");
                 return true;
