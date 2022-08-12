@@ -8,12 +8,12 @@ import cn.summer.homework.Entity.Question;
 import cn.summer.homework.Entity.Result;
 import cn.summer.homework.Entity.User;
 import cn.summer.homework.PO.*;
+import cn.summer.homework.dao.CourseDao;
 import cn.summer.homework.dao.QuestionDao;
 import cn.summer.homework.dao.QuestionTypeDao;
 import cn.summer.homework.dao.ResultDao;
 import cn.summer.homework.dao.cascade.*;
 import cn.summer.homework.exception.SQLRWException;
-import cn.summer.homework.service.CourseService;
 import cn.summer.homework.service.HomeworkService;
 import cn.summer.homework.service.UserService;
 import org.slf4j.Logger;
@@ -54,7 +54,11 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Resource
     private UserService userService;
     @Resource
-    private CourseService courseService;
+    private CourseDao courseDao;
+    @Resource
+    private TeacherCourseDao teacherCourseDao;
+    @Resource
+    private StudentCourseDao studentCourseDao;
 
     private User getUser(Integer uid) {
         return userService.findUser(uid).getUser();
@@ -231,7 +235,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
-            Course course = courseService.getCourse(cid).getCourse();
+            Course course = courseDao.selectByID(cid);
             if (!Objects.equals(course.getId(), cid)) {
                 throw new Exception("课程不存在");
             }
@@ -239,7 +243,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (qtid <= 0) {
                 throw new Exception("问题类型不存在");
             }
-            if (!courseService.isTeachingByTeacher(tid, cid)) {
+            if (!teacherCourseDao.selectByTID(tid).contains(cid)) {
                 throw new Exception("该课程并不由该老师教导");
             }
             flag = 1;
@@ -643,7 +647,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (!userService.isStudent(sid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
-            if (!courseService.isLearningByStudent(cid, sid)) {
+            if (!studentCourseDao.selectBySID(sid).contains(cid)) {
                 throw new Exception("用户并未选修该课");
             }
             if (questionCourseDao.accurateDelete(new QuestionCourse(qid, cid)) <= 0) {
