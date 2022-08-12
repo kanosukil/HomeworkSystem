@@ -23,7 +23,7 @@ import java.util.Map;
 @Component
 public class AuthenticationInterceptor implements HandlerInterceptor {
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationInterceptor.class);
-    @Value("interceptor.ignore-uri")
+    @Value("${interceptor.ignore-uri}")
     private String ignore;
 
     @Override
@@ -31,6 +31,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             throws IOException {
         String uri = request.getRequestURI();
         logger.info("当前进入拦截器的URI:{}", uri);
+        logger.info("Ignore={}", ignore);
         for (String ig : ignore.split(",")) {
             if (ig.trim().equals(uri)) {
                 return true;

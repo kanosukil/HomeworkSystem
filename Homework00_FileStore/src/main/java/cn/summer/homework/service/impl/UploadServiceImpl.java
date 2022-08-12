@@ -23,9 +23,9 @@ public class UploadServiceImpl implements UploadService {
     private static final Logger logger = LoggerFactory.getLogger(UploadServiceImpl.class);
     private static final List<String> picContentType
             = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmg");
-    @Value("{path.img}")
+    @Value("${path.img}")
     private String imagePath;
-    @Value("{path.file}")
+    @Value("${path.file}")
     private String filePath;
 
     private String combine(MultipartFile file, Integer uid, String path) {

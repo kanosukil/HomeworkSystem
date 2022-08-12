@@ -31,9 +31,9 @@ public class DownloadServiceImpl implements DownloadService {
         put(".png", "image/png");
         put(".bmp", "image/bmp");
     }};
-    @Value("{path.img}")
+    @Value("${path.img}")
     private String imagePath;
-    @Value("{path.file}")
+    @Value("${path.file}")
     private String filePath;
 
     private File getFile(String name, String path) {

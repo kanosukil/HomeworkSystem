@@ -3,7 +3,7 @@ package cn.summer.homework.controller;
 import cn.summer.homework.DTO.*;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.SearchVO;
-import cn.summer.homework.feignClient.ESReadClient;
+import cn.summer.homework.feignClient.ESCRUDClient;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class SearchController {
     @Resource
     private FindService find;
     @Resource
-    private ESReadClient es;
+    private ESCRUDClient es;
     @Resource
     private ElasticSearchDirectExchangeService mq;
 

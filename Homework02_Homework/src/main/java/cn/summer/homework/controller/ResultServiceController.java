@@ -3,7 +3,7 @@ package cn.summer.homework.controller;
 import cn.summer.homework.BO.HomeworkOpBO;
 import cn.summer.homework.DTO.NewResultDTO;
 import cn.summer.homework.DTO.ResultQuestionDTO;
-import cn.summer.homework.feignClient.ResultSQLClient;
+import cn.summer.homework.feignClient.HomeworkSQLClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("result")
 public class ResultServiceController {
     @Resource
-    private ResultSQLClient sqlClient;
+    private HomeworkSQLClient sqlClient;
 
     @GetMapping("results-get")
     public List<ResultQuestionDTO> getAResult() {

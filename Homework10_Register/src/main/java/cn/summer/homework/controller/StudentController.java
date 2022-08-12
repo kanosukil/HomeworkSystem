@@ -5,7 +5,7 @@ import cn.summer.homework.DTO.*;
 import cn.summer.homework.Entity.Result;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.StudentVO;
-import cn.summer.homework.feignClient.ESCreateUpdateDeleteClient;
+import cn.summer.homework.feignClient.ESCRUDClient;
 import cn.summer.homework.feignClient.StudentClient;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
@@ -35,7 +35,7 @@ public class StudentController {
     @Resource
     private FindService find;
     @Resource
-    private ESCreateUpdateDeleteClient esCUD;
+    private ESCRUDClient esCUD;
 
     private void esIndexDelete(String index) {
         ElasticSearchDTO dto = new ElasticSearchDTO();

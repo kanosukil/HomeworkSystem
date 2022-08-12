@@ -7,12 +7,13 @@ import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.Util.RabbitMQUtil;
 import cn.summer.homework.Util.TypeUtil;
+import cn.summer.homework.config.InputMessageConsumer;
 import cn.summer.homework.service.ElasticSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.Queue;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -27,6 +28,7 @@ import java.util.Map;
  */
 
 @Component
+@EnableBinding(InputMessageConsumer.class)
 public class ElasticSearchDirectExchangeGetter {
     private static final Logger logger =
             LoggerFactory.getLogger(ElasticSearchDirectExchangeGetter.class);
@@ -57,23 +59,26 @@ public class ElasticSearchDirectExchangeGetter {
         }};
     }
 
-    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.SAVE_QUEUE))
-    @RabbitHandler
-    public void save(Object obj) {
-        logger.info("ElasticSearch 服务接收对象: {}", obj);
+    //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.SAVE_QUEUE))
+//    @RabbitHandler
+    @StreamListener(RabbitMQUtil.SAVE_IN)
+    public void save(Message<Object> obj) {
+        Object payload = obj.getPayload();
+        logger.info("ElasticSearch 服务接收对象: {}-OpType:{}",
+                payload, obj.getHeaders().get("type"));
         int id;
         String index;
         Map<String, Object> map;
         try {
             if (obj instanceof List) {
-                List<Object> objects = TypeUtil.objToList(obj);
+                List<Object> objects = TypeUtil.objToList(payload);
                 index = getInfo(objects.get(0)).get("index").toString();
                 ess.createDocs(index, objects);
             } else {
-                map = getInfo(obj);
+                map = getInfo(payload);
                 index = map.get("index").toString();
                 id = Integer.parseInt(map.get("id").toString());
-                ess.createDoc(index, id, obj);
+                ess.createDoc(index, id, payload);
             }
         } catch (IOException io) {
             logger.error("RabbitMQ ES 插入异常", io);
@@ -84,14 +89,17 @@ public class ElasticSearchDirectExchangeGetter {
         }
     }
 
-    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.DELETE_QUEUE))
-    @RabbitHandler
-    public void delete(Object obj) {
-        logger.info("ElasticSearch 服务接收对象: {}", obj);
+    //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.DELETE_QUEUE))
+//    @RabbitHandler
+    @StreamListener(RabbitMQUtil.DELETE_IN)
+    public void delete(Message<Object> obj) {
+        Object payload = obj.getPayload();
+        logger.info("ElasticSearch 服务接收对象: {}-OpType:{}",
+                payload, obj.getHeaders().get("type"));
         int id;
         String index;
         try {
-            Map<String, Object> map = getInfo(obj);
+            Map<String, Object> map = getInfo(payload);
             index = map.get("index").toString();
             id = Integer.parseInt(map.get("id").toString());
             ess.deleteDoc(index, id);
@@ -104,17 +112,20 @@ public class ElasticSearchDirectExchangeGetter {
         }
     }
 
-    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.UPDATE_QUEUE))
-    @RabbitHandler
-    public void update(Object obj) {
-        logger.info("ElasticSearch 服务接收对象: {}", obj);
+    //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.UPDATE_QUEUE))
+//    @RabbitHandler
+    @StreamListener(RabbitMQUtil.UPDATE_IN)
+    public void update(Message<Object> obj) {
+        Object payload = obj.getPayload();
+        logger.info("ElasticSearch 服务接收对象: {}-OpType:{}",
+                payload, obj.getHeaders().get("type"));
         int id;
         String index;
         try {
-            Map<String, Object> map = getInfo(obj);
+            Map<String, Object> map = getInfo(payload);
             index = map.get("index").toString();
             id = Integer.parseInt(map.get("id").toString());
-            ess.updateDoc(index, id, obj);
+            ess.updateDoc(index, id, payload);
         } catch (IOException io) {
             logger.error("RabbitMQ ES 更新异常", io);
         } catch (RuntimeException run) {

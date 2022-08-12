@@ -8,7 +8,7 @@ import cn.summer.homework.Entity.Result;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.AdminVO;
 import cn.summer.homework.feignClient.AdminClient;
-import cn.summer.homework.feignClient.ESCreateUpdateDeleteClient;
+import cn.summer.homework.feignClient.ESCRUDClient;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class AdminController {
     @Resource
     private FindService find;
     @Resource
-    private ESCreateUpdateDeleteClient esCUD;
+    private ESCRUDClient esCUD;
     @Resource
     private ElasticSearchDirectExchangeService es;
 

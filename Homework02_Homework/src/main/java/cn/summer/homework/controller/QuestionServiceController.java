@@ -5,7 +5,7 @@ import cn.summer.homework.DTO.NewQuestionDTO;
 import cn.summer.homework.DTO.NewResultDTO;
 import cn.summer.homework.DTO.QuestionResultDTO;
 import cn.summer.homework.PO.TeacherQuestion;
-import cn.summer.homework.feignClient.QuestionSQLClient;
+import cn.summer.homework.feignClient.HomeworkSQLClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("question")
 public class QuestionServiceController {
     @Resource
-    private QuestionSQLClient sqlClient;
+    private HomeworkSQLClient sqlClient;
 
     @GetMapping("questions-get")
     public List<QuestionResultDTO> getAQuestion() {

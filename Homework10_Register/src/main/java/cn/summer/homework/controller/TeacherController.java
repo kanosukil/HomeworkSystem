@@ -6,7 +6,7 @@ import cn.summer.homework.Entity.Course;
 import cn.summer.homework.Entity.Question;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.TeacherVO;
-import cn.summer.homework.feignClient.ESCreateUpdateDeleteClient;
+import cn.summer.homework.feignClient.ESCRUDClient;
 import cn.summer.homework.feignClient.TeacherClient;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
@@ -36,7 +36,7 @@ public class TeacherController {
     @Resource
     private FindService find;
     @Resource
-    private ESCreateUpdateDeleteClient esCUD;
+    private ESCRUDClient esCUD;
 
     private void esIndexDelete(String index) {
         ElasticSearchDTO dto = new ElasticSearchDTO();
