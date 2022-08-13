@@ -12,10 +12,7 @@ import cn.summer.homework.service.UserIOService;
 import cn.summer.homework.service.UserSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -145,6 +142,32 @@ public class LoginController {
                             Integer.parseInt(reg.getInfo().get("uid").toString()),
                             newUser.getName()),
                     "Student"));
+        }
+    }
+
+    @PostMapping("/logoff/id")
+    public UserVO<String> logoff(@RequestParam("uid") Integer uid) {
+        try {
+            UserRoleDTO user = userSearchService.get(uid);
+            if (user == null) {
+                throw new IOException("用户不存在");
+            }
+            return logoff(user.getUser().getEmail());
+        } catch (IOException io) {
+            logger.error("User Logoff Exception: {}", io.getMessage());
+            return new UserVO<>(500, "Cause", io.getMessage());
+        }
+    }
+
+    @PostMapping("/logoff/email")
+    public UserVO<String> logoff(@RequestParam("email") String email) {
+        UserOpBO logoff = userIOService.logoff(email);
+        if (logoff.getIsSuccess()) {
+            return new UserVO<>(200, "OK",
+                    logoff.getInfo().toString());
+        } else {
+            return new UserVO<>(500, "cause",
+                    logoff.getInfo().get("Cause").toString());
         }
     }
 }
