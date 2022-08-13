@@ -170,7 +170,7 @@ public class LoginController {
                                  HttpServletRequest request) {
         try {
             UserRoleDTO ur = userSearchService.get(email);
-            if (ur.getUser().getId() !=
+            if (ur == null || ur.getUser().getId() !=
                     Integer.parseInt(request.getAttribute("userid").toString())) {
                 throw new IOException("无效操作: 不允许操作其他用户");
             }
