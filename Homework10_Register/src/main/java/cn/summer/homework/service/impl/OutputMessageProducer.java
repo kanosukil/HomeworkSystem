@@ -47,7 +47,7 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     //    private <T> Message<T> getMessage(T doc, String index, String id, Integer isList) {
     private <T> Message<String> getMessage(T doc, String index, String id, Integer isList) {
         logger.info("Doc: {}", doc);
-        logger.info("Doc: {}", JSON.toJSONString(doc));
+//        logger.info("Doc: {}", JSON.toJSONString(doc));
         MessageHeaders header = new MessageHeaders(new HashMap<>(6, 1f) {{
             put("content-type", "UTF-8");
             put("send-time", new Date().toString());

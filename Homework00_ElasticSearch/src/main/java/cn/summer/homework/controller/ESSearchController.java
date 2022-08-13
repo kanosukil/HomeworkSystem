@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author VHBin
@@ -41,21 +42,16 @@ public class ESSearchController {
             if (!elasticSearchService.isExistIndex(es.getIndex())) {
                 return res;
             }
+            Map<String, String> stringStringMap;
             if (es.getFrom() == null) {
-                elasticSearchService.matchAll(es.getIndex())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.matchAll(es.getIndex());
+
             } else {
-                elasticSearchService.matchAll(es.getIndex(),
-                                es.getFrom(),
-                                es.getSize())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.matchAll(es.getIndex(),
+                        es.getFrom(),
+                        es.getSize());
             }
+            getID(stringStringMap, res);
         } catch (Exception ex) {
             logger.error("SearchAll 异常: {}", ex.getMessage());
             res.clear();
@@ -75,22 +71,16 @@ public class ESSearchController {
             if (!elasticSearchService.isExistIndex(es.getIndex())) {
                 return res;
             }
+            Map<String, String> stringStringMap;
             if (es.getFrom() == null) {
-                elasticSearchService.termSearch(es.getIndex(), es.getValue())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.termSearch(es.getIndex(), es.getValue());
             } else {
-                elasticSearchService.termSearch(es.getIndex(),
-                                es.getValue(),
-                                es.getFrom(),
-                                es.getSize())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.termSearch(es.getIndex(),
+                        es.getValue(),
+                        es.getFrom(),
+                        es.getSize());
             }
+            getID(stringStringMap, res);
         } catch (Exception ex) {
             logger.error("TermSearch 异常: {}", ex.getMessage());
             res.clear();
@@ -110,22 +100,16 @@ public class ESSearchController {
             if (!elasticSearchService.isExistIndex(es.getIndex())) {
                 return res;
             }
+            Map<String, String> stringStringMap;
             if (es.getFrom() == null) {
-                elasticSearchService.wildCardSearch(es.getIndex(), es.getValue())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.wildCardSearch(es.getIndex(), es.getValue());
             } else {
-                elasticSearchService.wildCardSearch(es.getIndex(),
-                                es.getValue(),
-                                es.getFrom(),
-                                es.getSize())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.wildCardSearch(es.getIndex(),
+                        es.getValue(),
+                        es.getFrom(),
+                        es.getSize());
             }
+            getID(stringStringMap, res);
         } catch (Exception ex) {
             logger.error("WildCardSearch 异常: {}", ex.getMessage());
             res.clear();
@@ -145,27 +129,30 @@ public class ESSearchController {
             if (!elasticSearchService.isExistIndex(es.getIndex())) {
                 return res;
             }
+            Map<String, String> stringStringMap;
             if (es.getFrom() == null) {
-                elasticSearchService.matchSearch(es.getIndex(), es.getValue())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.matchSearch(es.getIndex(), es.getValue());
             } else {
-                elasticSearchService.matchSearch(es.getIndex(),
-                                es.getValue(),
-                                es.getFrom(),
-                                es.getSize())
-                        .forEach((k, v) -> {
-                            res.add(Integer.parseInt(k));
-                            logger.info("Key:{}, Value:{}", k, v);
-                        });
+                stringStringMap = elasticSearchService.matchSearch(es.getIndex(),
+                        es.getValue(),
+                        es.getFrom(),
+                        es.getSize());
             }
+            getID(stringStringMap, res);
         } catch (Exception ex) {
             logger.error("MatchSearch 异常: {}", ex.getMessage());
             res.clear();
             res.add(-1);
         }
         return res;
+    }
+
+    private void getID(Map<String, String> map, List<Integer> IDS) {
+        if (map != null) {
+            map.forEach((k, v) -> {
+                IDS.add(Integer.parseInt(k));
+                logger.info("Key: {}, Value: {}", k, v);
+            });
+        }
     }
 }

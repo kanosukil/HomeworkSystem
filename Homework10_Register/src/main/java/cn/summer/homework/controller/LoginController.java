@@ -1,14 +1,15 @@
 package cn.summer.homework.controller;
 
 import cn.summer.homework.BO.UserOpBO;
-import cn.summer.homework.DTO.LoginDTO;
-import cn.summer.homework.DTO.RegisterDTO;
-import cn.summer.homework.DTO.UserDTO;
-import cn.summer.homework.DTO.UserRoleDTO;
+import cn.summer.homework.DTO.*;
 import cn.summer.homework.Entity.User;
+import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.Util.TokenUtil;
 import cn.summer.homework.VO.UserVO;
+import cn.summer.homework.feignClient.ESCRUDClient;
+import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.UserIOService;
+import cn.summer.homework.service.UserSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -34,6 +36,12 @@ public class LoginController {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
     @Resource
     private UserIOService userIOService;
+    @Resource
+    private UserSearchService userSearchService;
+    @Resource
+    private ElasticSearchDirectExchangeService ess;
+    @Resource
+    private ESCRUDClient es;
 
     /**
      * 登录
@@ -71,8 +79,25 @@ public class LoginController {
             }
         } catch (Exception ex) {
             return new UserVO<>(500, "登录异常", ex.getMessage());
+        } finally {
+            ElasticSearchDTO search = new ElasticSearchDTO();
+            search.setOption(7);
+            search.setIndex(IndexUtil.USER);
+            if (es.searchAll(search).size() != userSearchService.getAll().size()) {
+                deleteUserIndex();
+            }
         }
+    }
 
+    private void deleteUserIndex() {
+        ElasticSearchDTO search = new ElasticSearchDTO();
+        search.setOption(4);
+        search.setIndex(IndexUtil.USER);
+        if (es.indexDelete(search).getIsSuccess()) {
+            logger.info("Index User 删除完成");
+        } else {
+            logger.error("Index User 删除异常");
+        }
     }
 
     /**
@@ -100,6 +125,17 @@ public class LoginController {
         UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, new ArrayList<>(1) {{
             add("Student");
         }}));
+        try {
+            if (ess.save(userIOService.login(newUser.getEmail()))) {
+                logger.info("ES Save New User 完成");
+            } else {
+                logger.warn("ES Save New User 异常");
+                deleteUserIndex();
+            }
+        } catch (IOException io) {
+            logger.error("ES Save New User Exception: {}", io.getMessage());
+            deleteUserIndex();
+        }
         logger.info("Result: {}", reg);
         if (!reg.getIsSuccess()) {
             return new UserVO<>(400, reg.getInfo().get("Cause").toString(), "");
@@ -107,7 +143,8 @@ public class LoginController {
             return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
                     new UserDTO(
                             Integer.parseInt(reg.getInfo().get("uid").toString()),
-                            newUser.getName()), "Student"));
+                            newUser.getName()),
+                    "Student"));
         }
     }
 }
