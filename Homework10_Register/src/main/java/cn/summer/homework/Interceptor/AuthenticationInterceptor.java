@@ -62,6 +62,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                                 map.get("account").toString()),
                         map.get("roles").toString()));
             }
+            request.setAttribute("userid", map.get("userid").toString());
             return true;
         } catch (Exception ex) {
             logger.error("Exception!", ex);

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -146,13 +147,18 @@ public class LoginController {
     }
 
     @PostMapping("/logoff/id")
-    public UserVO<String> logoff(@RequestParam("uid") Integer uid) {
+    public UserVO<String> logoff(@RequestParam("uid") Integer uid,
+                                 HttpServletRequest request) {
         try {
+            logger.info("Request: \n{}", request.getAttribute("userid"));
+            if (uid != Integer.parseInt(request.getAttribute("userid").toString())) {
+                throw new IOException("无效操作: 不允许操作其他用户");
+            }
             UserRoleDTO user = userSearchService.get(uid);
             if (user == null) {
                 throw new IOException("用户不存在");
             }
-            return logoff(user.getUser().getEmail());
+            return logoff(user.getUser().getEmail(), request);
         } catch (IOException io) {
             logger.error("User Logoff Exception: {}", io.getMessage());
             return new UserVO<>(500, "Cause", io.getMessage());
@@ -160,14 +166,32 @@ public class LoginController {
     }
 
     @PostMapping("/logoff/email")
-    public UserVO<String> logoff(@RequestParam("email") String email) {
-        UserOpBO logoff = userIOService.logoff(email);
-        if (logoff.getIsSuccess()) {
-            return new UserVO<>(200, "OK",
-                    logoff.getInfo().toString());
-        } else {
-            return new UserVO<>(500, "cause",
-                    logoff.getInfo().get("Cause").toString());
+    public UserVO<String> logoff(@RequestParam("email") String email,
+                                 HttpServletRequest request) {
+        try {
+            UserRoleDTO ur = userSearchService.get(email);
+            if (ur.getUser().getId() !=
+                    Integer.parseInt(request.getAttribute("userid").toString())) {
+                throw new IOException("无效操作: 不允许操作其他用户");
+            }
+            UserOpBO logoff = userIOService.logoff(email);
+            if (ess.delete(ur)) {
+                logger.info("ES Delete User 完成");
+            } else {
+                logger.warn("ES Delete User 异常");
+                deleteUserIndex();
+            }
+            if (logoff.getIsSuccess()) {
+                return new UserVO<>(200, "OK",
+                        logoff.getInfo().toString());
+            } else {
+                return new UserVO<>(500, "cause",
+                        logoff.getInfo().get("Cause").toString());
+            }
+        } catch (IOException e) {
+            logger.error("Delete User Exception: {}", e.getMessage());
+            deleteUserIndex();
+            return new UserVO<>(500, "cause", e.getMessage());
         }
     }
 }

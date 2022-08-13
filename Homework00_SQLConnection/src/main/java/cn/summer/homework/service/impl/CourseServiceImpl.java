@@ -1,7 +1,6 @@
 package cn.summer.homework.service.impl;
 
 import cn.summer.homework.BO.CourseOpBO;
-import cn.summer.homework.BO.UserOpBO;
 import cn.summer.homework.DTO.CourseSTDTO;
 import cn.summer.homework.Entity.Course;
 import cn.summer.homework.Entity.User;
@@ -512,14 +511,14 @@ public class CourseServiceImpl implements CourseService {
             tCourse.forEach(e ->
                     delete[2] += courseDao.deleteCourse(e.getId()));
             flag = 4;
-            UserOpBO deleteUser = userService.deleteUser(tid);
-            if (!deleteUser.getIsSuccess()) {
-                throw new Exception("课程删除完毕, 用户删除异常");
-            }
-            delete[3] = deleteUser.getInfo().size();
+//            UserOpBO deleteUser = userService.deleteUser(tid);
+//            if (!deleteUser.getIsSuccess()) {
+//                throw new Exception("课程删除完毕, 用户删除异常");
+//            }
+//            delete[3] = deleteUser.getInfo().size();
             flag = 5;
             logger.info("Teacher UserID: {} 删除完成", tid);
-            logger.info("User 删除了 {} 条数据", delete[3]);
+//            logger.info("User 删除了 {} 条数据", delete[3]);
             logger.info("Course 删除了 {} 条数据", delete[2]);
             logger.info("TeacherCourse 删除了 {} 条数据", delete[0]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[1]);
@@ -559,14 +558,14 @@ public class CourseServiceImpl implements CourseService {
             flag = 2;
             delete[0] = studentCourseDao.deleteBySID(sid);
             flag = 4;
-            UserOpBO deleteUser = userService.deleteUser(sid);
-            if (!deleteUser.getIsSuccess()) {
-                throw new Exception("课程删除完毕, 用户删除异常");
-            }
-            delete[1] = deleteUser.getInfo().size();
+//            UserOpBO deleteUser = userService.deleteUser(sid);
+//            if (!deleteUser.getIsSuccess()) {
+//                throw new Exception("课程删除完毕, 用户删除异常");
+//            }
+//            delete[1] = deleteUser.getInfo().size();
             flag = 5;
             logger.info("Student UserID: {} 删除完成", sid);
-            logger.info("User 删除了 {} 条数据", delete[1]);
+//            logger.info("User 删除了 {} 条数据", delete[1]);
             logger.info("StudentCourse 删除了 {} 条数据", delete[0]);
             setCourseOpDTO(courseOpBO, new HashMap<>() {{
                 sCourse.forEach(e -> put(sid.toString() + "\t"

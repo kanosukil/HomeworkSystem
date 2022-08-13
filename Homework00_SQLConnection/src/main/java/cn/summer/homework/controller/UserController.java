@@ -162,7 +162,6 @@ public class UserController {
             } else {
                 throw new Exception("销号失败");
             }
-
         } catch (Exception ex) {
             logger.error("销号失败: {}", ex.getMessage());
             setRes(res, false, "Cause", ex.getMessage());

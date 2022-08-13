@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author VHBin
@@ -47,9 +49,22 @@ public class StudentController {
         }
     }
 
+    private void judge(Integer id, HttpServletRequest request)
+            throws IOException {
+        UserRoleDTO tmp = find.user(
+                Integer.parseInt(request.getAttribute("userid").toString()));
+        if (!tmp.getRoles().contains("Student")) {
+            throw new IOException("无效操作: 非 Student");
+        }
+        if (!Objects.equals(id, tmp.getUser().getId())) {
+            throw new IOException("无效操作: 不允许操作其他用户");
+        }
+    }
+
     @PostMapping("/c/result")
-    public StudentVO createResult(@RequestBody ResultInDTO in) {
+    public StudentVO createResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getSid(), request);
             StudentVO result = student.createResult(in);
             if (result.getCode() == 200) {
                 ResultQuestionDTO rInSQL = find.result(Integer.parseInt(result.getInfo()));
@@ -68,8 +83,9 @@ public class StudentController {
     }
 
     @PostMapping("/u/result")
-    public StudentVO updateResult(@RequestBody ResultInDTO in) {
+    public StudentVO updateResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getSid(), request);
             StudentVO result = student.updateResult(in);
             if (result.getCode() == 200) {
                 ResultQuestionDTO after = find.result(in.getResult().getId());
@@ -88,7 +104,13 @@ public class StudentController {
     }
 
     @PostMapping("/d/result")
-    public StudentVO deleteResult(@RequestBody ResultInDTO in) {
+    public StudentVO deleteResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
+        try {
+            judge(in.getSid(), request);
+        } catch (IOException e) {
+            logger.error("[Delete Result]", e);
+            return new StudentVO(400, "DeleteResult: 无效操作", e.getMessage());
+        }
         StudentVO result = student.deleteResult(in);
         if (result.getCode() == 200) {
             Result before = new Result();
@@ -105,8 +127,9 @@ public class StudentController {
     }
 
     @PostMapping("/ao/add/course")
-    public StudentVO addCourse(@RequestBody CourseInDTO in) {
+    public StudentVO addCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getSid(), request);
             StudentVO course = student.addCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCid());
@@ -125,8 +148,9 @@ public class StudentController {
     }
 
     @PostMapping("/ao/drop/course")
-    public StudentVO dropCourse(@RequestBody CourseInDTO in) {
+    public StudentVO dropCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getSid(), request);
             StudentVO course = student.dropCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCid());

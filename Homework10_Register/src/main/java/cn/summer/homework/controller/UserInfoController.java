@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 
 /**
  * @author VHBin
@@ -26,21 +28,46 @@ public class UserInfoController {
     @Resource
     private UserIOService userIO;
 
+    private void isUserSelf(Integer id, HttpServletRequest request)
+            throws IOException {
+        if (Integer.parseInt(request.getAttribute("userid").toString()) == id) {
+            throw new IOException("无效操作: 不允许操作其他用户");
+        }
+    }
+
     @PostMapping("/update/all")
-    public UserVO<String> update(@RequestBody UserUpdateDTO update) {
+    public UserVO<String> update(@RequestBody UserUpdateDTO update, HttpServletRequest request) {
+        try {
+            isUserSelf(update.getUid(), request);
+        } catch (IOException e) {
+            logger.error("[Update User]", e);
+            return new UserVO<>(400, "UpdateUser: 无效操作", e.getMessage());
+        }
         UserOpBO res = userIO.update(
                 new UserRoleDTO(update.getUser(), update.getRoles()));
         return getStringUserVO(res);
     }
 
     @PostMapping("/update/info")
-    public UserVO<String> infoUpdate(@RequestBody UserUpdateDTO info) {
+    public UserVO<String> infoUpdate(@RequestBody UserUpdateDTO info, HttpServletRequest request) {
+        try {
+            isUserSelf(info.getUid(), request);
+        } catch (IOException e) {
+            logger.error("[Update UserInfo]", e);
+            return new UserVO<>(400, "UpdateUserInfo: 无效操作", e.getMessage());
+        }
         UserOpBO res = userIO.infoUpdate(info.getUser());
         return getStringUserVO(res);
     }
 
     @PostMapping("/update/role")
-    public UserVO<String> roleUpdate(@RequestBody UserUpdateDTO role) {
+    public UserVO<String> roleUpdate(@RequestBody UserUpdateDTO role, HttpServletRequest request) {
+        try {
+            isUserSelf(role.getUid(), request);
+        } catch (IOException e) {
+            logger.error("[Update UserRole]", e);
+            return new UserVO<>(400, "UpdateUserRole: 无效操作", e.getMessage());
+        }
         UserOpBO res = userIO.roleUpdate(
                 new URoleDTO(role.getUid(), role.getRoles()));
         return getStringUserVO(res);

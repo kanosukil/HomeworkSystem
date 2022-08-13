@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
@@ -49,13 +50,21 @@ public class AdminController {
         }
     }
 
+    private void isAdmin(HttpServletRequest request) throws IOException {
+        int userid = Integer.parseInt(request.getAttribute("userid").toString());
+        if (!find.user(userid).getRoles().contains("Admin")) {
+            throw new IOException("无效操作: 非 Admin");
+        }
+    }
+
     /*
         result
      */
     @PostMapping("/c/result")
-    public AdminVO createResult(@RequestBody ResultInDTO in) {
+    public AdminVO createResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO result = admin.createResult(in);
             if (result.getCode() == 200) {
                 ResultQuestionDTO rInSQL = find.result(Integer.parseInt(result.getInfo()));
@@ -74,9 +83,10 @@ public class AdminController {
     }
 
     @PostMapping("/u/result")
-    public AdminVO updateResult(@RequestBody ResultInDTO in) {
+    public AdminVO updateResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO result = admin.updateResult(in);
             if (result.getCode() == 200) {
                 ResultQuestionDTO after = find.result(in.getResult().getId());
@@ -95,8 +105,14 @@ public class AdminController {
     }
 
     @PostMapping("/d/result")
-    public AdminVO deleteResult(@RequestBody ResultInDTO in) {
+    public AdminVO deleteResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Delete Result]", io);
+            return new AdminVO(400, "DeleteUpdate: 无效操作", io.getMessage());
+        }
         AdminVO result = admin.deleteResult(in);
         if (result.getCode() == 200) {
             Result before = new Result();
@@ -116,9 +132,10 @@ public class AdminController {
         course
      */
     @PostMapping("/c/course")
-    public AdminVO createCourse(@RequestBody CourseInDTO in) {
+    public AdminVO createCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO course = admin.createCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO cInSQL = find.course(Integer.parseInt(course.getInfo()));
@@ -137,9 +154,10 @@ public class AdminController {
     }
 
     @PostMapping("/u/course")
-    public AdminVO updateCourse(@RequestBody CourseInDTO in) {
+    public AdminVO updateCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO course = admin.updateCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCourse().getId());
@@ -158,8 +176,14 @@ public class AdminController {
     }
 
     @PostMapping("/d/course")
-    public AdminVO deleteCourse(@RequestBody CourseInDTO in) {
+    public AdminVO deleteCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Delete Course]", io);
+            return new AdminVO(400, "DeleteCourse: 无效操作", io.getMessage());
+        }
         AdminVO course = admin.deleteCourse(in);
         if (course.getCode() == 200) {
             Course before = new Course();
@@ -178,9 +202,10 @@ public class AdminController {
         question
      */
     @PostMapping("/c/question")
-    public AdminVO createQuestion(@RequestBody QuestionInDTO in) {
+    public AdminVO createQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO question = admin.createQuestion(in);
             if (question.getCode() == 200) {
                 QuestionResultDTO qInSQL = find.question(Integer.parseInt(question.getInfo()));
@@ -199,9 +224,10 @@ public class AdminController {
     }
 
     @PostMapping("/u/question")
-    public AdminVO updateQuestion(@RequestBody QuestionInDTO in) {
+    public AdminVO updateQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
         try {
+            isAdmin(request);
             AdminVO question = admin.updateQuestion(in);
             if (question.getCode() == 200) {
                 QuestionResultDTO after = find.question(in.getQid());
@@ -220,8 +246,14 @@ public class AdminController {
     }
 
     @PostMapping("/d/question")
-    public AdminVO deleteQuestion(@RequestBody QuestionInDTO in) {
+    public AdminVO deleteQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Delete Question]", io);
+            return new AdminVO(400, "DeleteQuestion: 无效操作", io.getMessage());
+        }
         AdminVO question = admin.deleteQuestion(in);
         if (question.getCode() == 200) {
             Question before = new Question();
@@ -241,14 +273,26 @@ public class AdminController {
         type
      */
     @PostMapping("/c/type")
-    public AdminVO createType(@RequestBody QuestionInDTO in) {
+    public AdminVO createType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Create Type]", io);
+            return new AdminVO(400, "CreateType: 无效操作", io.getMessage());
+        }
         return admin.createType(in);
     }
 
     @PostMapping("/d/type")
-    public AdminVO deleteType(@RequestBody QuestionInDTO in) {
+    public AdminVO deleteType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Delete Type]", io);
+            return new AdminVO(400, "DeleteType: 无效操作", io.getMessage());
+        }
         return admin.deleteType(in);
     }
 }

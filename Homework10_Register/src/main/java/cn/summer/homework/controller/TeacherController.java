@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author VHBin
@@ -48,12 +50,25 @@ public class TeacherController {
         }
     }
 
+    private void judge(Integer id, HttpServletRequest request)
+            throws IOException {
+        UserRoleDTO tmp = find.user(
+                Integer.parseInt(request.getAttribute("userid").toString()));
+        if (!tmp.getRoles().contains("Teacher")) {
+            throw new IOException("无效操作: 非 Teacher");
+        }
+        if (!Objects.equals(id, tmp.getUser().getId())) {
+            throw new IOException("无效操作: 不允许操作其他用户");
+        }
+    }
+
     /*
         course
      */
     @PostMapping("/c/course")
-    public TeacherVO createCourse(@RequestBody CourseInDTO in) {
+    public TeacherVO createCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO course = teacher.createCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO cInSQL = find.course(Integer.parseInt(course.getInfo()));
@@ -72,8 +87,9 @@ public class TeacherController {
     }
 
     @PostMapping("/u/course")
-    public TeacherVO updateCourse(@RequestBody CourseInDTO in) {
+    public TeacherVO updateCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO course = teacher.updateCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCourse().getId());
@@ -92,7 +108,13 @@ public class TeacherController {
     }
 
     @PostMapping("/d/course")
-    public TeacherVO deleteCourse(@RequestBody CourseInDTO in) {
+    public TeacherVO deleteCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
+        try {
+            judge(in.getTid(), request);
+        } catch (IOException io) {
+            logger.error("[Delete Course]", io);
+            return new TeacherVO(400, "DeleteCourse: 无效操作", io.getMessage());
+        }
         TeacherVO course = teacher.deleteCourse(in);
         if (course.getCode() == 200) {
             Course before = new Course();
@@ -111,8 +133,9 @@ public class TeacherController {
         question
      */
     @PostMapping("/c/question")
-    public TeacherVO createQuestion(@RequestBody QuestionInDTO in) {
+    public TeacherVO createQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO question = teacher.createQuestion(in);
             if (question.getCode() == 200) {
                 QuestionResultDTO qInSQL = find.question(Integer.parseInt(question.getInfo()));
@@ -131,8 +154,9 @@ public class TeacherController {
     }
 
     @PostMapping("/u/question")
-    public TeacherVO updateQuestion(@RequestBody QuestionInDTO in) {
+    public TeacherVO updateQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO question = teacher.updateQuestion(in);
             if (question.getCode() == 200) {
                 QuestionResultDTO after = find.question(in.getQid());
@@ -151,7 +175,13 @@ public class TeacherController {
     }
 
     @PostMapping("/d/question")
-    public TeacherVO deleteQuestion(@RequestBody QuestionInDTO in) {
+    public TeacherVO deleteQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
+        try {
+            judge(in.getTid(), request);
+        } catch (IOException io) {
+            logger.error("[Delete Question]", io);
+            return new TeacherVO(400, "DeleteQuestion: 无效操作", io.getMessage());
+        }
         TeacherVO question = teacher.deleteQuestion(in);
         if (question.getCode() == 200) {
             Question before = new Question();
@@ -171,12 +201,24 @@ public class TeacherController {
         type
      */
     @PostMapping("/c/type")
-    public TeacherVO createType(@RequestBody QuestionInDTO in) {
+    public TeacherVO createType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
+        try {
+            judge(in.getTid(), request);
+        } catch (IOException io) {
+            logger.error("[Create Type]", io);
+            return new TeacherVO(400, "CreateType: 无效操作", io.getMessage());
+        }
         return teacher.createType(in);
     }
 
     @PostMapping("/d/type")
-    public TeacherVO deleteType(@RequestBody QuestionInDTO in) {
+    public TeacherVO deleteType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
+        try {
+            judge(in.getTid(), request);
+        } catch (IOException io) {
+            logger.error("[Delete Type]", io);
+            return new TeacherVO(400, "DeleteType: 无效操作", io.getMessage());
+        }
         return teacher.deleteType(in);
     }
 
@@ -184,9 +226,10 @@ public class TeacherController {
         AddOption
      */
     @PostMapping("/ao/correct/question")
-    public TeacherVO correct(@RequestBody ResultInDTO in) {
+    public TeacherVO correct(@RequestBody ResultInDTO in, HttpServletRequest request) {
         TeacherVO correct = teacher.correct(in);
         try {
+            judge(in.getTid(), request);
             if (correct.getCode() == 200) {
                 ResultQuestionDTO after = find.result(in.getRid());
                 if (es.update(after)) {
@@ -204,8 +247,9 @@ public class TeacherController {
     }
 
     @PostMapping("/ao/add/course")
-    public TeacherVO addCourse(@RequestBody CourseInDTO in) {
+    public TeacherVO addCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO course = teacher.addCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCid());
@@ -224,8 +268,9 @@ public class TeacherController {
     }
 
     @PostMapping("/ao/drop/course")
-    public TeacherVO dropCourse(@RequestBody CourseInDTO in) {
+    public TeacherVO dropCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
+            judge(in.getTid(), request);
             TeacherVO course = teacher.dropCourse(in);
             if (course.getCode() == 200) {
                 CourseSTDTO after = find.course(in.getCid());
