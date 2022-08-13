@@ -79,8 +79,7 @@ public class UserInfoController {
     private UserVO<String> getStringUserVO(UserOpBO res) {
         if (res.getIsSuccess()) {
             logger.info("用户数据更新完成");
-            logger.info("Source User: {}", res.getInfo().get("SrcUser"));
-            logger.info("Update User: {}", res.getInfo().get("UpdateUser"));
+            logger.info("Source User: {}", res.getInfo().get("srcUser"));
             return new UserVO<>(200, "OK", "更新完成");
         } else {
             logger.error("用户数据更新异常");

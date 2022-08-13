@@ -109,7 +109,7 @@ public class UserIOServiceImpl implements UserIOService {
 
     @Override
     public UserOpBO roleUpdate(URoleDTO roles) {
-        if (roles.getUid() == 0 || roles.getRoles() == null || roles.getRoles().size() == 0) {
+        if (roles.getUid() == 0 || roles.getRoles() == null) {
             return OpBOUtil.generateUOB("用户角色更新传入数据无效");
         }
         return client.roleUpdate(roles);

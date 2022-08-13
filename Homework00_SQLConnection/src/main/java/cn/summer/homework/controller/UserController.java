@@ -226,15 +226,30 @@ public class UserController {
                 put("Admin", false);
             }};
             srcUser.getRoles().forEach(e -> map.put(e, true));
+            Map<String, Boolean> flag = new HashMap<>(3, 1f) {{
+                put("Student", false);
+                put("Teacher", false);
+                put("Admin", false);
+            }};
             for (String role : roles.getRoles()) {
-                UserOpBO update;
-                if (map.get(role)) {
-                    update = userService.deleteUserRole(uid, role);
-                } else {
-                    update = userService.updateUserRole(uid, role);
+                if (map.get(role) == null) {
+                    return userService.updateUserRole(uid, role);
                 }
-                if (!update.getIsSuccess()) {
-                    throw new Exception("更新用户角色失败");
+                if (!map.get(role)) {
+                    if (!userService.updateUserRole(uid, role).getIsSuccess()) {
+                        throw new Exception("更新用户角色失败");
+                    }
+                    map.put(role, true);
+                }
+                flag.put(role, true);
+            }
+            if (flag.containsValue(false)) {
+                for (String role : flag.keySet()) {
+                    if ((!flag.get(role)) || map.get(role)) {
+                        if (!userService.deleteUserRole(uid, role).getIsSuccess()) {
+                            throw new Exception("更新用户角色失败");
+                        }
+                    }
                 }
             }
             logger.info("用户角色更新完成");

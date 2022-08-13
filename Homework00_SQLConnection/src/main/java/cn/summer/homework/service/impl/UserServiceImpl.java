@@ -215,9 +215,7 @@ public class UserServiceImpl implements UserService {
         if (flag == 1 || flag == 2) {
             throw new SQLRWException("User/UserRole删除异常");
         }
-        setUserOpDTO(userOpBO,
-                flag == 3 ? "删除 User 完成, 但仍有异常" : "删除 User 失败",
-                ex.getMessage());
+        setUserOpDTO(userOpBO, "Cause", ex.getMessage());
 
     }
 
@@ -294,9 +292,7 @@ public class UserServiceImpl implements UserService {
         if (flag == 1 || flag == 2) {
             throw new SQLRWException("User/UserRole删除异常");
         }
-        setUserOpDTO(userOpBO,
-                flag == 3 ? "更新 User 完成, 但仍有异常" : "更新 User 失败",
-                ex.getMessage());
+        setUserOpDTO(userOpBO, "Cause", ex.getMessage());
     }
 
     @Override
@@ -376,7 +372,7 @@ public class UserServiceImpl implements UserService {
             if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
-            if ((rid = roleDao.selectByName(role)) <= 0) {
+            if ((rid = roleDao.selectByName(role)) == null || rid <= 0) {
                 throw new Exception("需要添加的角色不存在. Role=".concat(role));
             }
             if (userRoleDao.accurateSelect(new UserRole(id, rid)) > 0) {
@@ -411,7 +407,7 @@ public class UserServiceImpl implements UserService {
             if (!isExists(id)) {
                 throw new Exception("用户不存在. UserID=".concat(id.toString()));
             }
-            if ((rid = roleDao.selectByName(role)) <= 0) {
+            if ((rid = roleDao.selectByName(role)) == null || rid <= 0) {
                 throw new Exception("需要删除的角色不存在. Role=".concat(role));
             }
             if (userRoleDao.accurateSelect(new UserRole(id, rid)) <= 0) {
@@ -425,16 +421,14 @@ public class UserServiceImpl implements UserService {
             logger.info("UserRole 表更新 {} 条数据", update);
             User user = userDao.selectByID(id);
             List<String> updateRoles = getRoles(id);
-            /*
-                // 当该用户没有角色时, 添加一个默认角色 Student
-                if (updateRoles.size() == 0) {
-                    if (userRoleDao.addNewUser(new UserRole(id, 1)) > 0) {
-                        updateRoles.add("Student");
-                    } else {
-                        throw new Exception("用户角色已全被删除, 若仍需使用该用户, 请添加角色.");
-                    }
+            // 当该用户没有角色时, 添加一个默认角色 Student
+            if (updateRoles.size() == 0) {
+                if (userRoleDao.addNewUser(new UserRole(id, 1)) > 0) {
+                    updateRoles.add("Student");
+                } else {
+                    throw new Exception("用户角色已全被删除, 若仍需使用该用户, 请添加角色.");
                 }
-            */
+            }
             setUserOpDTO(userOpBO, new HashMap<>() {{
                 put("SrcUser", new UserRoleDTO(user, srcRoles));
                 put("UpdateUser", new UserRoleDTO(user, updateRoles));
