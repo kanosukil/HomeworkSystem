@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 
 /**
@@ -34,6 +36,10 @@ public class UserIOServiceImpl implements UserIOService {
         if (user.getName() == null || user.getEmail() == null
                 || user.getPassword_hash() == null) {
             return OpBOUtil.generateUOB("注册用户信息不全");
+        }
+        if (!user.getEmail().matches("(.*)@(.*)\\.(.*)") ||
+                !user.getName().matches("[\\w\\u4e00-\\u9fa5]{6,16}")) {
+            return OpBOUtil.generateUOB("注册用户含有非法数据");
         }
         user.setIntroduction("还没有填写个人介绍哟~");
         user.setHead_image("default");
@@ -76,13 +82,10 @@ public class UserIOServiceImpl implements UserIOService {
                 updateUser.getRoles().size() == 0) {
             return OpBOUtil.generateUOB("用户更新传入数据不能为空");
         }
-        if (IsUserNull(user)) {
+        if (userCheck(user)) {
             return OpBOUtil.generateUOB("用户更新的数据无效");
         }
-        if (user.getCreate_time().before(client.get(user.getId())
-                .getUser().getCreate_time())) {
-            return OpBOUtil.generateUOB("用户更新的创建时间错误");
-        }
+        updateUser.setUser(user);
         return client.update(updateUser);
     }
 
@@ -91,17 +94,35 @@ public class UserIOServiceImpl implements UserIOService {
         if (user == null) {
             return OpBOUtil.generateUOB("更新用户数据为空");
         }
-        if (IsUserNull(user)) {
+        if (userCheck(user)) {
             return OpBOUtil.generateUOB("用户更新的数据无效");
         }
         return client.infoUpdate(user);
+    }
+
+    private boolean userCheck(User user) {
+        if (IsUserNull(user)) {
+            return true;
+        }
+        User sqlUser = client.get(user.getId()).getUser();
+        String password = user.getPassword_hash();
+        if (!sqlUser.getPassword_hash().equals(password)) {
+            user.setPassword_hash(
+                    Base64.getEncoder()
+                            .encodeToString(
+                                    password.getBytes(StandardCharsets.UTF_8)));
+        }
+        if (user.getCreate_time().before(sqlUser.getCreate_time())) {
+            user.setCreate_time(sqlUser.getCreate_time());
+        }
+        return false;
     }
 
     private boolean IsUserNull(User user) {
         return user.getId() == 0 || user.getEmail().equals("")
                 || !user.getEmail().matches("(.*)@(.*)\\.(.*)")
                 || user.getEmail() == null || user.getName().equals("")
-                || user.getName().matches("\\w{16}") || user.getName() == null
+                || !user.getName().matches("[\\w\\u4e00-\\u9fa5]{6,16}") || user.getName() == null
                 || user.getCreate_time() == null || user.getPassword_hash().equals("")
                 || user.getPassword_hash() == null || user.getHead_image() == null
                 || user.getIntroduction() == null;

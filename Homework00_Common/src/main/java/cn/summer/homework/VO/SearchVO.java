@@ -16,5 +16,5 @@ import java.util.List;
 public class SearchVO<T> {
     private Integer code;
     private String message;
-    private List<T> courses;
+    private List<T> objects;
 }
