@@ -131,6 +131,14 @@ public class AdminController {
     /*
         course
      */
+
+    /**
+     * 新建课程
+     *
+     * @param in      tid+course
+     * @param request 检测是否为管理员操作
+     * @return AdminVO statusCode+message(新建cid)+info(cid值)
+     */
     @PostMapping("/c/course")
     public AdminVO createCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
@@ -149,10 +157,18 @@ public class AdminController {
             return course;
         } catch (IOException io) {
             logger.error("ad:[Create Course]SQL Course 获取异常", io);
+            esIndexDelete(IndexUtil.COURSE);
             return new AdminVO(500, "CreateCourse: SQL Course 获取异常", io.toString());
         }
     }
 
+    /**
+     * 更新课程信息
+     *
+     * @param in      tid+course
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(course)+info(course对象字符串)
+     */
     @PostMapping("/u/course")
     public AdminVO updateCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
@@ -171,10 +187,18 @@ public class AdminController {
             return course;
         } catch (IOException io) {
             logger.error("ad:[Update Course]SQL Course 获取异常", io);
+            esIndexDelete(IndexUtil.COURSE);
             return new AdminVO(500, "UpdateCourse: SQL Course 获取异常", io.toString());
         }
     }
 
+    /**
+     * 删除课程
+     *
+     * @param in      tid+cid
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message+info(原课程信息)
+     */
     @PostMapping("/d/course")
     public AdminVO deleteCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
@@ -200,6 +224,14 @@ public class AdminController {
 
     /*
         question
+     */
+
+    /**
+     * 创建问题
+     *
+     * @param in      tid+cid+question+type
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message+info
      */
     @PostMapping("/c/question")
     public AdminVO createQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {

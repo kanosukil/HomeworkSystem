@@ -240,8 +240,10 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new Exception("课程不存在");
             }
             Integer qtid = questionTypeDao.selectByName(type);
-            if (qtid <= 0) {
-                throw new Exception("问题类型不存在");
+            if (qtid == null || qtid <= 0) {
+                if (!createType(tid, type)) {
+                    throw new Exception("题目类型不存在(创建失败)");
+                }
             }
             if (!teacherCourseDao.selectByTID(tid).contains(cid)) {
                 throw new Exception("该课程并不由该老师教导");

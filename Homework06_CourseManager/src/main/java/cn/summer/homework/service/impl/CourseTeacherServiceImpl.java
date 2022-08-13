@@ -61,22 +61,21 @@ public class CourseTeacherServiceImpl implements CourseTeacherService {
         if (course == null || updateCourse.getTid() == 0) {
             return OpBOUtil.generateCOB("更新课程的传入数据不能为空");
         }
-        if (course.getName() == null || course.getName().equals("") ||
-                course.getId() == 0 || course.getTeacher_num() == null ||
-                course.getStudent_num() == null) {
+        if (course.getName() == null || course.getName().equals("")
+                || course.getId() == 0) {
             return OpBOUtil.generateCOB("更新课程的数据不能为空");
         }
-        CourseSTDTO before = client.get(course.getId());
-        if (before.getTeachers().size() != course.getTeacher_num()) {
+        try {
+            CourseSTDTO before = client.get(course.getId());
             course.setTeacher_num(before.getTeachers().size());
-        }
-        if (before.getStudents().size() != course.getStudent_num()) {
             course.setStudent_num(before.getStudents().size());
+            course.setCreate_time(before.getCourse().getCreate_time());
+            updateCourse.setCourse(course);
+            return client.update(updateCourse);
+        } catch (Exception ex) {
+            return OpBOUtil
+                    .generateCOB("更新课程获取数据异常[推测:courseID错误]");
         }
-        course.setCreate_time(before.getCourse().getCreate_time());
-        updateCourse.setCourse(course);
-        return client.update(updateCourse);
-
     }
 
     @Override

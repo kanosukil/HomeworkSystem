@@ -204,9 +204,7 @@ public class CourseServiceImpl implements CourseService {
             throw new SQLRWException("Course/TeacherCourse/StudentCourse 插入/删除异常");
         }
         setCourseOpDTO(courseOpBO,
-                flag == 3 ?
-                        "更新 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
-                        "更新 Course/TeacherCourse/StudentCourse 失败",
+                "Cause",
                 ex.getMessage());
 
     }
@@ -248,6 +246,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeTeacher(tid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -280,6 +281,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeStudent(sid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -312,6 +316,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeTeacher(uid, cid, course.getId());
             flag = 1;
             course.setName(name);
@@ -342,6 +349,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeStudent(sid, cid, course.getId());
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
@@ -384,6 +394,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeTeacher(tid, cid, course.getId());
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             CourseSTDTO afterCourseSTDTO;
@@ -431,9 +444,7 @@ public class CourseServiceImpl implements CourseService {
             throw new SQLRWException("Course/TeacherCourse/StudentCourse 删除异常");
         }
         setCourseOpDTO(courseOpBO,
-                flag >= 4 ?
-                        "删除 Course/TeacherCourse/StudentCourse 完成, 但仍有异常" :
-                        "删除 Course/TeacherCourse/StudentCourse 失败",
+                "Cause",
                 ex.getMessage());
     }
 
@@ -447,6 +458,9 @@ public class CourseServiceImpl implements CourseService {
 
         try {
             Course course = courseDao.selectByID(cid);
+            if (course == null) {
+                throw new Exception("课程不存在");
+            }
             judgeTeacher(uid, cid, course.getId());
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             homeworkService.selectHKByCID_T(cid).forEach(e
@@ -473,8 +487,8 @@ public class CourseServiceImpl implements CourseService {
                 put("被删除课程", srcCourseSTDTO);
             }});
         } catch (Exception ex) {
-            logger.error("CourseID: {} 删除异常", ex.getMessage());
-            updateExLog(courseOpBO, flag, ex);
+            logger.error("CourseID: {} 删除异常", cid);
+            deleteExLog(courseOpBO, flag, ex);
         }
         return courseOpBO;
     }
