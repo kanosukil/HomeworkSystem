@@ -187,7 +187,7 @@ public class UserController {
             if (!role.getIsSuccess()) {
                 throw new Exception("用户角色更新失败");
             }
-            logger.info("更新完成");
+            logger.info("用户更新完成");
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户更新失败: {}", ex.getMessage());
@@ -205,7 +205,7 @@ public class UserController {
             if (!update.getIsSuccess()) {
                 throw new Exception("更新用户数据失败");
             }
-            logger.info("更新完成");
+            logger.info("用户数据更新完成");
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户数据更新失败: {}", ex.getMessage());
@@ -220,7 +220,11 @@ public class UserController {
         Integer uid = roles.getUid();
         try {
             UserRoleDTO srcUser = userService.findUser(uid);
-            Map<String, Boolean> map = new HashMap<>();
+            Map<String, Boolean> map = new HashMap<>(3, 1f) {{
+                put("Student", false);
+                put("Teacher", false);
+                put("Admin", false);
+            }};
             srcUser.getRoles().forEach(e -> map.put(e, true));
             for (String role : roles.getRoles()) {
                 UserOpBO update;
@@ -233,7 +237,7 @@ public class UserController {
                     throw new Exception("更新用户角色失败");
                 }
             }
-            logger.info("更新完成");
+            logger.info("用户角色更新完成");
             setRes(res, true, "srcUser", srcUser);
         } catch (Exception ex) {
             logger.error("用户角色更新失败: {}", ex.getMessage());

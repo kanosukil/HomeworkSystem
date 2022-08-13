@@ -30,7 +30,7 @@ public class UserInfoController {
 
     private void isUserSelf(Integer id, HttpServletRequest request)
             throws IOException {
-        if (Integer.parseInt(request.getAttribute("userid").toString()) == id) {
+        if (Integer.parseInt(request.getAttribute("userid").toString()) != id) {
             throw new IOException("无效操作: 不允许操作其他用户");
         }
     }
@@ -43,6 +43,7 @@ public class UserInfoController {
             logger.error("[Update User]", e);
             return new UserVO<>(400, "UpdateUser: 无效操作", e.getMessage());
         }
+        logger.info("User: {}", update);
         UserOpBO res = userIO.update(
                 new UserRoleDTO(update.getUser(), update.getRoles()));
         return getStringUserVO(res);
@@ -56,6 +57,7 @@ public class UserInfoController {
             logger.error("[Update UserInfo]", e);
             return new UserVO<>(400, "UpdateUserInfo: 无效操作", e.getMessage());
         }
+        logger.info("User: {}", info);
         UserOpBO res = userIO.infoUpdate(info.getUser());
         return getStringUserVO(res);
     }
@@ -68,6 +70,7 @@ public class UserInfoController {
             logger.error("[Update UserRole]", e);
             return new UserVO<>(400, "UpdateUserRole: 无效操作", e.getMessage());
         }
+        logger.info("User: {}", role);
         UserOpBO res = userIO.roleUpdate(
                 new URoleDTO(role.getUid(), role.getRoles()));
         return getStringUserVO(res);
