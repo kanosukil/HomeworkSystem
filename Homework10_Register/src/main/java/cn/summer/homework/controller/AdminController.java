@@ -231,7 +231,7 @@ public class AdminController {
      *
      * @param in      tid+cid+question+type
      * @param request 检测是否为管理员
-     * @return AdminVO statusCode+message+info
+     * @return AdminVO statusCode+message(qid)+info(qid值)
      */
     @PostMapping("/c/question")
     public AdminVO createQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
@@ -255,6 +255,13 @@ public class AdminController {
         }
     }
 
+    /**
+     * 更新问题
+     *
+     * @param in      tid+qid+question+type
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(question)+info(question字符串)
+     */
     @PostMapping("/u/question")
     public AdminVO updateQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
@@ -277,6 +284,13 @@ public class AdminController {
         }
     }
 
+    /**
+     * 删除问题
+     *
+     * @param in      tid+qid
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(question)+info(question字符串)
+     */
     @PostMapping("/d/question")
     public AdminVO deleteQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");

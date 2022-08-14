@@ -152,7 +152,7 @@ public class HomeworkController {
             }
             logger.info("问题删除完成");
             setRes_Q(res, true, "Question",
-                    question.getInfo().get("Question".concat(tq.getQid().toString())));
+                    question.getInfo().get("SrcQuestion"));
         } catch (Exception ex) {
             logger.error("删除问题异常: {}", ex.getMessage());
             setRes_Q(res, false, "Cause", ex.getMessage());

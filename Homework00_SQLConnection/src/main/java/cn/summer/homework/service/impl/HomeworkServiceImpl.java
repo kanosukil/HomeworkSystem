@@ -144,11 +144,11 @@ public class HomeworkServiceImpl implements HomeworkService {
                 question);
     }
 
-    private void setHomeworkOpBO_Q(HomeworkOpBO homeworkOpBO_Q, String key, String value) {
+    private void setHomeworkOpBO_Q(HomeworkOpBO homeworkOpBO_Q, String value) {
         homeworkOpBO_Q.setIsSuccess(false);
         homeworkOpBO_Q.setIsQuestion(true);
         homeworkOpBO_Q.setInfo(new HashMap<>(1, 1f) {{
-            put(key, value);
+            put("Cause", value);
         }});
     }
 
@@ -158,11 +158,11 @@ public class HomeworkServiceImpl implements HomeworkService {
         homeworkOpBO_Q.setInfo(map);
     }
 
-    private void setHomeworkOpBO_R(HomeworkOpBO homeworkOpBO_Q, String key, String value) {
+    private void setHomeworkOpBO_R(HomeworkOpBO homeworkOpBO_Q, String value) {
         homeworkOpBO_Q.setIsSuccess(false);
         homeworkOpBO_Q.setIsQuestion(false);
         homeworkOpBO_Q.setInfo(new HashMap<>(1, 1f) {{
-            put(key, value);
+            put("Cause", value);
         }});
     }
 
@@ -206,7 +206,11 @@ public class HomeworkServiceImpl implements HomeworkService {
     public List<QuestionResultDTO> selectHKByQuestionType(String type)
             throws Exception {
         List<QuestionResultDTO> res = new ArrayList<>();
-        for (Integer qid : question_typeDao.selectByQTID(questionTypeDao.selectByName(type))) {
+        Integer qtid = questionTypeDao.selectByName(type);
+        if (qtid == null) {
+            throw new Exception("问题类型不存在");
+        }
+        for (Integer qid : question_typeDao.selectByQTID(qtid)) {
             res.add(getQR_DTO(qid));
         }
         return res;
@@ -235,7 +239,7 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Course course = courseDao.selectByID(cid);
-            if (!Objects.equals(course.getId(), cid)) {
+            if (course == null || !Objects.equals(course.getId(), cid)) {
                 throw new Exception("课程不存在");
             }
             Integer qtid = questionTypeDao.selectByName(type);
@@ -282,8 +286,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("Question/TeacherQuestion/QuestionCourse/Question_Type 插入异常");
             }
             setHomeworkOpBO_Q(homeworkOpBO,
-                    flag == 5 ? "Question/TeacherQuestion/QuestionCourse/Question_Type 插入完成, 但仍有异常" :
-                            "Question/TeacherQuestion/QuestionCourse/Question_Type 插入失败",
                     ex.getMessage());
         }
 
@@ -309,15 +311,12 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (teacherQuestionDao.accurateSelect(new TeacherQuestion(tid, qid)) <= 0) {
                 throw new Exception("用户权限不够");
             }
-            Map<String, Object> map = new HashMap<>();
+            QuestionResultDTO qr_dto = getQR_DTO(question);
             flag = 1;
             delete[0] = 0;
             delete[1] = 0;
             delete[2] = 0;
             questionResultDao.selectByQID(qid).forEach(e -> {
-                Result result = resultDao.selectByID(e);
-                map.put("Result".concat(result.getId().toString()),
-                        getRQ_DTO(result));
                 delete[0] += studentResultDao.deleteByRID(e);
                 delete[1] += resultCourseDao.deleteByRID(e);
                 delete[2] += resultDao.deleteByID(e);
@@ -330,7 +329,6 @@ public class HomeworkServiceImpl implements HomeworkService {
             flag = 4;
             delete[6] = teacherQuestionDao.deleteByQID(qid);
             flag = 5;
-            map.put("Question".concat(qid.toString()), getQR_DTO(question));
             delete[7] = questionDao.deleteByID(qid);
             flag = 6;
             logger.info("QuestionID: {} 删除完成", qid);
@@ -344,7 +342,9 @@ public class HomeworkServiceImpl implements HomeworkService {
             logger.info("QuestionCourse 删除了 {} 条数据", delete[5]);
             logger.info("TeacherQuestion 删除了 {} 条数据", delete[6]);
             logger.info("Question 删除了 {} 条数据", delete[7]);
-            setHomeworkOpBO_Q(homeworkOpBO, map);
+            setHomeworkOpBO_Q(homeworkOpBO, new HashMap<>(1, 1f) {{
+                put("SrcQuestion", qr_dto);
+            }});
         } catch (Exception ex) {
             logger.error("QuestionID: {} 删除异常", qid);
             switch (flag) {
@@ -360,8 +360,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("Question 删除异常");
             }
             setHomeworkOpBO_Q(homeworkOpBO,
-                    flag == 6 ? "Question 删除完成, 但仍有异常" :
-                            "Question 删除失败",
                     ex.getMessage());
         }
         return homeworkOpBO;
@@ -379,8 +377,6 @@ public class HomeworkServiceImpl implements HomeworkService {
             throw new SQLRWException("Question/Question_Type 删除异常");
         }
         setHomeworkOpBO_Q(homeworkOpBO,
-                flag == 3 ? "Question/Question_Type 删除完成, 但仍有异常" :
-                        "Question/TQuestion_Type 删除失败",
                 ex.getMessage());
     }
 
@@ -391,6 +387,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         HomeworkOpBO homeworkOpBO = new HomeworkOpBO();
         int flag = 0;
         Integer id = question.getId();
+
         try {
             if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
@@ -438,8 +435,12 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new Exception("用户权限不够");
             }
             Integer qtid = questionTypeDao.selectByName(type);
-            if (qtid <= 0) {
-                throw new Exception("问题类型不存在");
+            if (qtid == null || qtid <= 0) {
+                if (createType(tid, type)) {
+                    qtid = questionTypeDao.selectByName(type);
+                } else {
+                    throw new Exception("问题类型不存在");
+                }
             }
             QuestionResultDTO src = getQR_DTO(qid);
             flag = 2;
@@ -478,8 +479,12 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Integer qtid = questionTypeDao.selectByName(type);
-            if (qtid <= 0) {
-                throw new Exception("问题类型不存在");
+            if (qtid == null || qtid <= 0) {
+                if (createType(tid, type)) {
+                    qtid = questionTypeDao.selectByName(type);
+                } else {
+                    throw new Exception("问题类型不存在");
+                }
             }
             Question srcQuestion = selectHKByQID(qid).getQuestion();
             if (srcQuestion == null) {
@@ -558,7 +563,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("Teacher 批改 Result 更新异常");
             }
             setHomeworkOpBO_R(homeworkOpBO,
-                    flag == 2 ? "Result 更新完成, 但仍有异常" : "Result 更新失败",
                     ex.getMessage());
         }
         return homeworkOpBO;
@@ -689,7 +693,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("新建 Result 异常");
             }
             setHomeworkOpBO_R(homeworkOpBO,
-                    flag == 5 ? "新建 Result 完成, 但仍有异常" : "新建 Result 失败",
                     ex.getMessage());
         }
         return homeworkOpBO;
@@ -704,7 +707,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int[] delete = new int[4];
 
         try {
-            Result srcResult = checkResult(sid, rid);
+            ResultQuestionDTO rq_dto = getRQ_DTO(checkResult(sid, rid));
             flag = 1;
             delete[3] = studentResultDao.accurateDelete(new StudentResult(sid, rid));
             flag = 2;
@@ -720,7 +723,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             logger.info("ResultCourse 删除 {} 条数据", delete[2]);
             logger.info("StudentResult 删除 {} 条数据", delete[3]);
             setHomeworkOpBO_R(homeworkOpBO, new HashMap<>(1, 1f) {{
-                put("srcResult", getRQ_DTO(srcResult));
+                put("srcResult", rq_dto);
             }});
         } catch (Exception ex) {
             logger.error("UserID: {} 新建回答异常", sid);
@@ -736,7 +739,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("删除 Result 异常");
             }
             setHomeworkOpBO_R(homeworkOpBO,
-                    flag == 5 ? "删除 Result 完成, 但仍有异常" : "删除 Result 失败",
                     ex.getMessage());
         }
         return homeworkOpBO;
@@ -786,7 +788,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 throw new SQLRWException("更新 Result 异常");
             }
             setHomeworkOpBO_R(homeworkOpBO,
-                    flag == 2 ? "更新 Result 完成, 但仍有异常" : "更新 Result 失败",
                     ex.getMessage());
         }
         return homeworkOpBO;

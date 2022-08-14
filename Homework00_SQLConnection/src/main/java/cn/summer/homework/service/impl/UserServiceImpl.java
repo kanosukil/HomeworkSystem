@@ -42,6 +42,9 @@ public class UserServiceImpl implements UserService {
     public boolean isStudent(Integer id) {
         // 获取 UserRole 信息
         List<Integer> roles = userRoleDao.selectByUser(id);
+        if (roles == null) {
+            return false;
+        }
         // 获取 Role: Student id
         Integer student = roleDao.selectByName("Student");
         // 比对 UserRole 信息中是否有 Role: Student
@@ -57,11 +60,10 @@ public class UserServiceImpl implements UserService {
     public boolean isTeacher(Integer id) {
         // 获取 Role: Teacher id
         Integer teacher = roleDao.selectByName("Teacher");
-        // 获取 UserRole 信息
-        List<Integer> users = userRoleDao.selectByRole(teacher);
         // 比对 UserRole 中是否有 Role: Teacher id
         AtomicBoolean res = new AtomicBoolean(false);
-        users.forEach(e -> {
+        // 获取 UserRole 信息
+        userRoleDao.selectByRole(teacher).forEach(e -> {
             if (e.equals(id)) {
                 res.set(true);
             }
@@ -74,6 +76,9 @@ public class UserServiceImpl implements UserService {
     public boolean isAdmin(Integer id) {
         // 获取 UserRole 信息
         List<Integer> roles = userRoleDao.selectByUser(id);
+        if (roles == null) {
+            return false;
+        }
         // 直接比对
         for (Integer role : roles) {
             if ("Admin".equals(roleDao.selectByID(role)))
@@ -85,7 +90,8 @@ public class UserServiceImpl implements UserService {
     // 用户是否存在
     @Override
     public boolean isExists(String name) {
-        return userDao.selectByName(name).size() > 0;
+        List<User> users = userDao.selectByName(name);
+        return users != null && users.size() > 0;
     }
 
     @Override
