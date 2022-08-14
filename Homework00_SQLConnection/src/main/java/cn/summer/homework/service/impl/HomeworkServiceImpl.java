@@ -85,7 +85,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         // QuestionResultDTO(Question, Type, Teacher, Map<Student, Result>)
         // Question
         Question question = getQuestion(qid);
-        if (!Objects.equals(question.getId(), qid)) {
+        if (question == null || !Objects.equals(question.getId(), qid)) {
             throw new Exception("问题 Question 不存在");
         }
         return getQR_DTO(question);
@@ -96,16 +96,15 @@ public class HomeworkServiceImpl implements HomeworkService {
         // Type
         StringBuilder type = new StringBuilder();
         question_typeDao.selectByQID(qid).forEach(e ->
-                type.append(questionTypeDao.selectByID(e)));
+                type.append(questionTypeDao.selectByID(e))
+                        .append(","));
         // Map<Student, Result>
-        Map<User, Result> results = new HashMap<>();
+        Map<Integer, Integer> results = new HashMap<>();
         getResultsByQID(qid).forEach(e ->
-                results.put(
-                        getUser(studentResultDao.selectByRID(e)),
-                        getResult(e))
+                results.put(studentResultDao.selectByRID(e), e)
         );
         return new QuestionResultDTO(question,
-                type.toString(),
+                type.substring(0, type.lastIndexOf(",")),
                 getUser(teacherQuestionDao.selectByQID(qid)),
                 results);
     }
@@ -116,7 +115,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         // ResultQuestionDTO(Result, Student, Map<Teacher, Map<Type, Question>>)
         // result
         Result result = getResult(rid);
-        if (!Objects.equals(result.getId(), rid)) {
+        if (result == null || !Objects.equals(result.getId(), rid)) {
             throw new Exception("答案 Result 不存在");
         }
         return getRQ_DTO(result);
@@ -129,14 +128,14 @@ public class HomeworkServiceImpl implements HomeworkService {
         Integer qid = getQuestionByRID(rid);
         question_typeDao.selectByQID(qid).forEach(e ->
                 type.append(questionTypeDao.selectByID(e))
-                        .append(' '));
+                        .append(","));
         // Map<Teacher, Map<Type, Question>>
-        Map<User, Map<String, Question>> question
+        Map<Integer, Map<String, Integer>> question
                 = new HashMap<>(1, 1f) {{
-            put(getUser(teacherQuestionDao.selectByQID(qid)),
+            put(teacherQuestionDao.selectByQID(qid),
                     // Map<Type, Question>
                     new HashMap<>(1, 1f) {{
-                        put(type.toString(), getQuestion(qid));
+                        put(type.substring(0, type.lastIndexOf(",")), qid);
                     }});
         }};
         return new ResultQuestionDTO(
@@ -243,6 +242,8 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (qtid == null || qtid <= 0) {
                 if (!createType(tid, type)) {
                     throw new Exception("题目类型不存在(创建失败)");
+                } else {
+                    qtid = questionTypeDao.selectByName(type);
                 }
             }
             if (!teacherCourseDao.selectByTID(tid).contains(cid)) {

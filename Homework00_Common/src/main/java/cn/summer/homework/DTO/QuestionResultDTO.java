@@ -1,7 +1,6 @@
 package cn.summer.homework.DTO;
 
 import cn.summer.homework.Entity.Question;
-import cn.summer.homework.Entity.Result;
 import cn.summer.homework.Entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,5 +21,5 @@ public class QuestionResultDTO implements Serializable {
     private Question question;
     private String questionType;
     private User teacher;
-    private Map<User, Result> results;
+    private Map<Integer, Integer> results; // key: uid, value: rid
 }
