@@ -43,20 +43,25 @@ public class QuestionIOServiceImpl implements QuestionIOService {
 
     @Override
     public HomeworkOpBO updateQuestion(NewQuestionDTO updateQuestion) {
+        if (updateQuestion.getTid() == 0) {
+            return OpBOUtil.generateHOBq("更新问题的tid不能为空");
+        }
         Question question = updateQuestion.getQuestion();
-        if (question == null || updateQuestion.getType().equals("") ||
-                updateQuestion.getId() == 0 || updateQuestion.getTid() == 0) {
-            return OpBOUtil.generateHOBq("更新问题的传入数据不能为空");
+        if (question == null) {
+            if (updateQuestion.getId() == 0 || updateQuestion.getType().equals("")) {
+                return OpBOUtil.generateHOBq("更新问题的qid和type不能为空");
+            }
+        } else {
+            if (question.getTitle() == null || question.getId() == 0 ||
+                    question.getIsFile() == null || question.getScore() == null ||
+                    question.getAnswer() == null || question.getComment() == null ||
+                    question.getExtension() == null) {
+                return OpBOUtil.generateHOBq("更新问题的数据不能为空");
+            }
+            question.setCreate_time(client.getQuestion(question.getId())
+                    .getQuestion().getCreate_time());
+            updateQuestion.setQuestion(question);
         }
-        if (question.getTitle() == null || question.getId() == 0 ||
-                question.getIsFile() == null || question.getScore() == null ||
-                question.getAnswer() == null || question.getComment() == null ||
-                question.getExtension() == null) {
-            return OpBOUtil.generateHOBq("更新问题的数据不能为空");
-        }
-        question.setCreate_time(client.getQuestion(question.getId())
-                .getQuestion().getCreate_time());
-        updateQuestion.setQuestion(question);
         return client.updateQuestion(updateQuestion);
     }
 

@@ -120,6 +120,7 @@ public class HomeworkController {
             Integer qid = updateQuestion.getId();
             String type = updateQuestion.getType();
             HomeworkOpBO op;
+//            logger.info("Tid: {}-Question: {}-Qid: {}-Type: {}", tid, question, qid, type);
             if (type.equals("")) {
                 op = homeworkService.updateQuestion(tid, question);
             } else if (question == null) {

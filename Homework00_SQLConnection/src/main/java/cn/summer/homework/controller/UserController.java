@@ -231,10 +231,13 @@ public class UserController {
                 put("Teacher", false);
                 put("Admin", false);
             }};
-            for (String role : roles.getRoles()) {
+            List<String> inputRoles = roles.getRoles();
+            for (String role : inputRoles) {
+                // role 不存在
                 if (map.get(role) == null) {
                     return userService.updateUserRole(uid, role);
                 }
+                // user 非 role
                 if (!map.get(role)) {
                     if (!userService.updateUserRole(uid, role).getIsSuccess()) {
                         throw new Exception("更新用户角色失败");
@@ -243,9 +246,10 @@ public class UserController {
                 }
                 flag.put(role, true);
             }
+            // user 为 role 但是需要删除
             if (flag.containsValue(false)) {
                 for (String role : flag.keySet()) {
-                    if ((!flag.get(role)) || map.get(role)) {
+                    if ((!flag.get(role)) && map.get(role)) {
                         if (!userService.deleteUserRole(uid, role).getIsSuccess()) {
                             throw new Exception("更新用户角色失败");
                         }

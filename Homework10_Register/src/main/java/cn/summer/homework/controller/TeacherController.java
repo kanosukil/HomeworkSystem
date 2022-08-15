@@ -65,6 +65,14 @@ public class TeacherController {
     /*
         course
      */
+
+    /**
+     * 新建课程
+     *
+     * @param in      tid+course
+     * @param request 检测是否为本人操作
+     * @return TeacherVO code+msg(cid)+info(cid值)
+     */
     @PostMapping("/c/course")
     public TeacherVO createCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
@@ -86,6 +94,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 更新课程
+     *
+     * @param in      tid+update
+     * @param request 检测是否为本人操作
+     * @return TeacherVO code+msg(course)+info(更新前的值)
+     */
     @PostMapping("/u/course")
     public TeacherVO updateCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
@@ -107,6 +122,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 删除课程
+     *
+     * @param in      tid+cid
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(course)+info(删除前的值)
+     */
     @PostMapping("/d/course")
     public TeacherVO deleteCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
@@ -121,6 +143,8 @@ public class TeacherController {
             before.setId(in.getCid());
             if (es.delete(new CourseSTDTO(before, null, null))) {
                 logger.info("<course>MQ ES Delete 成功");
+                esIndexDelete(IndexUtil.QUESTION);
+                esIndexDelete(IndexUtil.RESULT);
             } else {
                 logger.warn("<course>MQ ES delete 异常, 未删除指定 ES 文档");
                 esIndexDelete(IndexUtil.COURSE);
@@ -131,6 +155,14 @@ public class TeacherController {
 
     /*
         question
+     */
+
+    /**
+     * 新建问题
+     *
+     * @param in      tid+cid+question+type
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(qid)+info(qid值)
      */
     @PostMapping("/c/question")
     public TeacherVO createQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
@@ -153,6 +185,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 更新问题
+     *
+     * @param in      tid+question 或 tid+qid+type 或 tid+question+type
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(question)+info(更新后的值)
+     */
     @PostMapping("/u/question")
     public TeacherVO updateQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         try {
@@ -174,6 +213,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 删除问题
+     *
+     * @param in      tid+qid
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(question)+info(删除前的值)
+     */
     @PostMapping("/d/question")
     public TeacherVO deleteQuestion(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         try {
@@ -189,6 +235,7 @@ public class TeacherController {
             if (es.delete(new QuestionResultDTO(before,
                     null, null, null))) {
                 logger.info("<question>MQ ES Delete 成功");
+                esIndexDelete(IndexUtil.RESULT);
             } else {
                 logger.warn("<question>MQ ES delete 异常, 未删除指定 ES 文档");
                 esIndexDelete(IndexUtil.QUESTION);
@@ -199,6 +246,14 @@ public class TeacherController {
 
     /*
         type
+     */
+
+    /**
+     * 新建题目类型
+     *
+     * @param in      tid+type
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(type)+info(successful)
      */
     @PostMapping("/c/type")
     public TeacherVO createType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
@@ -211,6 +266,13 @@ public class TeacherController {
         return teacher.createType(in);
     }
 
+    /**
+     * 删除题目类型
+     *
+     * @param in      tid+type
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(type)+info(successful)
+     */
     @PostMapping("/d/type")
     public TeacherVO deleteType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         try {
@@ -246,6 +308,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 课程添加老师
+     *
+     * @param in      tid+cid
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(course)+info(更新后的course值)
+     */
     @PostMapping("/ao/add/course")
     public TeacherVO addCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
@@ -267,6 +336,13 @@ public class TeacherController {
         }
     }
 
+    /**
+     * 老师从课程中退出
+     *
+     * @param in      tid+cid
+     * @param request 检测是否为本人
+     * @return TeacherVO code+msg(course)+info(更新后的course值)
+     */
     @PostMapping("/ao/drop/course")
     public TeacherVO dropCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {

@@ -91,13 +91,17 @@ public class HomeworkServiceImpl implements HomeworkService {
         return getQR_DTO(question);
     }
 
-    private QuestionResultDTO getQR_DTO(Question question) {
+    private QuestionResultDTO getQR_DTO(Question question)
+            throws Exception {
         Integer qid = question.getId();
         // Type
         StringBuilder type = new StringBuilder();
         question_typeDao.selectByQID(qid).forEach(e ->
                 type.append(questionTypeDao.selectByID(e))
                         .append(","));
+        if (type.toString().equals("")) {
+            throw new Exception("问题类型无法获取, 操作异常");
+        }
         // Map<Student, Result>
         Map<Integer, Integer> results = new HashMap<>();
         getResultsByQID(qid).forEach(e ->
@@ -178,7 +182,13 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     public List<QuestionResultDTO> selectAllHK_T() {
         List<QuestionResultDTO> res = new ArrayList<>();
-        questionDao.selectAll().forEach(e -> res.add(getQR_DTO(e)));
+        try {
+            for (Question question : questionDao.selectAll()) {
+                res.add(getQR_DTO(question));
+            }
+        } catch (Exception ex) {
+            logger.error("Question 获取异常: {}", ex.getMessage());
+        }
         return res;
     }
 
@@ -378,8 +388,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (flag == 1 || flag == 2) {
             throw new SQLRWException("Question/Question_Type 删除异常");
         }
-        setHomeworkOpBO_Q(homeworkOpBO,
-                ex.getMessage());
+        setHomeworkOpBO_Q(homeworkOpBO, ex.getMessage());
     }
 
     @Override
@@ -447,10 +456,11 @@ public class HomeworkServiceImpl implements HomeworkService {
             QuestionResultDTO src = getQR_DTO(qid);
             flag = 2;
             QuestionType questionType = new QuestionType(qid, qtid);
-            int update;
-            if (question_typeDao.accurateSelect(questionType) > 0) {
+            int update = 0;
+            int i = question_typeDao.accurateSelect(questionType);
+            if (i > 0 && question_typeDao.selectByQID(qid).size() > 1) {
                 update = question_typeDao.accurateDelete(questionType);
-            } else {
+            } else if (i <= 0) {
                 update = question_typeDao.createTypeOfQuestion(questionType);
             }
             flag = 3;
@@ -500,15 +510,16 @@ public class HomeworkServiceImpl implements HomeworkService {
             update[0] = questionDao.updateQuestion(question);
             flag = 2;
             QuestionType questionType = new QuestionType(qid, qtid);
-            if (question_typeDao.accurateSelect(questionType) > 0) {
+            int i = question_typeDao.accurateSelect(questionType);
+            if (i > 0 && question_typeDao.selectByQID(qid).size() > 1) {
                 update[1] = question_typeDao.accurateDelete(questionType);
-            } else {
+            } else if (i <= 0) {
                 update[1] = question_typeDao.createTypeOfQuestion(questionType);
             }
             flag = 3;
             logger.info("QuestionID: {} 更新完成", qid);
-            logger.info("Question 更新了 {} 条数据", update);
-            logger.info("Question_Type 更新了 {} 条数据", update);
+            logger.info("Question 更新了 {} 条数据", update[0]);
+            logger.info("Question_Type 更新了 {} 条数据", update[1]);
             setHomeworkOpBO_Q(homeworkOpBO, new HashMap<>(2, 1f) {{
                 put("srcQuestion", qr_dto);
                 put("updateQuestion", getQR_DTO(question));

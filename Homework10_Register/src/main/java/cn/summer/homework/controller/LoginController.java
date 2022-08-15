@@ -123,21 +123,21 @@ public class LoginController {
         UserOpBO reg = userIOService.register(new UserRoleDTO(newUser, new ArrayList<>(1) {{
             add("Student");
         }}));
-        try {
-            if (ess.save(userIOService.login(newUser.getEmail()))) {
-                logger.info("ES Save New User 完成");
-            } else {
-                logger.warn("ES Save New User 异常");
-                deleteUserIndex();
-            }
-        } catch (IOException io) {
-            logger.error("ES Save New User Exception: {}", io.getMessage());
-            deleteUserIndex();
-        }
-        logger.info("Result: {}", reg);
         if (!reg.getIsSuccess()) {
             return new UserVO<>(400, reg.getInfo().get("Cause").toString(), "");
         } else {
+            try {
+                if (ess.save(userIOService.login(newUser.getEmail()))) {
+                    logger.info("ES Save New User 完成");
+                } else {
+                    logger.warn("ES Save New User 异常");
+                    deleteUserIndex();
+                }
+            } catch (IOException io) {
+                logger.error("ES Save New User Exception: {}", io.getMessage());
+                deleteUserIndex();
+            }
+            logger.info("Result: {}", reg);
             return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
                     new UserDTO(
                             Integer.parseInt(reg.getInfo().get("uid").toString()),
@@ -175,13 +175,13 @@ public class LoginController {
                 throw new IOException("无效操作: 不允许操作其他用户");
             }
             UserOpBO logoff = userIOService.logoff(email);
-            if (ess.delete(ur)) {
-                logger.info("ES Delete User 完成");
-            } else {
-                logger.warn("ES Delete User 异常");
-                deleteUserIndex();
-            }
             if (logoff.getIsSuccess()) {
+                if (ess.delete(ur)) {
+                    logger.info("ES Delete User 完成");
+                } else {
+                    logger.warn("ES Delete User 异常");
+                    deleteUserIndex();
+                }
                 return new UserVO<>(200, "OK",
                         logoff.getInfo().toString());
             } else {
