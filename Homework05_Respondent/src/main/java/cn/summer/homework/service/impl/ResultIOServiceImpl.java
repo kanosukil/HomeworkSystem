@@ -46,14 +46,21 @@ public class ResultIOServiceImpl implements ResultIOService {
         if (result == null || updateResult.getUid() == 0) {
             return OpBOUtil.generateHOBr("更新回答传入数据不能为空");
         }
-        if (result.getId() == 0 || result.getIsCheck() == null ||
-                result.getIsFile() == null || result.getComment() == null ||
-                result.getScore() == null || result.getContent() == null) {
+        if (result.getId() == 0 || result.getIsFile() == null
+                || result.getContent() == null) {
             return OpBOUtil.generateHOBr("更新回答的传入数据不能为空");
+        }
+        Boolean isCheck = result.getIsCheck();
+        if (isCheck == null) {
+            result.setIsCheck(false);
+            isCheck = false;
+        }
+        if (isCheck) {
+            return OpBOUtil.generateHOBr("回答已批改, 不能再更新");
         }
         Result before = client.getResult(result.getId()).getResult();
         result.setCreate_time(before.getCreate_time());
-        if (result.getScore() < before.getScore()) {
+        if (result.getScore() == null || result.getScore() < before.getScore()) {
             result.setScore(before.getScore());
         }
         updateResult.setResult(result);

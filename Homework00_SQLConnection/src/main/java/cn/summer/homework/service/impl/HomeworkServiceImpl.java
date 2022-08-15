@@ -298,7 +298,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             throws SQLRWException {
         HomeworkOpBO homeworkOpBO = new HomeworkOpBO();
         int flag = 0;
-        int[] delete = new int[8];
+        int[] delete = new int[9];
 
         try {
             if (!userService.isTeacher(tid)) {
@@ -319,6 +319,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             questionResultDao.selectByQID(qid).forEach(e -> {
                 delete[0] += studentResultDao.deleteByRID(e);
                 delete[1] += resultCourseDao.deleteByRID(e);
+                delete[8] += questionResultDao.deleteByRID(e);
                 delete[2] += resultDao.deleteByID(e);
             });
             delete[3] = questionResultDao.deleteByQID(qid);
@@ -335,6 +336,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             logger.info("Result 部分");
             logger.info("StudentResult 删除了 {} 条数据", delete[0]);
             logger.info("ResultCourse 删除了 {} 条数据", delete[1]);
+            logger.info("QuestionResult 删除了 {} 条数据", delete[8]);
             logger.info("Result 删除了 {} 条数据", delete[2]);
             logger.info("QuestionResult 删除了 {} 条数据", delete[3]);
             logger.info("Question 部分");
@@ -657,8 +659,15 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (!studentCourseDao.selectBySID(sid).contains(cid)) {
                 throw new Exception("用户并未选修该课");
             }
-            if (questionCourseDao.accurateDelete(new QuestionCourse(qid, cid)) <= 0) {
+            if (questionCourseDao.accurateSelect(new QuestionCourse(qid, cid)) <= 0) {
                 throw new Exception("课程下没有指定问题");
+            }
+            List<Integer> rids = questionResultDao.selectByQID(qid);
+            List<Integer> ridss = studentResultDao.selectBySID(sid);
+            for (Integer rid : rids) {
+                if (ridss.contains(rid)) {
+                    throw new Exception("已作答");
+                }
             }
             flag = 1;
             insert[0] = resultDao.createNewResult(result);

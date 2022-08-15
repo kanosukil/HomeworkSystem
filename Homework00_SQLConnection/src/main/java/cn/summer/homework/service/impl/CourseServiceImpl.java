@@ -230,10 +230,6 @@ public class CourseServiceImpl implements CourseService {
         if (!Objects.equals(afterFindCID, cid)) {
             throw new Exception("课程不存在");
         }
-        if (studentCourseDao.accurateSelect(new StudentCourse(sid, cid)) <= 0) {
-            throw new Exception("用户权限不够");
-
-        }
     }
 
     @Override
@@ -353,6 +349,9 @@ public class CourseServiceImpl implements CourseService {
                 throw new Exception("课程不存在");
             }
             judgeStudent(sid, cid, course.getId());
+            if (studentCourseDao.accurateSelect(new StudentCourse(sid, cid)) <= 0) {
+                throw new Exception("用户权限不够");
+            }
             flag = 1;
             CourseSTDTO srcCourseSTDTO = getCourseSTDTO(course);
             course.setStudent_num(course.getStudent_num() - 1);

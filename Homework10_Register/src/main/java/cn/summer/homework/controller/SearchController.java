@@ -455,4 +455,24 @@ public class SearchController {
             return new SearchVO<>(500, "Result-Search:Error", null);
         }
     }
+
+    /**
+     * 获取全部问题类型
+     *
+     * @param s 分页
+     * @return SearchResultVO 状态码, 消息, 用户信息
+     */
+    @GetMapping("/type/all")
+    public SearchVO<String> getType(@RequestBody SearchDTO s) {
+        try {
+            List<String> types = find.types();
+            if (types == null) {
+                throw new IOException("问题类型获取异常");
+            }
+            return new SearchVO<>(200, "OK", types);
+        } catch (Exception ex) {
+            logger.error("SQL Type 获取异常", ex);
+            return new SearchVO<>(500, "Type-Search:Error", null);
+        }
+    }
 }

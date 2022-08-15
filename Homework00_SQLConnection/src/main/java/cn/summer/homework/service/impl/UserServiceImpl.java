@@ -48,11 +48,8 @@ public class UserServiceImpl implements UserService {
         // 获取 Role: Student id
         Integer student = roleDao.selectByName("Student");
         // 比对 UserRole 信息中是否有 Role: Student
-        for (Integer role : roles) {
-            if (role.equals(student))
-                return true;
-        }
-        return false;
+//        logger.info("UserID: {}-Roles: {}-StudentID: {}", id, roles, student);
+        return roles.contains(student);
     }
 
     // role->userRole==id

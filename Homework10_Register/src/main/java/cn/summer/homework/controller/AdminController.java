@@ -318,6 +318,14 @@ public class AdminController {
     /*
         type
      */
+
+    /**
+     * 新建问题类型
+     *
+     * @param in      tid+type
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(type)+info(successful)
+     */
     @PostMapping("/c/type")
     public AdminVO createType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
@@ -330,6 +338,13 @@ public class AdminController {
         return admin.createType(in);
     }
 
+    /**
+     * 删除问题类型
+     *
+     * @param in      tid+typeid/type
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(type)+info(successful)
+     */
     @PostMapping("/d/type")
     public AdminVO deleteType(@RequestBody QuestionInDTO in, HttpServletRequest request) {
         logger.info("Administer Operation");
