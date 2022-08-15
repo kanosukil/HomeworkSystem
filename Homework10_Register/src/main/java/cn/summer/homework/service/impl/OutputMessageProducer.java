@@ -135,6 +135,7 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     @Override
     public <T> Boolean update(T doc) {
         try {
+            logger.info("Doc:{}", doc);
             Map<String, String> info = getInfo(doc);
             Message<String> message = getMessage(doc, info.get("index"), info.get("id"), 0);
 //            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));

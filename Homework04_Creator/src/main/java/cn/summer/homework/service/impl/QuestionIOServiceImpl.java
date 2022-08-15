@@ -76,7 +76,8 @@ public class QuestionIOServiceImpl implements QuestionIOService {
     @Override
     public HomeworkOpBO correctResult(NewResultDTO correctResult) {
         Result result = correctResult.getResult();
-        if (result == null || correctResult.getUid() == 0) {
+        if (result == null || correctResult.getUid() == 0 ||
+                correctResult.getQid() == 0) {
             return OpBOUtil.generateHOBq("批改时传入的数据不能为空");
         }
         if (result.getId() == 0 || result.getIsCheck() == null ||
@@ -92,6 +93,10 @@ public class QuestionIOServiceImpl implements QuestionIOService {
                 .getQuestion().getScore()) {
             return OpBOUtil.generateHOBq("批改分数不符规定");
         }
+        Result srcResult = client.getResult(result.getId()).getResult();
+        result.setIsFile(srcResult.getIsFile());
+        result.setContent(srcResult.getContent());
+        correctResult.setResult(result);
         return client.correctResult(correctResult);
     }
 

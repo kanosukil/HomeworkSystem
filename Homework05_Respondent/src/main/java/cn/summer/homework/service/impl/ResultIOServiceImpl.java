@@ -28,8 +28,7 @@ public class ResultIOServiceImpl implements ResultIOService {
                 newResult.getCid() == 0 || newResult.getQid() == 0) {
             return OpBOUtil.generateHOBr("新建回答传入数据不能为空");
         }
-        if (result.getId() == 0 || result.getIsFile() == null
-                || result.getContent() == null || result.getCreate_time() == null) {
+        if (result.getIsFile() == null || result.getContent() == null) {
             return OpBOUtil.generateHOBr("新建回答的数据不能空");
         }
         result.setCreate_time(new Date());
@@ -53,6 +52,7 @@ public class ResultIOServiceImpl implements ResultIOService {
         Boolean isCheck = result.getIsCheck();
         if (isCheck == null) {
             result.setIsCheck(false);
+            result.setComment("");
             isCheck = false;
         }
         if (isCheck) {

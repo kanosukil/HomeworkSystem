@@ -61,6 +61,13 @@ public class StudentController {
         }
     }
 
+    /**
+     * 新建回答
+     *
+     * @param in      qid+cid+sid+result{content+isFile}
+     * @param request 检测是否为本人
+     * @return Student code+msg(rid)+info(rid值)
+     */
     @PostMapping("/c/result")
     public StudentVO createResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         try {
@@ -82,6 +89,13 @@ public class StudentController {
         }
     }
 
+    /**
+     * 更新回答
+     *
+     * @param in      sid+result(批改后不能修改)
+     * @param request 检测是否为本人
+     * @return StudentVO code+msg(result)+info(更新后result值)
+     */
     @PostMapping("/u/result")
     public StudentVO updateResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         try {
@@ -103,6 +117,13 @@ public class StudentController {
         }
     }
 
+    /**
+     * 删除回答
+     *
+     * @param in      sid+rid
+     * @param request 检测是否为本人
+     * @return StudentVO code+msg(result)+info(删除前result值)
+     */
     @PostMapping("/d/result")
     public StudentVO deleteResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
         try {
@@ -126,6 +147,13 @@ public class StudentController {
         return result;
     }
 
+    /**
+     * 选修一门课
+     *
+     * @param in      cid+sid
+     * @param request 检测是否为本人
+     * @return StudentVO code+msg(course)+info(course值)
+     */
     @PostMapping("/ao/add/course")
     public StudentVO addCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {
@@ -147,6 +175,13 @@ public class StudentController {
         }
     }
 
+    /**
+     * 退修一门课
+     *
+     * @param in      cid+sid
+     * @param request 检测是否为本人
+     * @return StudentVO code+msg(course)+info(course值)
+     */
     @PostMapping("/ao/drop/course")
     public StudentVO dropCourse(@RequestBody CourseInDTO in, HttpServletRequest request) {
         try {

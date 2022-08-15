@@ -34,8 +34,8 @@ public class AddOpController {
     public TeacherVO correct(@RequestBody ResultInDTO in) {
         HomeworkOpBO res = question.correct(new NewResultDTO(
                 in.getTid(),
-                0,
-                0,
+                in.getCid(),
+                in.getQid(),
                 in.getResult()));
         if (res.getIsQuestion()) {
             return new TeacherVO(500, "批改回答异常", "问题标识:true");

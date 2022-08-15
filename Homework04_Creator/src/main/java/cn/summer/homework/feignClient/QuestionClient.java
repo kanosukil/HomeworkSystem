@@ -4,6 +4,7 @@ import cn.summer.homework.BO.HomeworkOpBO;
 import cn.summer.homework.DTO.NewQuestionDTO;
 import cn.summer.homework.DTO.NewResultDTO;
 import cn.summer.homework.DTO.QuestionResultDTO;
+import cn.summer.homework.DTO.ResultQuestionDTO;
 import cn.summer.homework.PO.TeacherQuestion;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,4 +56,7 @@ public interface QuestionClient {
 
     @PostMapping("/question/question-type-delete")
     Boolean deleteType(@RequestBody NewQuestionDTO questionType);
+
+    @GetMapping("/result/result-get")
+    ResultQuestionDTO getResult(@RequestParam("rid") Integer rid);
 }

@@ -289,11 +289,11 @@ public class TeacherController {
      */
     @PostMapping("/ao/correct/question")
     public TeacherVO correct(@RequestBody ResultInDTO in, HttpServletRequest request) {
-        TeacherVO correct = teacher.correct(in);
         try {
             judge(in.getTid(), request);
+            TeacherVO correct = teacher.correct(in);
             if (correct.getCode() == 200) {
-                ResultQuestionDTO after = find.result(in.getRid());
+                ResultQuestionDTO after = find.result(in.getResult().getId());
                 if (es.update(after)) {
                     logger.info("<question-result>MQ ES Update 成功");
                 } else {

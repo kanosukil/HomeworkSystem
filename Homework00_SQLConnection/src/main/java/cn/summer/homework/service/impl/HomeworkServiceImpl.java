@@ -575,8 +575,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (flag == 1) {
                 throw new SQLRWException("Teacher 批改 Result 更新异常");
             }
-            setHomeworkOpBO_R(homeworkOpBO,
-                    ex.getMessage());
+            setHomeworkOpBO_R(homeworkOpBO, ex.getMessage());
         }
         return homeworkOpBO;
     }
