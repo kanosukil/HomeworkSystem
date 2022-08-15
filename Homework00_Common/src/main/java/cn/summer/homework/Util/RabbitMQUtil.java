@@ -20,5 +20,5 @@ public class RabbitMQUtil {
     public static final String UPDATE_EXCHANGE = "esUpdateExchange";
     public static final String UPDATE_ROUTING = "esUpdateRouting";
     public static final String UPDATE_OUT = "esUpdateOutput";
-    public static final String UPDATE_IN = "esSUpdateInput";
+    public static final String UPDATE_IN = "esUpdateInput";
 }

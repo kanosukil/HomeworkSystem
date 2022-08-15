@@ -153,7 +153,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
             UpdateResponse<ElasticSearchQO> response = client
                     .update(e -> e.index(index_name)
                                     .id(id.toString())
-                                    .doc(new ElasticSearchQO(e.toString())),
+                                    .doc(new ElasticSearchQO(updateDoc.toString())),
                             ElasticSearchQO.class);
             String s = response.result().jsonValue().trim();
             if (s.equals("noop")) {

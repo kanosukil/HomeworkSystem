@@ -58,77 +58,6 @@ public class AdminController {
     }
 
     /*
-        result
-     */
-    @PostMapping("/c/result")
-    public AdminVO createResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
-        logger.info("Administer Operation");
-        try {
-            isAdmin(request);
-            AdminVO result = admin.createResult(in);
-            if (result.getCode() == 200) {
-                ResultQuestionDTO rInSQL = find.result(Integer.parseInt(result.getInfo()));
-                if (es.save(rInSQL)) {
-                    logger.info("<ad-result>MQ ES Save 成功");
-                } else {
-                    logger.warn("<ad-result>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.RESULT);
-                }
-            }
-            return result;
-        } catch (IOException io) {
-            logger.error("ad:[Create Result]SQL Result 获取异常", io);
-            return new AdminVO(500, "CreateResult: SQL Result 获取异常", io.toString());
-        }
-    }
-
-    @PostMapping("/u/result")
-    public AdminVO updateResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
-        logger.info("Administer Operation");
-        try {
-            isAdmin(request);
-            AdminVO result = admin.updateResult(in);
-            if (result.getCode() == 200) {
-                ResultQuestionDTO after = find.result(in.getResult().getId());
-                if (es.update(after)) {
-                    logger.info("<ad-result>MQ ES Update 成功");
-                } else {
-                    logger.warn("<ad-result>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.RESULT);
-                }
-            }
-            return result;
-        } catch (IOException io) {
-            logger.error("ad:[Update Result]SQL Result 获取异常", io);
-            return new AdminVO(500, "UpdateResult: SQL Result 获取异常", io.toString());
-        }
-    }
-
-    @PostMapping("/d/result")
-    public AdminVO deleteResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
-        logger.info("Administer Operation");
-        try {
-            isAdmin(request);
-        } catch (IOException io) {
-            logger.error("ad:[Delete Result]", io);
-            return new AdminVO(400, "DeleteUpdate: 无效操作", io.getMessage());
-        }
-        AdminVO result = admin.deleteResult(in);
-        if (result.getCode() == 200) {
-            Result before = new Result();
-            before.setId(in.getRid());
-            if (es.delete(new ResultQuestionDTO(before,
-                    null, null))) {
-                logger.info("<ad-result>MQ ES Delete 成功");
-            } else {
-                logger.warn("<ad-result>MQ ES Delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.RESULT);
-            }
-        }
-        return result;
-    }
-
-    /*
         course
      */
 
@@ -214,6 +143,8 @@ public class AdminController {
             before.setId(in.getCid());
             if (es.delete(new CourseSTDTO(before, null, null))) {
                 logger.info("<ad-course>MQ ES Delete 成功");
+                esIndexDelete(IndexUtil.QUESTION);
+                esIndexDelete(IndexUtil.RESULT);
             } else {
                 logger.warn("<ad-course>MQ ES delete 异常, 未删除指定 ES 文档");
                 esIndexDelete(IndexUtil.COURSE);
@@ -307,6 +238,7 @@ public class AdminController {
             if (es.delete(new QuestionResultDTO(before,
                     null, null, null))) {
                 logger.info("<ad-question>MQ ES Delete 成功");
+                esIndexDelete(IndexUtil.RESULT);
             } else {
                 logger.warn("<ad-question>MQ ES delete 异常, 未删除指定 ES 文档");
                 esIndexDelete(IndexUtil.QUESTION);
@@ -355,5 +287,98 @@ public class AdminController {
             return new AdminVO(400, "DeleteType: 无效操作", io.getMessage());
         }
         return admin.deleteType(in);
+    }
+
+    /*
+        result
+     */
+
+    /**
+     * 创建回答
+     *
+     * @param in      qid+cid+sid+result
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(rid)+info(rid值)
+     */
+    @PostMapping("/c/result")
+    public AdminVO createResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
+        logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+            AdminVO result = admin.createResult(in);
+            if (result.getCode() == 200) {
+                ResultQuestionDTO rInSQL = find.result(Integer.parseInt(result.getInfo()));
+                if (es.save(rInSQL)) {
+                    logger.info("<ad-result>MQ ES Save 成功");
+                } else {
+                    logger.warn("<ad-result>MQ ES Save 异常, 未存入 ES 中");
+                    esIndexDelete(IndexUtil.RESULT);
+                }
+            }
+            return result;
+        } catch (IOException io) {
+            logger.error("ad:[Create Result]SQL Result 获取异常", io);
+            return new AdminVO(500, "CreateResult: SQL Result 获取异常", io.toString());
+        }
+    }
+
+    /**
+     * 更新回答
+     *
+     * @param in      qid+cid+sid+result
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(result)+info(result字符串)
+     */
+    @PostMapping("/u/result")
+    public AdminVO updateResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
+        logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+            AdminVO result = admin.updateResult(in);
+            if (result.getCode() == 200) {
+                ResultQuestionDTO after = find.result(in.getResult().getId());
+                if (es.update(after)) {
+                    logger.info("<ad-result>MQ ES Update 成功");
+                } else {
+                    logger.warn("<ad-result>MQ ES Update 异常, 未更新 ES");
+                    esIndexDelete(IndexUtil.RESULT);
+                }
+            }
+            return result;
+        } catch (IOException io) {
+            logger.error("ad:[Update Result]SQL Result 获取异常", io);
+            return new AdminVO(500, "UpdateResult: SQL Result 获取异常", io.toString());
+        }
+    }
+
+    /**
+     * 删除回答
+     *
+     * @param in      rid+sid
+     * @param request 检测是否为管理员
+     * @return AdminVO statusCode+message(question)+info(question字符串)
+     */
+    @PostMapping("/d/result")
+    public AdminVO deleteResult(@RequestBody ResultInDTO in, HttpServletRequest request) {
+        logger.info("Administer Operation");
+        try {
+            isAdmin(request);
+        } catch (IOException io) {
+            logger.error("ad:[Delete Result]", io);
+            return new AdminVO(400, "DeleteUpdate: 无效操作", io.getMessage());
+        }
+        AdminVO result = admin.deleteResult(in);
+        if (result.getCode() == 200) {
+            Result before = new Result();
+            before.setId(in.getRid());
+            if (es.delete(new ResultQuestionDTO(before,
+                    null, null))) {
+                logger.info("<ad-result>MQ ES Delete 成功");
+            } else {
+                logger.warn("<ad-result>MQ ES Delete 异常, 未删除指定 ES 文档");
+                esIndexDelete(IndexUtil.RESULT);
+            }
+        }
+        return result;
     }
 }
