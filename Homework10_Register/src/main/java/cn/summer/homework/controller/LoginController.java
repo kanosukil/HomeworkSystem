@@ -82,15 +82,15 @@ public class LoginController {
             search.setOption(7);
             search.setIndex(IndexUtil.USER);
             if (es.searchAll(search).size() != userSearchService.getAll().size()) {
-                deleteUserIndex();
+                deleteIndex(IndexUtil.USER);
             }
         }
     }
 
-    private void deleteUserIndex() {
+    private void deleteIndex(String index) {
         ElasticSearchDTO search = new ElasticSearchDTO();
         search.setOption(4);
-        search.setIndex(IndexUtil.USER);
+        search.setIndex(index);
         if (es.indexDelete(search).getIsSuccess()) {
             logger.info("Index User 删除完成");
         } else {
@@ -131,11 +131,11 @@ public class LoginController {
                     logger.info("ES Save New User 完成");
                 } else {
                     logger.warn("ES Save New User 异常");
-                    deleteUserIndex();
+                    deleteIndex(IndexUtil.USER);
                 }
             } catch (IOException io) {
                 logger.error("ES Save New User Exception: {}", io.getMessage());
-                deleteUserIndex();
+                deleteIndex(IndexUtil.USER);
             }
             logger.info("Result: {}", reg);
             return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
@@ -178,9 +178,12 @@ public class LoginController {
             if (logoff.getIsSuccess()) {
                 if (ess.delete(ur)) {
                     logger.info("ES Delete User 完成");
+                    deleteIndex(IndexUtil.COURSE);
+                    deleteIndex(IndexUtil.QUESTION);
+                    deleteIndex(IndexUtil.RESULT);
                 } else {
                     logger.warn("ES Delete User 异常");
-                    deleteUserIndex();
+                    deleteIndex(IndexUtil.USER);
                 }
                 return new UserVO<>(200, "OK",
                         logoff.getInfo().toString());
@@ -190,7 +193,10 @@ public class LoginController {
             }
         } catch (IOException e) {
             logger.error("Delete User Exception: {}", e.getMessage());
-            deleteUserIndex();
+            deleteIndex(IndexUtil.USER);
+            deleteIndex(IndexUtil.COURSE);
+            deleteIndex(IndexUtil.QUESTION);
+            deleteIndex(IndexUtil.RESULT);
             return new UserVO<>(500, "cause", e.getMessage());
         }
     }
