@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -42,12 +43,19 @@ public class UploadServiceImpl implements UploadService {
             if (picContentType.contains(file.getContentType())) {
                 flag = "image";
             }
-            String afterName = PathUtil.pathJudge(path) + uid + "-" +
+            String pa = PathUtil.pathJudge(path);
+            String afterName = pa + "uid_" + uid + "-time_" +
                     System.currentTimeMillis() % 1000 + "-"
                     + flag + beforeName.substring(
                     beforeName.lastIndexOf("."));
             logger.info("{}-Name:{}开始写入", flag, afterName);
             // file.transferTo(Paths.get(afterName)); // java.io
+            File fi = new File(pa);
+            if (!fi.exists()) {
+                if (!fi.mkdirs()) {
+                    throw new Exception("文件夹创建异常");
+                }
+            }
             Files.write(
                     Paths.get(afterName),
                     file.getBytes()); // java.nio

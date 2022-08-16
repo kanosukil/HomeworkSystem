@@ -40,6 +40,6 @@ public class UploadController {
     @PostMapping("files")
     public String files(@RequestParam("files") MultipartFile[] files,
                         @RequestParam("uid") Integer uid) {
-        return up.imagesUpload(files, uid);
+        return up.filesUpload(files, uid);
     }
 }

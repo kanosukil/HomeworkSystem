@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author VHBin
@@ -35,6 +36,14 @@ public class UploadController {
         }
     }
 
+    private void check(Integer uid, HttpServletRequest request)
+            throws Exception {
+        logger.info("Checking...");
+        if (uid != Integer.parseInt(request.getAttribute("userid").toString())) {
+            throw new Exception("不可操作其他用户");
+        }
+    }
+
     /**
      * 单张图片上传
      *
@@ -44,8 +53,15 @@ public class UploadController {
      */
     @PostMapping("image")
     public FileVO imageUpload(@RequestParam("image") MultipartFile image,
-                              @RequestParam("uid") Integer uid) {
-        return getRes(client.image(image, uid));
+                              @RequestParam("uid") Integer uid,
+                              HttpServletRequest request) {
+        try {
+            check(uid, request);
+            return getRes(client.image(image, uid));
+        } catch (Exception ex) {
+            logger.error("异常: {}", ex.getMessage(), ex);
+            return new FileVO(400, "Exception", "传输异常/非法访问");
+        }
     }
 
     /**
@@ -57,8 +73,15 @@ public class UploadController {
      */
     @PostMapping("file")
     public FileVO fileUpload(@RequestParam("file") MultipartFile file,
-                             @RequestParam("uid") Integer uid) {
-        return getRes(client.file(file, uid));
+                             @RequestParam("uid") Integer uid,
+                             HttpServletRequest request) {
+        try {
+            check(uid, request);
+            return getRes(client.file(file, uid));
+        } catch (Exception ex) {
+            logger.error("异常: {}", ex.getMessage(), ex);
+            return new FileVO(400, "Exception", "传输异常/非法访问");
+        }
     }
 
     /**
@@ -70,8 +93,15 @@ public class UploadController {
      */
     @PostMapping("images")
     public FileVO imagesUpload(@RequestParam("images") MultipartFile[] images,
-                               @RequestParam("uid") Integer uid) {
-        return getRes(client.images(images, uid));
+                               @RequestParam("uid") Integer uid,
+                               HttpServletRequest request) {
+        try {
+            check(uid, request);
+            return getRes(client.images(images, uid));
+        } catch (Exception ex) {
+            logger.error("异常: {}", ex.getMessage(), ex);
+            return new FileVO(400, "Exception", "传输异常/非法访问");
+        }
     }
 
     /**
@@ -83,7 +113,14 @@ public class UploadController {
      */
     @PostMapping("files")
     public FileVO filesUpload(@RequestParam("files") MultipartFile[] files,
-                              @RequestParam("uid") Integer uid) {
-        return getRes(client.files(files, uid));
+                              @RequestParam("uid") Integer uid,
+                              HttpServletRequest request) {
+        try {
+            check(uid, request);
+            return getRes(client.files(files, uid));
+        } catch (Exception ex) {
+            logger.error("异常: {}", ex.getMessage(), ex);
+            return new FileVO(400, "Exception", "传输异常/非法访问");
+        }
     }
 }

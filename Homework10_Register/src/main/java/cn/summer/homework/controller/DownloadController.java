@@ -1,16 +1,17 @@
 package cn.summer.homework.controller;
 
-import cn.summer.homework.VO.FileVO;
 import cn.summer.homework.feignClient.FileStoreClient;
+import feign.Response;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author VHBin
@@ -24,27 +25,34 @@ public class DownloadController {
     @Resource
     private FileStoreClient client;
 
-    private FileVO getRes(String res) {
-        if (res == null) {
-            return new FileVO(400, "Error", "文件/图片不存在");
-        } else if (res.equals("")) {
-            return new FileVO(500, "Exception", "文件/图片获取异常");
-        } else if (res.equals("no")) {
-            return new FileVO(400, "Error", "不能显示非图片文件");
-        } else {
-            return new FileVO(200, "OK", res);
+    @GetMapping("download")
+    @ResponseBody
+    public void fileDownload(@RequestParam("name") String name,
+                             HttpServletResponse response) {
+        response.setContentType("application/octet-stream");
+        response.setCharacterEncoding("UTF-8");
+        try (
+                InputStream input = client.download(name).body().asInputStream();
+                ServletOutputStream output = response.getOutputStream()
+        ) {
+            IOUtils.copy(input, output);
+        } catch (IOException e) {
+            logger.error("下载文件异常: {}", e.getMessage(), e);
         }
     }
 
-    @GetMapping("download")
-    public FileVO fileDownload(@RequestParam("name") String name,
-                               HttpServletResponse response) {
-        return getRes(client.download(name, response));
-    }
-
     @GetMapping("/show/image")
-    public FileVO imageShow(@RequestParam("image-name") String imageName,
-                            HttpServletResponse response) {
-        return getRes(client.show(imageName, response));
+    @ResponseBody
+    public void imageShow(@RequestParam("image-name") String imageName,
+                          HttpServletResponse response) {
+        Response res = client.show(imageName);
+        try (
+                InputStream input = res.body().asInputStream();
+                ServletOutputStream output = response.getOutputStream()
+        ) {
+            IOUtils.copy(input, output);
+        } catch (IOException e) {
+            logger.error("图片读写异常: {}", e.getMessage(), e);
+        }
     }
 }

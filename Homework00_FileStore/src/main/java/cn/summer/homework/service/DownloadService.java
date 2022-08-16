@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
  * @date 2022/8/11-17:07
  */
 public interface DownloadService {
-    String download(String name, HttpServletResponse response);
+    void download(String name, HttpServletResponse response);
 
-    String showImage(String name, HttpServletResponse response);
+    void showImage(String name, HttpServletResponse response);
 }

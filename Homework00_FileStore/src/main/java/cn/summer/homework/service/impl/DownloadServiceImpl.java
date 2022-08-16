@@ -49,17 +49,17 @@ public class DownloadServiceImpl implements DownloadService {
      *
      * @param name     文件/图片名
      * @param response Servlet response 对象
-     * @return String name/null=Error/""=Exception
      */
     @Override
-    public String download(String name, HttpServletResponse response) {
+    public void download(String name, HttpServletResponse response) {
         File file = getFile(name,
                 picSuffix.containsKey(
                         name.substring(name.lastIndexOf(".")))
                         ? imagePath : filePath);
         if (!file.exists()) {
             logger.error("文件/图片为空");
-            return null;
+            response.setHeader("error", "no-file");
+            return;
         }
         response.reset();
         response.setContentType("application/octet-stream");
@@ -83,9 +83,10 @@ public class DownloadServiceImpl implements DownloadService {
             }
         } catch (IOException e) {
             logger.error("文件/图片读取/传输异常", e);
-            return "";
+            response.setHeader("error", "io-file");
+            return;
         }
-        return name;
+        response.setHeader("error", "no");
     }
 
     /**
@@ -93,20 +94,21 @@ public class DownloadServiceImpl implements DownloadService {
      *
      * @param name     图片名
      * @param response Servlet response 对象
-     * @return String name/null=Error/""=Exception
      */
     @Override
-    public String showImage(String name, HttpServletResponse response) {
+    public void showImage(String name, HttpServletResponse response) {
         String contentType;
         String suffix = name.substring(name.lastIndexOf(".")).trim();
         if (picSuffix.containsKey(suffix)) {
             contentType = picSuffix.get(suffix);
         } else {
-            return "no";
+            response.setHeader("error", "no-suffix");
+            return;
         }
         File image = getFile(name, imagePath);
         if (!image.exists()) {
-            return null;
+            response.setHeader("error", "no-file");
+            return;
         }
         response.reset();
         response.setContentType(contentType);
@@ -123,8 +125,9 @@ public class DownloadServiceImpl implements DownloadService {
             out.flush();
         } catch (IOException e) {
             logger.error("图片读取/传输异常", e);
-            return "";
+            response.setHeader("error", "io-file");
+            return;
         }
-        return name;
+        response.setHeader("error", "no");
     }
 }

@@ -1,10 +1,7 @@
 package cn.summer.homework.controller;
 
 import cn.summer.homework.service.DownloadService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -20,12 +17,14 @@ public class DownloadController {
     private DownloadService down;
 
     @GetMapping("download")
-    public String download(@RequestParam("name") String name, HttpServletResponse response) {
-        return down.download(name, response);
+    @ResponseBody
+    public void download(@RequestParam("name") String name, HttpServletResponse response) {
+        down.download(name, response);
     }
 
     @GetMapping("show")
-    public String show(@RequestParam("image-name") String name, HttpServletResponse response) {
-        return down.showImage(name, response);
+    @ResponseBody
+    public void show(@RequestParam("image-name") String name, HttpServletResponse response) {
+        down.showImage(name, response);
     }
 }
