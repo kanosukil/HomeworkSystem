@@ -25,14 +25,16 @@ public class DownloadController {
     @Resource
     private FileStoreClient client;
 
-    @GetMapping("download")
+    @GetMapping("/download/{name}")
     @ResponseBody
-    public void fileDownload(@RequestParam("name") String name,
+    public void fileDownload(@PathVariable("name") String name,
                              HttpServletResponse response) {
-        response.setContentType("application/octet-stream");
-        response.setCharacterEncoding("UTF-8");
+//        response.setContentType("application/octet-stream");
+//        response.setCharacterEncoding("UTF-8");
+        Response download = client.download(name);
+        logger.info("Response Headers: {}", download.headers().get("error"));
         try (
-                InputStream input = client.download(name).body().asInputStream();
+                InputStream input = download.body().asInputStream();
                 ServletOutputStream output = response.getOutputStream()
         ) {
             IOUtils.copy(input, output);
@@ -41,9 +43,9 @@ public class DownloadController {
         }
     }
 
-    @GetMapping("/show/image")
+    @GetMapping("/show/image/{image-name}")
     @ResponseBody
-    public void imageShow(@RequestParam("image-name") String imageName,
+    public void imageShow(@PathVariable("image-name") String imageName,
                           HttpServletResponse response) {
         Response res = client.show(imageName);
         try (

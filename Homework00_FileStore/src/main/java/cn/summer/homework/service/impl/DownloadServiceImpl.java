@@ -13,6 +13,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
@@ -67,14 +69,13 @@ public class DownloadServiceImpl implements DownloadService {
         response.setCharacterEncoding("utf-8");
         response.setContentLengthLong(file.length());
         response.setHeader("Content-Disposition",
-                "attachment;filename=" + name);
+                "attachment;filename=" + URLEncoder.encode(name, StandardCharsets.UTF_8));
         try (
                 BufferedInputStream in
                         = new BufferedInputStream(new FileInputStream(file));
                 ServletOutputStream out
                         = response.getOutputStream()
         ) {
-
             byte[] bytes = new byte[1024];
             int i;
             while ((i = in.read(bytes)) != -1) {
