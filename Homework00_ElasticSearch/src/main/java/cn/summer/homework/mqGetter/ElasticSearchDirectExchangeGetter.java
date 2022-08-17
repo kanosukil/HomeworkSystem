@@ -1,22 +1,21 @@
 package cn.summer.homework.mqGetter;
 
-import cn.summer.homework.Util.RabbitMQUtil;
 import cn.summer.homework.Util.TypeUtil;
-import cn.summer.homework.config.InputMessageConsumer;
 import cn.summer.homework.service.ElasticSearchService;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * @author VHBin
@@ -24,7 +23,7 @@ import java.util.Objects;
  */
 
 @Component
-@EnableBinding(InputMessageConsumer.class)
+//@EnableBinding(InputMessageConsumer.class)
 public class ElasticSearchDirectExchangeGetter {
     private static final Logger logger =
             LoggerFactory.getLogger(ElasticSearchDirectExchangeGetter.class);
@@ -33,9 +32,9 @@ public class ElasticSearchDirectExchangeGetter {
 
     //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.SAVE_QUEUE))
 //    @RabbitHandler
-    @StreamListener(RabbitMQUtil.SAVE_IN)
+//    @StreamListener(RabbitMQUtil.SAVE_IN)
 //    public void save(Message<?> obj) {
-    public void save(Message<String> obj) {
+    private void save(Message<String> obj) {
         try {
             String className = Objects.requireNonNull(obj.getHeaders().get("class"))
                     .toString().split(" ")[1].trim();
@@ -69,9 +68,9 @@ public class ElasticSearchDirectExchangeGetter {
 
     //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.DELETE_QUEUE))
 //    @RabbitHandler
-    @StreamListener(RabbitMQUtil.DELETE_IN)
+//    @StreamListener(RabbitMQUtil.DELETE_IN)
 //    public void delete(Message<?> obj) {
-    public void delete(Message<String> obj) {
+    private void delete(Message<String> obj) {
         try {
             String className = Objects.requireNonNull(obj.getHeaders().get("class"))
                     .toString().split(" ")[1].trim();
@@ -93,9 +92,9 @@ public class ElasticSearchDirectExchangeGetter {
 
     //    @RabbitListener(queuesToDeclare = @Queue(RabbitMQUtil.UPDATE_QUEUE))
 //    @RabbitHandler
-    @StreamListener(RabbitMQUtil.UPDATE_IN)
+//    @StreamListener(RabbitMQUtil.UPDATE_IN)
 //    public void update(Message<?> obj) {
-    public void update(Message<String> obj) {
+    private void update(Message<String> obj) {
         try {
             String className = Objects.requireNonNull(obj.getHeaders().get("class"))
                     .toString().split(" ")[1].trim();
@@ -113,5 +112,32 @@ public class ElasticSearchDirectExchangeGetter {
         } catch (Exception ex) {
             logger.error("其他异常", ex);
         }
+    }
+
+    @Bean
+    public Consumer<Flux<Message<String>>> save() {
+        return flux -> flux.map(message -> {
+            logger.info("Message: {}", message);
+            this.save(message);
+            return message;
+        }).subscribe();
+    }
+
+    @Bean
+    public Consumer<Flux<Message<String>>> delete() {
+        return flux -> flux.map(message -> {
+            logger.info("Message: {}", message);
+            this.delete(message);
+            return message;
+        }).subscribe();
+    }
+
+    @Bean
+    public Consumer<Flux<Message<String>>> update() {
+        return flux -> flux.map(message -> {
+            logger.info("Message: {}", message);
+            this.update(message);
+            return message;
+        }).subscribe();
     }
 }

@@ -6,15 +6,12 @@ import cn.summer.homework.DTO.ResultQuestionDTO;
 import cn.summer.homework.DTO.UserRoleDTO;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.Util.RabbitMQUtil;
-import cn.summer.homework.config.OutputChannelProcessor;
 import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import com.alibaba.fastjson2.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.stream.annotation.EnableBinding;
-import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
@@ -30,35 +27,41 @@ import java.util.Map;
  * @date 2022/8/12-18:09
  */
 @Service
-@EnableBinding(OutputChannelProcessor.class)
+//@EnableBinding(OutputChannelProcessor.class)
 public class OutputMessageProducer implements ElasticSearchDirectExchangeService {
     private static final Logger logger = LoggerFactory.getLogger(OutputMessageProducer.class);
-    @Resource
-    @Output(RabbitMQUtil.SAVE_OUT)
-    private MessageChannel saveChannel;
-    @Resource
-    @Output(RabbitMQUtil.DELETE_OUT)
-    private MessageChannel deleteChannel;
-    @Resource
-    @Output(RabbitMQUtil.UPDATE_OUT)
-    private MessageChannel updateChannel;
+    /**
+     * Spring Cloud Stream 3.2.2 Output/Input/StreamListener 等注解官方不建议使用并被弃用
+     * <p>
+     * &#064;Resource<br>
+     * &#064;Output(RabbitMQUtil.SAVE_OUT)  private MessageChannel saveChannel;<br>
+     * &#064;Resource<br>
+     * &#064;Output(RabbitMQUtil.DELETE_OUT) private MessageChannel deleteChannel;<br>
+     * &#064;Resource<br>
+     * &#064;Output(RabbitMQUtil.UPDATE_OUT) private MessageChannel updateChannel;<br>
+     * </p>
+     */
 
+
+    @Resource
+    private StreamBridge streamBridge;
 
     //    private <T> Message<T> getMessage(T doc, String index, String id, Integer isList) {
     private <T> Message<String> getMessage(T doc, String index, String id, Integer isList) {
         logger.info("Doc: {}", doc);
 //        logger.info("Doc: {}", JSON.toJSONString(doc));
-        MessageHeaders header = new MessageHeaders(new HashMap<>(6, 1f) {{
-            put("content-type", "UTF-8");
-            put("send-time", new Date().toString());
-            put("isList", isList.toString());
-            put("class", isList == 1 ?
-                    ((List<?>) doc).get(0).getClass().toString() :
-                    doc.getClass().toString());
+        MessageHeaders header =
+                new MessageHeaders(new HashMap<>(6, 1f) {{
+                    put("content-type", "UTF-8");
+                    put("send-time", new Date().toString());
+                    put("isList", isList.toString());
+                    put("class", isList == 1 ?
+                            ((List<?>) doc).get(0).getClass().toString() :
+                            doc.getClass().toString());
 //            put("class", doc.getClass().toString());
-            put("index", index);
-            put("out-id", id);
-        }});
+                    put("index", index);
+                    put("out-id", id);
+                }});
         return MessageBuilder.createMessage(JSON.toJSONString(doc), header);
 //        return MessageBuilder.createMessage(doc, header);
     }
@@ -98,9 +101,9 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
             } else {
                 info = getInfo(doc);
             }
-            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), isList);
 //            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
-            if (saveChannel.send(message)) {
+            if (streamBridge.send(RabbitMQUtil.SAVE_OUT,
+                    getMessage(doc, info.get("index"), info.get("id"), isList))) {
                 logger.info("Save Message 发送成功");
                 return true;
             } else {
@@ -117,9 +120,9 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
     public <T> Boolean delete(T doc) {
         try {
             Map<String, String> info = getInfo(doc);
-            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), 0);
 //            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
-            if (deleteChannel.send(message)) {
+            if (streamBridge.send(RabbitMQUtil.DELETE_OUT,
+                    getMessage(doc, info.get("index"), info.get("id"), 0))) {
                 logger.info("delete Message 发送成功");
                 return true;
             } else {
@@ -137,9 +140,9 @@ public class OutputMessageProducer implements ElasticSearchDirectExchangeService
         try {
             logger.info("Doc:{}", doc);
             Map<String, String> info = getInfo(doc);
-            Message<String> message = getMessage(doc, info.get("index"), info.get("id"), 0);
 //            Message<T> message = getMessage(doc, info.get("index"), info.get("id"));
-            if (updateChannel.send(message)) {
+            if (streamBridge.send(RabbitMQUtil.UPDATE_OUT,
+                    getMessage(doc, info.get("index"), info.get("id"), 0))) {
                 logger.info("update Message 发送成功");
                 return true;
             } else {
