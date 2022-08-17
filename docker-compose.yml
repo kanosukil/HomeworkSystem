@@ -1,0 +1,168 @@
+version: "3.9"
+services:
+  sentinel:
+    image: sentinel-8:1.2
+    container_name: sentinel-dashboard
+    restart: always
+    depends_on:
+      - nacos
+    ports:
+      - "8882:8882"
+    volumes:
+      - ./sentinel/logs:/root/logs/csp
+  nginx:
+    image: nginx:latest
+    container_name: nacos-nginx
+    restart: always
+    depends_on:
+      - nacos
+    ports:
+      - "8800:80"
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+  hs-elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+    ports:
+      - "9980:9980"
+  hs-store:
+    build: ./store
+    container_name: store-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+    ports:
+      - "10010:10010"
+  hs-sql:
+    build: ./sql
+    container_name: sql-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+    ports:
+      - "9990:9990"
+  hs-user:
+    build: ./user
+    container_name: user-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-sql
+    ports:
+      - "9991:9991"
+  hs-homework:
+    build: ./homework
+    container_name: homework-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-sql
+    ports:
+      - "9992:9992"
+  hs-course:
+    build: ./course
+    container_name: course-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-sql
+    ports:
+      - "9993:9993"
+  hs-creator:
+    build: ./creator
+    container_name: creator-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-homework
+    ports:
+      - "9994:9994"
+  hs-respondent:
+    build: ./respondent
+    container_name: respondent-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-homework
+    ports:
+      - "9995:9995"
+  hs-manager:
+    build: ./manager
+    container_name: manager-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-course
+    ports:
+      - "9996:9996"
+  hs-teacher:
+    build: ./teacher
+    container_name: teacher-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-manager
+      - hs-creator
+    ports:
+      - "9997:9997"
+  hs-student:
+    build: ./student
+    container_name: student-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-manager
+      - hs-respondent
+    ports:
+      - "9998:9998"
+  hs-admin:
+    build: ./admin
+    container_name: admin-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-manager
+      - hs-creator
+      - hs-respondent
+    ports:
+      - "9999:9999"
+  hs-entry:
+    build: ./entry
+    container_name: entry-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-elasticsearch
+      - hs-store
+      - hs-user
+      - hs-teacher
+      - hs-student
+      - hs-admin
+    ports:
+      - "10000:10000"
+  hs-gateway:
+    build: ./gateway
+    container_name: gateway-service
+    restart: always
+    depends_on:
+      - sentinel
+      - nginx
+      - hs-entry
+    ports:
+      - "10001:10001"
