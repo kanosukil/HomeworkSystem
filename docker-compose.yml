@@ -1,11 +1,21 @@
 version: "3.9"
 services:
+  redis:
+    image: redis:latest
+    container_name: redis-server
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - /home/kano/redis/conf:/conf
+      - /home/kano/redis/data/79:/data
+      - /home/kano/redis/pid/79:/var/run
+      - /home/kano/redis/logs/79:/logs
+    command: redis-server /conf/master.conf
   sentinel:
     image: sentinel-8:1.2
     container_name: sentinel-dashboard
     restart: always
-    depends_on:
-      - nacos
     ports:
       - "8882:8882"
     volumes:
@@ -14,8 +24,6 @@ services:
     image: nginx:latest
     container_name: nacos-nginx
     restart: always
-    depends_on:
-      - nacos
     ports:
       - "8800:80"
     volumes:
