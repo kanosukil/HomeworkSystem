@@ -8,7 +8,8 @@ spring:
   # Nacos 配置
   cloud:
     nacos:
-      server-addr: 127.0.0.1:8880
+      server-addr: nginx:80
+      #      server-addr: 127.0.0.1:8880
       #      server-addr: 127.0.0.1:8800
       config:
         namespace: d0174e23-6532-48a9-95f2-bf9df7f2327c
@@ -17,3 +18,9 @@ spring:
         group: Homework_System-Config
         name: es-config
         file-extension: yml
+logging:
+  level:
+    root: info
+  file:
+    name: elasticsearch.log
+    path: /log

@@ -8,9 +8,16 @@ spring:
   # Nacos 配置
   cloud:
     nacos:
-      server-addr: 127.0.0.1:8880
+      #      server-addr: 127.0.0.1:8880
       config:
         group: Homework_System-Config
         name: course-config
         file-extension: yml
         namespace: d0174e23-6532-48a9-95f2-bf9df7f2327c
+      server-addr: nginx:80
+logging:
+  level:
+    root: info
+  file:
+    name: course.log
+    path: /log
