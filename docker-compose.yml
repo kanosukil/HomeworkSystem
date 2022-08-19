@@ -1,8 +1,25 @@
 version: "3.9"
 services:
+  elasticsearch:
+    image: elasticsearch:8.1.2.1
+    container_name: elasticsearch
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "20020:15672"
   redis:
     image: redis:latest
-    container_name: redis-server
+    container_name: redis
     restart: always
     ports:
       - "6379:6379"
@@ -14,7 +31,7 @@ services:
     command: redis-server /conf/master.conf
   sentinel:
     image: sentinel-8:1.2
-    container_name: sentinel-dashboard
+    container_name: sentinel
     restart: always
     ports:
       - "8882:8882"
@@ -22,7 +39,7 @@ services:
       - ./sentinel/logs:/root/logs/csp
   nginx:
     image: nginx:latest
-    container_name: nacos-nginx
+    container_name: nginx
     restart: always
     ports:
       - "8800:80"
