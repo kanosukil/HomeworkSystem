@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -57,10 +58,14 @@ public class LoginController {
             User user = lo.getUser();
             StringBuilder roles = new StringBuilder();
             AtomicBoolean isAdmin = new AtomicBoolean(false);
+            AtomicBoolean isTeacher = new AtomicBoolean(false);
+            AtomicBoolean isStudent = new AtomicBoolean(false);
             lo.getRoles().forEach(e -> {
                 roles.append(e).append(" ");
-                if (e.equals("Admin")) {
-                    isAdmin.set(true);
+                switch (e) {
+                    case "Admin" -> isAdmin.set(true);
+                    case "Teacher" -> isTeacher.set(true);
+                    case "Student" -> isStudent.set(true);
                 }
             });
             if (user == null || roles.toString().equals("")) {
@@ -69,9 +74,10 @@ public class LoginController {
             logger.info("Result: {}", lo);
             if (!Base64.getEncoder().encodeToString(login.getPassword().getBytes(StandardCharsets.UTF_8))
                     .equals(user.getPassword_hash())) {
-                return new UserVO<>(200, "密码错误", "");
+                return new UserVO<>(400, "密码错误", "");
             } else {
-                return new UserVO<>(200, "登录成功", isAdmin.get(),
+                return new UserVO<>(200, "登录成功", isAdmin.get(), isTeacher.get(),
+                        isStudent.get(), user.getId(),
                         TokenUtil.generateJWToken(
                                 new UserDTO(user.getId(), user.getEmail()), roles.toString()));
             }
@@ -81,7 +87,10 @@ public class LoginController {
             ElasticSearchDTO search = new ElasticSearchDTO();
             search.setOption(7);
             search.setIndex(IndexUtil.USER);
-            if (es.searchAll(search).size() != userSearchService.getAll().size()) {
+            List<Integer> list = es.searchAll(search);
+            int size = list.size();
+            if ((size != 0 && list.get(0) != -1)
+                    || size != userSearchService.getAll().size()) {
                 deleteIndex(IndexUtil.USER);
             }
         }
@@ -138,11 +147,13 @@ public class LoginController {
                 deleteIndex(IndexUtil.USER);
             }
             logger.info("Result: {}", reg);
-            return new UserVO<>(200, "注册成功", TokenUtil.generateJWToken(
-                    new UserDTO(
-                            Integer.parseInt(reg.getInfo().get("uid").toString()),
-                            newUser.getName()),
-                    "Student"));
+            return new UserVO<>(200, "注册成功", false, false,
+                    true, Integer.valueOf(reg.getInfo().get("uid").toString()),
+                    TokenUtil.generateJWToken(
+                            new UserDTO(
+                                    Integer.parseInt(reg.getInfo().get("uid").toString()),
+                                    newUser.getName()),
+                            "Student"));
         }
     }
 
