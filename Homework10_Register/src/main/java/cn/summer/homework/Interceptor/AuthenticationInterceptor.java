@@ -3,6 +3,7 @@ package cn.summer.homework.Interceptor;
 import cn.summer.homework.DTO.UserDTO;
 import cn.summer.homework.Util.TokenUtil;
 import com.alibaba.fastjson2.JSONObject;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +28,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private String ignore;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+    public boolean preHandle(HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler)
             throws IOException {
         String uri = request.getRequestURI();
         logger.info("当前进入拦截器的URI:{}", uri);
@@ -66,9 +69,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             return true;
         } catch (Exception ex) {
             logger.error("Exception!", ex);
-            response.setContentType("application/json;charset=utf-8");
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
             JSONObject obj = new JSONObject();
+            obj.put("code", 400);
             obj.put("Exception", ex.getMessage());
             obj.put("Suggestion", "重新登录");
             writer.print(obj.toJSONString());
