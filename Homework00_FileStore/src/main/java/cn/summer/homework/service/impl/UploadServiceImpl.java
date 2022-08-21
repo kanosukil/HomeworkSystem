@@ -1,5 +1,6 @@
 package cn.summer.homework.service.impl;
 
+import cn.summer.homework.Util.PathUtil;
 import cn.summer.homework.service.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,8 @@ public class UploadServiceImpl implements UploadService {
             if (picContentType.contains(file.getContentType())) {
                 flag = "image";
             }
-            String pa = flag.equals("file") ? filePath : imagePath;
+            String pa = flag.equals("file") ? PathUtil.pathJudge(filePath)
+                    : PathUtil.pathJudge(imagePath);
             String afterName = pa + "uid_" + uid + "-time_" +
                     System.currentTimeMillis() % 1000 + "-"
                     + flag + beforeName.substring(
