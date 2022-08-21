@@ -8,6 +8,8 @@ public class PathUtil {
     public static String pathJudge(String origin) {
         if (!origin.endsWith("/")) {
             origin = origin.concat("/");
+        } else if (!origin.endsWith("\\")) {
+            origin = origin.concat("\\");
         }
         return origin;
     }
