@@ -55,6 +55,9 @@ public class LoginController {
         }
         try {
             UserRoleDTO lo = userIOService.login(login.getAccount());
+            if (lo == null) {
+                throw new Exception("用户不存在");
+            }
             User user = lo.getUser();
             StringBuilder roles = new StringBuilder();
             AtomicBoolean isAdmin = new AtomicBoolean(false);
