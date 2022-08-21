@@ -122,7 +122,7 @@ public class UserIOServiceImpl implements UserIOService {
         return user.getId() == 0 || user.getEmail().equals("")
                 || !user.getEmail().matches("(.*)@(.*)\\.(.*)")
                 || user.getEmail() == null || user.getName().equals("")
-                || !user.getName().matches("[\\w\\u4e00-\\u9fa5]{6,16}") || user.getName() == null
+                || !user.getName().matches("[\\w\\u4e00-\\u9fa5]{2,16}") || user.getName() == null
                 || user.getCreate_time() == null || user.getPassword_hash().equals("")
                 || user.getPassword_hash() == null || user.getHead_image() == null
                 || user.getIntroduction() == null;

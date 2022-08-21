@@ -1,6 +1,5 @@
 package cn.summer.homework.service.impl;
 
-import cn.summer.homework.Util.PathUtil;
 import cn.summer.homework.service.UploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,7 @@ public class UploadServiceImpl implements UploadService {
     @Value("${path.file}")
     private String filePath;
 
-    private String combine(MultipartFile file, Integer uid, String path) {
+    private String combine(MultipartFile file, Integer uid) {
         if (file.isEmpty()) {
             return null;
         }
@@ -43,7 +42,7 @@ public class UploadServiceImpl implements UploadService {
             if (picContentType.contains(file.getContentType())) {
                 flag = "image";
             }
-            String pa = PathUtil.pathJudge(path);
+            String pa = flag.equals("file") ? filePath : imagePath;
             String afterName = pa + "uid_" + uid + "-time_" +
                     System.currentTimeMillis() % 1000 + "-"
                     + flag + beforeName.substring(
@@ -67,10 +66,10 @@ public class UploadServiceImpl implements UploadService {
         }
     }
 
-    private String combines(MultipartFile[] files, Integer uid, String path) {
+    private String combines(MultipartFile[] files, Integer uid) {
         StringBuilder temp = new StringBuilder();
         for (MultipartFile file : files) {
-            String tmp = combine(file, uid, path);
+            String tmp = combine(file, uid);
             if (tmp == null || tmp.equals("")) {
                 return tmp;
             }
@@ -89,7 +88,7 @@ public class UploadServiceImpl implements UploadService {
      */
     @Override
     public String imageUpload(MultipartFile image, Integer uid) {
-        return combine(image, uid, imagePath);
+        return combine(image, uid);
     }
 
     /**
@@ -101,7 +100,7 @@ public class UploadServiceImpl implements UploadService {
      */
     @Override
     public String imagesUpload(MultipartFile[] images, Integer uid) {
-        return combines(images, uid, imagePath);
+        return combines(images, uid);
     }
 
     /**
@@ -113,7 +112,7 @@ public class UploadServiceImpl implements UploadService {
      */
     @Override
     public String fileUpload(MultipartFile file, Integer uid) {
-        return combine(file, uid, filePath);
+        return combine(file, uid);
     }
 
     /**
@@ -125,6 +124,6 @@ public class UploadServiceImpl implements UploadService {
      */
     @Override
     public String filesUpload(MultipartFile[] files, Integer uid) {
-        return combines(files, uid, filePath);
+        return combines(files, uid);
     }
 }
