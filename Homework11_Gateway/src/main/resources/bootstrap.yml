@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: gateway.log
+    name: /log/gateway.log
     path: /log

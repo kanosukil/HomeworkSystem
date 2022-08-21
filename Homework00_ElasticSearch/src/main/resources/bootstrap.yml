@@ -22,5 +22,5 @@ logging:
   level:
     root: info
   file:
-    name: elasticsearch.log
+    name: /log/elasticsearch.log
     path: /log

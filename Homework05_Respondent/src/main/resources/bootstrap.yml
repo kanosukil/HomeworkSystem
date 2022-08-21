@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: respondent.log
+    name: /log/respondent.log
     path: /log

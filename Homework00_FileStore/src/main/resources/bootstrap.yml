@@ -16,5 +16,5 @@ logging:
   level:
     root: info
   file:
-    name: store.log
+    name: /log/store.log
     path: /log

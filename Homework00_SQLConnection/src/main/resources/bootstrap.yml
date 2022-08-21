@@ -22,5 +22,5 @@ logging:
   level:
     root: info
   file:
-    name: sql.log
+    name: /log/sql.log
     path: /log

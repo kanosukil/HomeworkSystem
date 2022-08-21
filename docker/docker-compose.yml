@@ -67,6 +67,8 @@ services:
       - "10010:10010"
     volumes:
       - ./store/log:/log
+      - ./store/tmp/img:/hs-tmp/pic
+      - ./store/tmp/file:/hs-tmp/file
   hs-sql:
     build: ./sql
     container_name: sql-service

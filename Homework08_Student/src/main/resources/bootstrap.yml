@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: student.log
+    name: /log/student.log
     path: /log

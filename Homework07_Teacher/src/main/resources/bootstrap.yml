@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: teacher.log
+    name: /log/teacher.log
     path: /log

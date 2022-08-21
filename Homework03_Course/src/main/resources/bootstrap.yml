@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: course.log
+    name: /log/course.log
     path: /log

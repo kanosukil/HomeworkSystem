@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: entry.log
+    name: /log/entry.log
     path: /log

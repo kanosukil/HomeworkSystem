@@ -19,5 +19,5 @@ logging:
   level:
     root: info
   file:
-    name: manager.log
+    name: /log/manager.log
     path: /log
