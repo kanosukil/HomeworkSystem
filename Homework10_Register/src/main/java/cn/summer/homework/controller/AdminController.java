@@ -235,7 +235,7 @@ public class AdminController {
         if (question.getCode() == 200) {
             Question before = new Question();
             before.setId(in.getQid());
-            if (es.delete(new QuestionResultDTO(before,
+            if (es.delete(new QuestionResultDTO(before, null,
                     null, null, null))) {
                 logger.info("<ad-question>MQ ES Delete 成功");
                 esIndexDelete(IndexUtil.RESULT);
@@ -371,7 +371,7 @@ public class AdminController {
         if (result.getCode() == 200) {
             Result before = new Result();
             before.setId(in.getRid());
-            if (es.delete(new ResultQuestionDTO(before,
+            if (es.delete(new ResultQuestionDTO(before, null,
                     null, null))) {
                 logger.info("<ad-result>MQ ES Delete 成功");
             } else {

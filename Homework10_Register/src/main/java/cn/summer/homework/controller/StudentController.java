@@ -136,7 +136,7 @@ public class StudentController {
         if (result.getCode() == 200) {
             Result before = new Result();
             before.setId(in.getRid());
-            if (es.delete(new ResultQuestionDTO(before,
+            if (es.delete(new ResultQuestionDTO(before, null,
                     null, null))) {
                 logger.info("<result>MQ ES Delete 成功");
             } else {

@@ -232,7 +232,7 @@ public class TeacherController {
         if (question.getCode() == 200) {
             Question before = new Question();
             before.setId(in.getQid());
-            if (es.delete(new QuestionResultDTO(before,
+            if (es.delete(new QuestionResultDTO(before, null,
                     null, null, null))) {
                 logger.info("<question>MQ ES Delete 成功");
                 esIndexDelete(IndexUtil.RESULT);
