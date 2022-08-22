@@ -107,9 +107,13 @@ public class HomeworkServiceImpl implements HomeworkService {
         getResultsByQID(qid).forEach(e ->
                 results.put(studentResultDao.selectByRID(e), e)
         );
+        Course course = courseDao.selectByID(questionCourseDao.selectByQID(qid));
         return new QuestionResultDTO(question,
                 type.substring(0, type.lastIndexOf(",")),
                 getUser(teacherQuestionDao.selectByQID(qid)),
+                new HashMap<>(1, 1f) {{
+                    put(course.getId(), course.getName());
+                }},
                 results);
     }
 

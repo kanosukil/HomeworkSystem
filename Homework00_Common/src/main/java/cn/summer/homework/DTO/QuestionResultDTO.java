@@ -21,5 +21,6 @@ public class QuestionResultDTO implements Serializable {
     private Question question;
     private String questionType;
     private User teacher;
+    private Map<Integer, String> course;
     private Map<Integer, Integer> results; // key: uid, value: rid
 }
