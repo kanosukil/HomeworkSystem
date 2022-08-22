@@ -131,25 +131,20 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     private ResultQuestionDTO getRQ_DTO(Result result) {
         Integer rid = result.getId();
-        // type
-        StringBuilder type = new StringBuilder();
         Integer qid = getQuestionByRID(rid);
-        question_typeDao.selectByQID(qid).forEach(e ->
-                type.append(questionTypeDao.selectByID(e))
-                        .append(","));
-        // Map<Teacher, Map<Type, Question>>
-        Map<Integer, Map<String, Integer>> question
+        HashMap<Integer, String> teacher
                 = new HashMap<>(1, 1f) {{
-            put(teacherQuestionDao.selectByQID(qid),
-                    // Map<Type, Question>
-                    new HashMap<>(1, 1f) {{
-                        put(type.substring(0, type.lastIndexOf(",")), qid);
-                    }});
+            Integer tid = teacherQuestionDao.selectByQID(qid);
+            put(tid, userService.findUser(tid).getUser().getName());
+        }};
+        Map<Integer, String> question
+                = new HashMap<>(1, 1f) {{
+            put(qid, questionDao.selectByID(qid).getTitle());
         }};
         return new ResultQuestionDTO(
                 result,
                 getUser(studentResultDao.selectByRID(rid)),
-                question);
+                teacher, question);
     }
 
     private void setHomeworkOpBO_Q(HomeworkOpBO homeworkOpBO_Q, String value) {

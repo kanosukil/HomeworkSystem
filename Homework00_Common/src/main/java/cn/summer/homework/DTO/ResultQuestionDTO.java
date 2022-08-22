@@ -20,5 +20,6 @@ import java.util.Map;
 public class ResultQuestionDTO implements Serializable {
     private Result result;
     private User student;
-    private Map<Integer, Map<String, Integer>> question; // key: tid, value: {key: type, value: qid}
+    private Map<Integer, String> teacher;
+    private Map<Integer, String> question;
 }
