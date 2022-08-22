@@ -8,7 +8,10 @@ import cn.summer.homework.service.ElasticSearchDirectExchangeService;
 import cn.summer.homework.service.FindService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -82,11 +85,14 @@ public class SearchController {
     /**
      * 获取全部用户信息
      *
-     * @param s 可为空, 也可以设定 from & size
-     * @return SearchUserVO 状态码, 消息, 用户信息
+     * @param from 分页起始
+     * @param size 分页大小
+     * @return 角色信息
      */
     @GetMapping("/user/all")
-    public SearchVO<UserRoleDTO> allUsers(@RequestBody SearchDTO s) {
+    public SearchVO<UserRoleDTO> allUsers(@RequestParam("from") Integer from,
+                                          @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO("all", from, size);
         List<Integer> uidList = esFindAll(IndexUtil.USER, s);
         if (isException(uidList)) {
             return new SearchVO<>(500, "User-Search:Error", null);
@@ -95,16 +101,16 @@ public class SearchController {
         if (uidList.size() == 0) {
             logger.info("新建");
             Map<String, Integer> page = getPage(s);
-            int from, size;
-            from = page.get("from");
-            size = page.get("size");
+            int fi, si;
+            fi = page.get("from");
+            si = page.get("size");
             users = find.users();
             logger.info("Users: {}", users);
             if (users.size() > 0) {
                 mq.save(users);
                 users = users.subList(
-                        from,
-                        Math.min(from + size, users.size()));
+                        fi,
+                        Math.min(fi + si, users.size()));
             }
         } else {
             logger.info("从 ES");
@@ -128,11 +134,16 @@ public class SearchController {
     /**
      * 查找符合条件的用户
      *
-     * @param s value 为条件(关键字), 可设定 from & size
-     * @return SearchUserVO 状态码, 消息, 用户信息
+     * @param value 查询值
+     * @param from  分页起始
+     * @param size  分页大小
+     * @return 角色信息
      */
     @GetMapping("/user/find")
-    public SearchVO<UserRoleDTO> findUser(@RequestBody SearchDTO s) {
+    public SearchVO<UserRoleDTO> findUser(@RequestParam("value") String value,
+                                          @RequestParam("from") Integer from,
+                                          @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO(value, from, size);
         List<Integer> uidList = esFind(IndexUtil.USER, s);
         if (isException(uidList)) {
             return new SearchVO<>(500, "User-Search:Error", null);
@@ -177,11 +188,14 @@ public class SearchController {
     /**
      * 获取全部课程信息
      *
-     * @param s 可为空, 也可以设定 from & size
-     * @return SearchCourseVO 状态码, 消息, 用户信息
+     * @param from 分页起始
+     * @param size 分页大小
+     * @return 课程信息
      */
     @GetMapping("/course/all")
-    public SearchVO<CourseSTDTO> allCourse(@RequestBody SearchDTO s) {
+    public SearchVO<CourseSTDTO> allCourse(@RequestParam("from") Integer from,
+                                           @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO("all", from, size);
         List<Integer> cidList = esFindAll(IndexUtil.COURSE, s);
         if (isException(cidList)) {
             return new SearchVO<>(500, "Course-Search:Error", null);
@@ -190,15 +204,15 @@ public class SearchController {
         if (cidList.size() == 0) {
             logger.info("新建");
             Map<String, Integer> page = getPage(s);
-            int from = page.get("from");
-            int size = page.get("size");
+            int fi = page.get("from");
+            int si = page.get("size");
             courses = find.courses();
             logger.info("Courses: {}", courses);
             if (courses.size() > 0) {
                 mq.save(courses);
                 courses = courses.subList(
-                        from,
-                        Math.min(from + size, courses.size()));
+                        fi,
+                        Math.min(fi + si, courses.size()));
             }
         } else {
             logger.info("从 ES");
@@ -222,11 +236,16 @@ public class SearchController {
     /**
      * 查找符合条件的课程
      *
-     * @param s value 为条件(关键字), 可设定 from & size
-     * @return SearchCourseVO 状态码, 消息, 用户信息
+     * @param value 查询之
+     * @param from  分页起始
+     * @param size  分页大小
+     * @return 课程信息
      */
     @GetMapping("/course/find")
-    public SearchVO<CourseSTDTO> findCourse(@RequestBody SearchDTO s) {
+    public SearchVO<CourseSTDTO> findCourse(@RequestParam("value") String value,
+                                            @RequestParam("from") Integer from,
+                                            @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO(value, from, size);
         List<Integer> cidList = esFind(IndexUtil.COURSE, s);
         if (isException(cidList)) {
             return new SearchVO<>(500, "Course-Search:Error", null);
@@ -271,11 +290,14 @@ public class SearchController {
     /**
      * 获取全部问题信息
      *
-     * @param s 可为空, 也可以设定 from & size
-     * @return SearchQuestionVO 状态码, 消息, 用户信息
+     * @param from 分页起始
+     * @param size 分页大小
+     * @return 问题信息
      */
     @GetMapping("/question/all")
-    public SearchVO<QuestionResultDTO> allQuestion(@RequestBody SearchDTO s) {
+    public SearchVO<QuestionResultDTO> allQuestion(@RequestParam("from") Integer from,
+                                                   @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO("all", from, size);
         List<Integer> qidList = esFindAll(IndexUtil.QUESTION, s);
         if (isException(qidList)) {
             return new SearchVO<>(500, "Question-Search:Error", null);
@@ -284,15 +306,15 @@ public class SearchController {
         if (qidList.size() == 0) {
             logger.info("新建");
             Map<String, Integer> page = getPage(s);
-            int from = page.get("from");
-            int size = page.get("size");
+            int fi = page.get("from");
+            int si = page.get("size");
             questions = find.questions();
             logger.info("questions: {}", questions);
             if (questions.size() > 0) {
                 mq.save(questions);
                 questions = questions.subList(
-                        from,
-                        Math.min(from + size, questions.size()));
+                        fi,
+                        Math.min(fi + si, questions.size()));
             }
         } else {
             logger.info("从 ES");
@@ -316,11 +338,16 @@ public class SearchController {
     /**
      * 查找符合条件的问题
      *
-     * @param s value 为条件(关键字), 可设定 from & size
-     * @return SearchQuestionVO 状态码, 消息, 用户信息
+     * @param value 查询值
+     * @param from  分页起始
+     * @param size  分页大小
+     * @return 问题信息
      */
     @GetMapping("/question/find")
-    public SearchVO<QuestionResultDTO> findQuestion(@RequestBody SearchDTO s) {
+    public SearchVO<QuestionResultDTO> findQuestion(@RequestParam("value") String value,
+                                                    @RequestParam("from") Integer from,
+                                                    @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO(value, from, size);
         List<Integer> qidList = esFind(IndexUtil.QUESTION, s);
         if (isException(qidList)) {
             return new SearchVO<>(500, "Question-Search:Error", null);
@@ -365,11 +392,14 @@ public class SearchController {
     /**
      * 获取全部回答信息
      *
-     * @param s 可为空, 也可以设定 from & size
-     * @return SearchResultVO 状态码, 消息, 用户信息
+     * @param from 分页起始
+     * @param size 分页大小
+     * @return 回答信息
      */
     @GetMapping("/result/all")
-    public SearchVO<ResultQuestionDTO> allResult(@RequestBody SearchDTO s) {
+    public SearchVO<ResultQuestionDTO> allResult(@RequestParam("from") Integer from,
+                                                 @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO("all", from, size);
         List<Integer> ridList = esFindAll(IndexUtil.RESULT, s);
         if (isException(ridList)) {
             return new SearchVO<>(500, "Result-Search:Error", null);
@@ -378,15 +408,15 @@ public class SearchController {
         if (ridList.size() == 0) {
             logger.info("新建");
             Map<String, Integer> page = getPage(s);
-            int from = page.get("from");
-            int size = page.get("size");
+            int fi = page.get("from");
+            int si = page.get("size");
             results = find.results();
             logger.info("results: {}", results);
             if (results.size() > 0) {
                 mq.save(results);
                 results = results.subList(
-                        from,
-                        Math.min(from + size, results.size()));
+                        fi,
+                        Math.min(fi + si, results.size()));
             }
         } else {
             logger.info("从 ES");
@@ -410,11 +440,16 @@ public class SearchController {
     /**
      * 查找符合条件的回答
      *
-     * @param s value 为条件(关键字), 可设定 from & size
-     * @return SearchResultVO 状态码, 消息, 用户信息
+     * @param value 查询值
+     * @param from  分页起始
+     * @param size  分页大小
+     * @return 回答信息
      */
     @GetMapping("/result/find")
-    public SearchVO<ResultQuestionDTO> findResult(@RequestBody SearchDTO s) {
+    public SearchVO<ResultQuestionDTO> findResult(@RequestParam("value") String value,
+                                                  @RequestParam("from") Integer from,
+                                                  @RequestParam("size") Integer size) {
+        SearchDTO s = new SearchDTO(value, from, size);
         List<Integer> ridList = esFind(IndexUtil.RESULT, s);
         if (isException(ridList)) {
             return new SearchVO<>(500, "Result-Search:Error", null);
@@ -459,11 +494,10 @@ public class SearchController {
     /**
      * 获取全部问题类型
      *
-     * @param s 分页
      * @return SearchResultVO 状态码, 消息, 用户信息
      */
     @GetMapping("/type/all")
-    public SearchVO<String> getType(@RequestBody SearchDTO s) {
+    public SearchVO<String> getType() {
         try {
             List<String> types = find.types();
             if (types == null) {
