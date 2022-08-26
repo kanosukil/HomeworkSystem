@@ -16,13 +16,7 @@
         var uid = getCookie('uid');
         var role = getCookie('role');
         var url = "/entry/operation/teacher/c/course";
-        var who;
-        if (isTeacher(role)) {
-            who = '老师';
-        } else if (isAdmin(role)) {
-            who = '管理员';
-            url = '/entry/operation/admin/c/course'
-        } else {
+        if (!isTeacher(role)) {
             alert('学生不可以进来哟~');
             top.location = 'main.html';
         }

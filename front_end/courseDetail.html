@@ -16,7 +16,7 @@
         var uid = getCookie('uid');
         var role = getCookie('role');
         var cid = decodeURI(document.URL);
-        cid = cid.substring(cid.indexOf('=') + 1);
+        cid = cid.substring(cid.indexOf('=') + 1).replace(/[^0-9]/g, '');
         var coursename = '';
         var courseTnum = 1;
         var courseSnum = 0;
@@ -195,7 +195,7 @@
                     }
                     ucBtn.onclick = function () {
                         ucBtn.disabled = true;
-                        if (!isTeacher(role) || !isAdmin(role)) {
+                        if (!isTeacher(role)) {
                             alert('学生修改不了课程信息哟~');
                             ucBtn.disabled = false;
                             return;
@@ -207,13 +207,9 @@
                             cname.readOnly = true;
                             var tmp = JSON.parse(JSON.stringify(req));
                             tmp['method'] = 'post';
-                            if (isTeacher(role)) {
-                                tmp['url'] = '/entry/operation/teacher/u/course';
-                            } else {
-                                tmp['url'] = '/entry/operation/admin/u/course';
-                            }
+                            tmp['url'] = '/entry/operation/teacher/u/course';
                             tmp['data'] = {
-                                'tid': uid,
+                                'tid': courseTid[0],
                                 'course': {
                                     'id': cid,
                                     'name': cname.value
@@ -389,8 +385,8 @@
         <script>
             const dbtn = document.getElementById('delete');
             dbtn.onclick = function () {
-                if (!isAdmin(role) || !belongTeacher(uid)) {
-                    alert('只有老师能够删除课程哟~');
+                if (!belongTeacher(uid)) {
+                    alert('只有授课老师能够删除课程哟~');
                     return;
                 }
                 if (!confirm('确定要删除该课程吗o(TヘTo)')) {
@@ -398,12 +394,7 @@
                     return;
                 }
                 dbtn.disabled = true;
-                var url = '';
-                if (!isAdmin(role)) {
-                    url = '/entry/operation/teacher/d/course';
-                } else {
-                    url = '/entry/operation/admin/d/course';
-                }
+                var url = '/entry/operation/teacher/d/course';
                 axios({
                     'method': 'post',
                     'headers': {
@@ -433,6 +424,7 @@
                 dbtn.disabled = false;
             }
             function belongTeacher(uid) {
+                console.log(uid, courseTid);
                 for (var i = 0; i < courseTid.length; i++) {
                     if (courseTid[i] == uid) {
                         return true;

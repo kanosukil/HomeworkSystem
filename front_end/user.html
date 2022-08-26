@@ -221,7 +221,7 @@
                 top.location = 'main.html';
             }
             create.onclick = function () {
-                if (isTeacher(role) || isAdmin(role)) {
+                if (isTeacher(role)) {
                     alert('正在前往课程创建页面哟~');
                     top.location = '/homework-system/createCourse.html';
                 } else {

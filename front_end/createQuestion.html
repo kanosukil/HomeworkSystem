@@ -16,8 +16,8 @@
         var uid = getCookie('uid');
         var role = getCookie('role');
         var cid = decodeURI(document.URL);
-        cid = cid.substring(cid.indexOf('=') + 1);
-        if (!isTeacher(role) || !isAdmin(role)) {
+        cid = cid.substring(cid.indexOf('=') + 1).replace(/[^0-9]/g, '');
+        if (!isTeacher(role)) {
             alert('只有老师可以进来哟~')
             top.location = 'main.html';
         }
@@ -208,12 +208,7 @@
                 var upIsFile = qfile.checked;
                 var upAnswer = qanswer.value;
                 var upComment = qreference.value;
-                var url = "";
-                if (isTeacher(role)) {
-                    url = "/entry/operation/teacher/c/question";
-                } else {
-                    url = "/entry/operation/admin/c/question";
-                }
+                var url = "/entry/operation/teacher/c/question";
                 const req = {
                     'method': 'post',
                     'headers': {
@@ -222,7 +217,7 @@
                     },
                     'url': url,
                     'data': {
-                        'tid': uid,
+                        'tid': tid,
                         'cid': cid,
                         'question': {
                             'title': upTitle,

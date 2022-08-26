@@ -15,7 +15,7 @@
         var token = getCookie('token');
         var uid = getCookie('uid');
         var role = getCookie('role');
-        if (!isStudent(role) || !isAdmin(role)) {
+        if (!isStudent(role)) {
             alert('只有学生可以进来哟~')
             top.location = 'main.html';
         }
@@ -77,12 +77,7 @@
                 })
             }
             cbtn.onclick = function () {
-                var url = "";
-                if (isStudent(role)) {
-                    url = '/entry/operation/student/c/result';
-                } else {
-                    url = '/entry/operation/admin/c/result';
-                }
+                var url = '/entry/operation/student/c/result';
                 axios({
                     'method': 'post',
                     'headers': {

@@ -16,7 +16,7 @@
         var uid = getCookie('uid');
         var rid = decodeURI(document.URL);
         var role = getCookie('role');
-        rid = rid.substring(rid.indexOf('=') + 1);
+        rid = rid.substring(rid.indexOf('=') + 1).replace(/[^0-9]/g, '');
     </script>
     <div id="head">
         <h1 style="text-align: center;">回答信息</h1>
@@ -418,7 +418,7 @@
         }
         const delBtn = document.getElementById('delete');
         delBtn.onclick = function () {
-            if (!isAdmin(role) || rSid != uid) {
+            if (rSid != uid) {
                 alert('只有本人可以操作哟~');
                 return;
             }
@@ -427,12 +427,7 @@
                 return;
             }
             delBtn.disabled = true;
-            var url = "";
-            if (!isAdmin(uid)) {
-                url = '/entry/operation/student/d/result';
-            } else {
-                url = '/entry/operation/admin/d/result';
-            }
+            var url = '/entry/operation/student/d/result';
             axios({
                 'method': 'post',
                 'headers': {

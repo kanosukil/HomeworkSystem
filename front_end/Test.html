@@ -13,17 +13,8 @@
     <textarea id="test" width="100px" height="100px" value="123"></textarea>
     <input type="checkbox" id="questionIsFile" />
     <script>
-        var test = '123';
-        document.body.appendChild(document.createTextNode(test.substring(1)));
-        document.body.appendChild(document.createTextNode(test.substring(0)));
-        let arr = [1, 2, 3];
-        console.log(arr.indexOf('2'));
-        console.log(arr.includes('2'));
-        var text = document.getElementById('test');
-        var bt = document.getElementById('questionIsFile');
-        bt.onclick = function () {
-            console.log(regImg(text.value));
-        }
+        console.log('1' == 1);
+        console.log('1' === 1);
     </script>
     <br>
 </body>

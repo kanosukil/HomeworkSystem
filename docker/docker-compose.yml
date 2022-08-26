@@ -29,14 +29,14 @@ services:
       - /home/kano/redis/pid/79:/var/run
       - /home/kano/redis/logs/79:/logs
     command: redis-server /conf/master.conf
-  sentinel:
-    image: sentinel-8:1.2
-    container_name: sentinel
-    restart: always
-    ports:
-      - "8882:8882"
-    volumes:
-      - ./sentinel/logs:/root/logs/csp
+  # sentinel:
+  #   image: sentinel-8:1.2
+  #   container_name: sentinel
+  #   restart: always
+  #   ports:
+  #     - "8882:8882"
+  #   volumes:
+  #     - ./sentinel/logs:/root/logs/csp
   nginx:
     image: nginx:latest
     container_name: nginx

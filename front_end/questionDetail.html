@@ -16,7 +16,7 @@
         var uid = getCookie('uid');
         var role = getCookie('role');
         var qid = decodeURI(document.URL);
-        qid = qid.substring(qid.indexOf('=') + 1);
+        qid = qid.substring(qid.indexOf('=') + 1).replace(/[^0-9]/g, '');
         var quTitle = '';
         var quExtension = '';
         var quScore = '';
@@ -305,7 +305,7 @@
                 }
             }
             updateBtn.onclick = function () {
-                if (uid != teacherid || !isAdmin(role)) {
+                if (uid != teacherid) {
                     alert('只有出题人能够修改哟~');
                     return;
                 }
@@ -342,12 +342,7 @@
                     oth.disabled = true;
                     othText.readOnly = true;
                     downText.disabled = true;
-                    var url = '';
-                    if (isAdmin(role)) {
-                        url = '/entry/operation/admin/u/question';
-                    } else {
-                        url = '/entry/operation/teacher/u/question';
-                    }
+                    var url = '/entry/operation/teacher/u/question';
                     var updateType = '';
                     if (oth.checked) {
                         updateType = othText.value;
@@ -441,7 +436,7 @@
                 })
             }
             crBtn.onclick = function () {
-                if (!isStudent(role) || !isAdmin(role)) {
+                if (!isStudent(role)) {
                     alert('只有学生可以作答哟~');
                     return;
                 }
@@ -450,7 +445,7 @@
             }
             var btn = document.getElementById('delete');
             btn.onclick = function () {
-                if (!isAdmin(role) || uid != teacherid) {
+                if (uid != teacherid) {
                     alert('只有本人可以删除哟~');
                     return;
                 }
@@ -459,12 +454,7 @@
                     return;
                 }
                 btn.disabled = true;
-                var url = '';
-                if (!isAdmin(role)) {
-                    url = '/entry/operation/teacher/d/question';
-                } else {
-                    url = '/entry/operation/admin/d/question';
-                }
+                var url = '/entry/operation/teacher/d/question';
                 axios({
                     'method': 'post',
                     'headers': {
