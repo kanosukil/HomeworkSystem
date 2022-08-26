@@ -1,10 +1,10 @@
 package cn.summer.homework.controller;
 
 import cn.summer.homework.BO.ESOpBO;
-import cn.summer.homework.DTO.*;
-import cn.summer.homework.Entity.Course;
-import cn.summer.homework.Entity.Question;
-import cn.summer.homework.Entity.Result;
+import cn.summer.homework.DTO.CourseInDTO;
+import cn.summer.homework.DTO.ElasticSearchDTO;
+import cn.summer.homework.DTO.QuestionInDTO;
+import cn.summer.homework.DTO.ResultInDTO;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.AdminVO;
 import cn.summer.homework.feignClient.AdminClient;
@@ -75,13 +75,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO course = admin.createCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO cInSQL = find.course(Integer.parseInt(course.getInfo()));
-                if (!es.save(cInSQL)) {
-                    logger.warn("<ad-course>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.COURSE);
-                } else {
-                    logger.info("<ad-course>MQ ES Save 成功");
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {
@@ -105,13 +99,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO course = admin.updateCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO after = find.course(in.getCourse().getId());
-                if (!es.update(after)) {
-                    logger.warn("<ad-course>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.COURSE);
-                } else {
-                    logger.info("<ad-course>MQ ES Update 成功");
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {
@@ -139,16 +127,9 @@ public class AdminController {
         }
         AdminVO course = admin.deleteCourse(in);
         if (course.getCode() == 200) {
-            Course before = new Course();
-            before.setId(in.getCid());
-            if (es.delete(new CourseSTDTO(before, null, null))) {
-                logger.info("<ad-course>MQ ES Delete 成功");
-                esIndexDelete(IndexUtil.QUESTION);
-                esIndexDelete(IndexUtil.RESULT);
-            } else {
-                logger.warn("<ad-course>MQ ES delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.COURSE);
-            }
+            esIndexDelete(IndexUtil.QUESTION);
+            esIndexDelete(IndexUtil.RESULT);
+            esIndexDelete(IndexUtil.COURSE);
         }
         return course;
     }
@@ -171,13 +152,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO question = admin.createQuestion(in);
             if (question.getCode() == 200) {
-                QuestionResultDTO qInSQL = find.question(Integer.parseInt(question.getInfo()));
-                if (es.save(qInSQL)) {
-                    logger.info("<ad-question>MQ ES Save 成功");
-                } else {
-                    logger.warn("<ad-question>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.QUESTION);
-                }
+                esIndexDelete(IndexUtil.QUESTION);
             }
             return question;
         } catch (IOException io) {
@@ -200,13 +175,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO question = admin.updateQuestion(in);
             if (question.getCode() == 200) {
-                QuestionResultDTO after = find.question(in.getQid());
-                if (es.update(after)) {
-                    logger.info("<ad-question>MQ ES Update 成功");
-                } else {
-                    logger.warn("<ad-question>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.QUESTION);
-                }
+                esIndexDelete(IndexUtil.QUESTION);
             }
             return question;
         } catch (IOException io) {
@@ -233,16 +202,8 @@ public class AdminController {
         }
         AdminVO question = admin.deleteQuestion(in);
         if (question.getCode() == 200) {
-            Question before = new Question();
-            before.setId(in.getQid());
-            if (es.delete(new QuestionResultDTO(before, null,
-                    null, null, null))) {
-                logger.info("<ad-question>MQ ES Delete 成功");
-                esIndexDelete(IndexUtil.RESULT);
-            } else {
-                logger.warn("<ad-question>MQ ES delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.QUESTION);
-            }
+            esIndexDelete(IndexUtil.RESULT);
+            esIndexDelete(IndexUtil.QUESTION);
         }
         return question;
     }
@@ -307,13 +268,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO result = admin.createResult(in);
             if (result.getCode() == 200) {
-                ResultQuestionDTO rInSQL = find.result(Integer.parseInt(result.getInfo()));
-                if (es.save(rInSQL)) {
-                    logger.info("<ad-result>MQ ES Save 成功");
-                } else {
-                    logger.warn("<ad-result>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.RESULT);
-                }
+                esIndexDelete(IndexUtil.RESULT);
             }
             return result;
         } catch (IOException io) {
@@ -336,13 +291,7 @@ public class AdminController {
             isAdmin(request);
             AdminVO result = admin.updateResult(in);
             if (result.getCode() == 200) {
-                ResultQuestionDTO after = find.result(in.getResult().getId());
-                if (es.update(after)) {
-                    logger.info("<ad-result>MQ ES Update 成功");
-                } else {
-                    logger.warn("<ad-result>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.RESULT);
-                }
+                esIndexDelete(IndexUtil.RESULT);
             }
             return result;
         } catch (IOException io) {
@@ -369,15 +318,7 @@ public class AdminController {
         }
         AdminVO result = admin.deleteResult(in);
         if (result.getCode() == 200) {
-            Result before = new Result();
-            before.setId(in.getRid());
-            if (es.delete(new ResultQuestionDTO(before, null,
-                    null, null))) {
-                logger.info("<ad-result>MQ ES Delete 成功");
-            } else {
-                logger.warn("<ad-result>MQ ES Delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.RESULT);
-            }
+            esIndexDelete(IndexUtil.RESULT);
         }
         return result;
     }

@@ -2,8 +2,6 @@ package cn.summer.homework.controller;
 
 import cn.summer.homework.BO.ESOpBO;
 import cn.summer.homework.DTO.*;
-import cn.summer.homework.Entity.Course;
-import cn.summer.homework.Entity.Question;
 import cn.summer.homework.Util.IndexUtil;
 import cn.summer.homework.VO.TeacherVO;
 import cn.summer.homework.feignClient.ESCRUDClient;
@@ -79,13 +77,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO course = teacher.createCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO cInSQL = find.course(Integer.parseInt(course.getInfo()));
-                if (!es.save(cInSQL)) {
-                    logger.warn("<course>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.COURSE);
-                } else {
-                    logger.info("<course>MQ ES Save 成功");
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {
@@ -107,13 +99,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO course = teacher.updateCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO after = find.course(in.getCourse().getId());
-                if (!es.update(after)) {
-                    logger.warn("<course>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.COURSE);
-                } else {
-                    logger.info("<course>MQ ES Update 成功");
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {
@@ -139,16 +125,9 @@ public class TeacherController {
         }
         TeacherVO course = teacher.deleteCourse(in);
         if (course.getCode() == 200) {
-            Course before = new Course();
-            before.setId(in.getCid());
-            if (es.delete(new CourseSTDTO(before, null, null))) {
-                logger.info("<course>MQ ES Delete 成功");
-                esIndexDelete(IndexUtil.QUESTION);
-                esIndexDelete(IndexUtil.RESULT);
-            } else {
-                logger.warn("<course>MQ ES delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.COURSE);
-            }
+            esIndexDelete(IndexUtil.QUESTION);
+            esIndexDelete(IndexUtil.RESULT);
+            esIndexDelete(IndexUtil.COURSE);
         }
         return course;
     }
@@ -170,13 +149,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO question = teacher.createQuestion(in);
             if (question.getCode() == 200) {
-                QuestionResultDTO qInSQL = find.question(Integer.parseInt(question.getInfo()));
-                if (es.save(qInSQL)) {
-                    logger.info("<question>MQ ES Save 成功");
-                } else {
-                    logger.warn("<question>MQ ES Save 异常, 未存入 ES 中");
-                    esIndexDelete(IndexUtil.QUESTION);
-                }
+                esIndexDelete(IndexUtil.QUESTION);
             }
             return question;
         } catch (IOException io) {
@@ -198,13 +171,8 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO question = teacher.updateQuestion(in);
             if (question.getCode() == 200) {
-                QuestionResultDTO after = find.question(in.getQid());
-                if (es.update(after)) {
-                    logger.info("<question>MQ ES Update 成功");
-                } else {
-                    logger.warn("<question>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.QUESTION);
-                }
+
+                esIndexDelete(IndexUtil.QUESTION);
             }
             return question;
         } catch (IOException io) {
@@ -230,16 +198,8 @@ public class TeacherController {
         }
         TeacherVO question = teacher.deleteQuestion(in);
         if (question.getCode() == 200) {
-            Question before = new Question();
-            before.setId(in.getQid());
-            if (es.delete(new QuestionResultDTO(before, null,
-                    null, null, null))) {
-                logger.info("<question>MQ ES Delete 成功");
-                esIndexDelete(IndexUtil.RESULT);
-            } else {
-                logger.warn("<question>MQ ES delete 异常, 未删除指定 ES 文档");
-                esIndexDelete(IndexUtil.QUESTION);
-            }
+            esIndexDelete(IndexUtil.RESULT);
+            esIndexDelete(IndexUtil.QUESTION);
         }
         return question;
     }
@@ -293,13 +253,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO correct = teacher.correct(in);
             if (correct.getCode() == 200) {
-                ResultQuestionDTO after = find.result(in.getResult().getId());
-                if (es.update(after)) {
-                    logger.info("<question-result>MQ ES Update 成功");
-                } else {
-                    logger.warn("<question-result>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.RESULT);
-                }
+                esIndexDelete(IndexUtil.RESULT);
             }
             return correct;
         } catch (IOException io) {
@@ -321,13 +275,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO course = teacher.addCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO after = find.course(in.getCid());
-                if (es.update(after)) {
-                    logger.info("<course-tadd>MQ ES Update 成功");
-                } else {
-                    logger.warn("<course-tadd>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.COURSE);
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {
@@ -349,13 +297,7 @@ public class TeacherController {
             judge(in.getTid(), request);
             TeacherVO course = teacher.dropCourse(in);
             if (course.getCode() == 200) {
-                CourseSTDTO after = find.course(in.getCid());
-                if (es.update(after)) {
-                    logger.info("<course-tdrop>MQ ES Update 成功");
-                } else {
-                    logger.warn("<course-tdrop>MQ ES Update 异常, 未更新 ES");
-                    esIndexDelete(IndexUtil.COURSE);
-                }
+                esIndexDelete(IndexUtil.COURSE);
             }
             return course;
         } catch (IOException io) {

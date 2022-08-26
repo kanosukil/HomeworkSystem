@@ -157,7 +157,7 @@ public class CourseServiceImpl implements CourseService {
         int[] insert = new int[2];
 
         try {
-            if (!userService.isTeacher(tid)) {
+            if (!userService.isTeacher(tid) || !userService.isAdmin(tid)) {
                 throw new Exception("用户不存在/用户权限不够. UserID=".concat(tid.toString()));
             }
             flag = 1;
@@ -211,7 +211,7 @@ public class CourseServiceImpl implements CourseService {
 
     private void judgeTeacher(Integer tid, Integer cid, Integer afterFindCID)
             throws Exception {
-        if (!userService.isTeacher(tid)) {
+        if (!userService.isTeacher(tid) || !userService.isAdmin(tid)) {
             throw new Exception("用户不存在/用户权限不够");
         }
         if (!Objects.equals(afterFindCID, cid)) {
@@ -221,7 +221,7 @@ public class CourseServiceImpl implements CourseService {
 
     private void judgeStudent(Integer sid, Integer cid, Integer afterFindCID)
             throws Exception {
-        if (!userService.isStudent(sid)) {
+        if (!userService.isStudent(sid) || !userService.isAdmin(sid)) {
             throw new Exception("用户不存在/用户权限不够");
         }
         if (!Objects.equals(afterFindCID, cid)) {
@@ -501,7 +501,7 @@ public class CourseServiceImpl implements CourseService {
         int[] delete = new int[4];
 
         try {
-            if (!userService.isTeacher(tid)) {
+            if (!userService.isTeacher(tid) || !userService.isAdmin(tid)) {
                 throw new Exception("用户不存在/用户非老师");
             }
             List<Course> tCourse = getTCourse(teacherCourseDao.selectByTID(tid));
@@ -556,7 +556,7 @@ public class CourseServiceImpl implements CourseService {
         int[] delete = new int[2];
 
         try {
-            if (!userService.isStudent(sid)) {
+            if (!userService.isStudent(sid) || !userService.isAdmin(sid)) {
                 throw new Exception("用户不存在/用户不是学生");
             }
             List<Course> sCourse = getSCourse(studentCourseDao.selectBySID(sid));
