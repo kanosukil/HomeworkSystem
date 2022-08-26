@@ -244,7 +244,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int[] insert = new int[4];
 
         try {
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Course course = courseDao.selectByID(cid);
@@ -310,7 +310,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int[] delete = new int[9];
 
         try {
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Question question = questionDao.selectByID(qid);
@@ -399,7 +399,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         Integer id = question.getId();
 
         try {
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Question srcQuestion = selectHKByQID(id).getQuestion();
@@ -435,7 +435,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int flag = 0;
 
         try {
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             if (selectHKByQID(qid).getQuestion() == null) {
@@ -486,7 +486,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         Integer qid = question.getId();
 
         try {
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             Integer qtid = questionTypeDao.selectByName(type);
@@ -546,7 +546,7 @@ public class HomeworkServiceImpl implements HomeworkService {
             if (!result.getIsCheck()) {
                 throw new Exception("未批改");
             }
-            if (!userService.isTeacher(tid) && !userService.isAdmin(tid)) {
+            if (!userService.isTeacher(tid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             if (teacherQuestionDao.accurateSelect(new TeacherQuestion(tid, qid)) <= 0) {
@@ -587,7 +587,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
     public boolean createType(Integer uid, String typeName) {
-        if (userService.isAdmin(uid) && userService.isTeacher(uid)) {
+        if (userService.isTeacher(uid)) {
             return questionTypeDao.addQuestionType(typeName) > 0;
         } else {
             logger.error("UserID: {} 不是管理员/教师", uid);
@@ -598,7 +598,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
     public boolean deleteType(Integer uid, String typeName) {
-        if (userService.isAdmin(uid) && userService.isTeacher(uid)) {
+        if (userService.isTeacher(uid)) {
             return questionTypeDao.deleteQuestionType(typeName) > 0;
         } else {
             logger.error("UserID: {} 不是管理员/教师", uid);
@@ -609,7 +609,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     @Override
     @Transactional(rollbackFor = SQLWarningException.class)
     public boolean deleteType(Integer uid, Integer id) {
-        if (userService.isAdmin(uid) && userService.isTeacher(uid)) {
+        if (userService.isTeacher(uid)) {
             return questionTypeDao.deleteByID(id) > 0;
         } else {
             logger.error("UserID: {} 不是管理员/教师", uid);
@@ -662,7 +662,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         int[] insert = new int[4];
 
         try {
-            if (!userService.isStudent(sid) && !userService.isAdmin(sid)) {
+            if (!userService.isStudent(sid)) {
                 throw new Exception("用户不存在/用户权限不够");
             }
             if (!studentCourseDao.selectBySID(sid).contains(cid)) {
@@ -763,7 +763,7 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     private Result checkResult(Integer sid, Integer rid) throws Exception {
-        if (!userService.isStudent(sid) && !userService.isAdmin(sid)) {
+        if (!userService.isStudent(sid)) {
             throw new Exception("用户不存在/用户权限不够");
         }
         Result srcResult = resultDao.selectByID(rid);
