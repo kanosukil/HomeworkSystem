@@ -75,7 +75,7 @@
 
   > 访问接口(未从 Gateway 暴露, 且未配置 Cors):
   >
-  > ```json
+  > ```
   > // Course
   > /course-sql
   > 	// 查询全部课程
@@ -221,7 +221,7 @@
   > 	返回数据: CourseOpBO
   > ```
   >
-  > ```json
+  > ```
   > // Homework
   > /homework-sql
   > 	// 获取全部问题
@@ -506,7 +506,7 @@
   > 	返回数据: HomeworkOpBO
   > ```
   >
-  > ```json
+  > ```
   > // User
   > /user-sql
   > 	// 用户注册
@@ -605,7 +605,9 @@
   >     }
   > 	返回数据: UserOpBO
   > ```
-#### ElasticSearch 
+
+#### ElasticSearch
+
 + 分词搜索
 
 + 优化数据访问效率
@@ -616,7 +618,7 @@
 
 > 访问接口(未从 Gateway 暴露, 且未配置 Cors):
 >
-> ```json
+> ```
 > // CUD
 > /es-data
 > // 返回数据全部都是
@@ -717,7 +719,7 @@
 
   > 访问接口(未配置 Cors):
   >
-  > ```json
+  > ```
   > // 上传
   > /upload
   > 	// 单张图片
@@ -1047,7 +1049,7 @@
 
   > + 访问接口(未配置 Cors):
   >
-  > ```json
+  > ```
   > // LoginController
   > /api
   > 	// 登录
@@ -1090,7 +1092,7 @@
   > 	返回数据: UserVO
   > ```
   >
-  > ```json
+  > ```
   > // UserInfoController
   > /user
   > 	// 用户更新
@@ -1139,7 +1141,7 @@
   > 	返回数据: UserVO
   > ```
   >
-  > ```json
+  > ```
   > // SearchController
   > /search
   > 	// 用户
@@ -1373,7 +1375,7 @@
   > 		}
   > ```
   >
-  > ```json
+  > ```
   > // StudentController
   > /operation/student
   > 	// 新建回答
@@ -1459,7 +1461,7 @@
   > 	}
   > ```
   >
-  > ```json
+  > ```
   > // TeacherController
   > /operation/teacher
   > 	// 新建课程
@@ -1658,7 +1660,7 @@
   >
   >   > admin 直接与 Teacher & Student 操作对应
   >
-  > ```json
+  > ```
   > // UploadController
   > /upload
   > 	// 单个文件
@@ -1729,7 +1731,7 @@
 
   > 访问接口:
   >
-  > ```json
+  > ```
   > /entry/** register 服务(总入口)接口
   > /store/** fileStore 服务(文件存储)接口
   > ```
