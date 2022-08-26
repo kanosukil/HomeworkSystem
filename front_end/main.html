@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>主页</title>
+</head>
+
+<body onload="initAJAX();checkToken();allUser()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+        var token = getCookie('token');
+        var uid = getCookie('uid');
+        var req;
+        var s1 = 1;
+        var page = 1;
+    </script>
+    <style>
+        #top-div {
+            text-align: center;
+            background-color: aqua;
+            color: black;
+            clear: both;
+        }
+    </style>
+    <div id="top-div">
+        <table align="center">
+            <tr>
+                <th align="left" width="200px">
+                    <p style="font-size: 5px;width: 50%;float: left;overflow: hidden;">当前时间:</p>
+                    <p id="time-p" style="font-size: 5px;width: 50%;float: right;overflow: hidden;color: red;"></p>
+                    <script>
+                        getTime('time-p');
+                    </script>
+                    <p style="display: none;clear: both;"></p>
+                </th>
+                <td align="left">
+                    <div id="top-left" style="font-size: 5px;">
+                        <script>
+                            var welcome = document.createElement('p');
+                            welcome.innerText = "欢迎ID:" + getCookie("uid") + "用户使用";
+                            document.getElementById("top-left").appendChild(welcome);
+                        </script>
+                    </div>
+                </td>
+                <td align="right" width="100px">
+                    <div id="top-right" style="font-size: 5px;margin: 5px 0px;">
+                        <a href="user.html">查看个人信息</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="head-div" style="max-width: 10000px;">
+        <h1 style="text-align: center;">Homework System 作业系统</h1>
+        <p style="text-align: center;width: 140%;">--计软192吕海彬</p>
+        <hr style="width: 100%;">
+    </div>
+    <div id="body-div">
+        <div class="search" style="text-align: center;">
+            <input type="radio" class="search" id="user-radio" name="search-type" value="user" checked />用户
+            <input type="radio" class="search" id="course-radio" name="search-type" value="course" />课程
+            <input type="radio" class="search" id="question-radio" name="search-type" value="question" />问题
+            <input type="radio" class="search" id="result-radio" name="search-type" value="result" />回答
+            <input type="text" class="search" id="search-value" value=""
+                style="margin: 5px;overflow: hidden;max-width: 1000px;" />
+            <button class="search" id="search-btn">开始搜索</button>
+        </div>
+        <div class="result" id="result-div"
+            style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+        </div>
+        <script>
+            const result_div = document.getElementById('result-div');
+            function allUser() {
+                result_div.innerHTML = "第" + page + "页\n";
+                req = {
+                    methed: 'get',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    url: '/entry/search/user/all',
+                    params: {
+                        'value': 'all',
+                        'from': 0,
+                        'size': 5
+                    }
+                };
+                axios(req).then(function (response) {
+                    const d = response.data;
+                    if (d['code'] == 200) {
+                        let array = d['objects'];
+                        Array.from(array).forEach(item => {
+                            const u = item['user'];
+                            const r = item['roles'];
+                            userDiv(u, r);
+                        })
+                    } else {
+                        alert('获取用户失败:' + d['message'] + '-' + d['objects']);
+                        return;
+                    }
+                }).catch(function (error) {
+                    alert('异常:' + error);
+                    return;
+                })
+            }
+            // 搜索按键
+            const sbtn = document.getElementById('search-btn');
+            sbtn.onclick = function () {
+                page = 1;
+                sbtn.disabled = true;
+                if (document.getElementById('user-radio').checked) s1 = 1;
+                else if (document.getElementById('course-radio').checked) s1 = 2;
+                else if (document.getElementById('question-radio').checked) s1 = 3;
+                else if (document.getElementById('result-radio').checked) s1 = 4;
+                var v1 = document.getElementById('search-value').value;
+                var url = '/entry/search/user/all';
+                var value = "all";
+                switch (s1) {
+                    case 1:
+                        if (v1 != "") {
+                            value = v1;
+                            url = '/entry/search/user/find';
+                        } else {
+                            url = '/entry/search/user/all';
+                        }
+                        break;
+                    case 2:
+                        if (v1 != "") {
+                            value = v1;
+                            url = '/entry/search/course/find';
+                        } else {
+                            url = '/entry/search/course/all';
+                        }
+                        break;
+                    case 3:
+                        if (v1 != "") {
+                            value = v1;
+                            url = '/entry/search/question/find';
+                        } else {
+                            url = '/entry/search/question/all';
+                        }
+                        break;
+                    case 4:
+                        if (v1 != "") {
+                            value = v1;
+                            url = '/entry/search/result/find';
+                        } else {
+                            url = '/entry/search/result/all';
+                        }
+                        break;
+                    default:
+                        alert('异常');
+                        location.reload();
+                }
+                req = {
+                    'methed': 'get',
+                    'headers': {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    'url': url,
+                    'params': {
+                        'value': value,
+                        'from': 0,
+                        'size': 5
+                    }
+                };
+                axios(req).then(function (response) {
+                    const d = response.data;
+                    if (d['code'] == 200) {
+                        result_div.innerHTML = "第" + page + "页\n";
+                        let array = d['objects'];
+                        Array.from(array).forEach(i => {
+                            switch (s1) {
+                                case 1:
+                                    const u = i['user'];
+                                    const ur = i['roles'];
+                                    userDiv(u, ur);
+                                    break;
+                                case 2:
+                                    const c = i['course'];
+                                    const ct = i['teachers'];
+                                    const cs = i['students'];
+                                    courseDiv(c, ct, cs);
+                                    break;
+                                case 3:
+                                    const q = i['question'];
+                                    const qt = i['questionType'];
+                                    const t = i['teacher'];
+                                    const qr = i['results'];
+                                    const qc = i['course'];
+                                    questionDiv(q, qt, t, qr, qc);
+                                    break;
+                                case 4:
+                                    const r = i['result'];
+                                    const rs = i['student'];
+                                    const rq = i['question'];
+                                    const rt = i['teacher'];
+                                    resultDiv(r, rs, rq, rt);
+                                    break;
+                                default:
+                                    alert('异常');
+                                    location.reload();
+                            }
+                        })
+                    } else {
+                        // console.log(d);
+                        alert('获取信息异常:' + d['message']);
+                        sbtn.disabled = false;
+                        return;
+                    }
+                }).catch(function (error) {
+                    alert('异常:' + error);
+                    location.reload();
+                })
+                sbtn.disabled = false;
+            }
+        </script>
+    </div>
+    <div id="tail-div" style="text-align: center;clear:both;margin: 3px;border: 3px;padding: 5px;position: relative;">
+        <hr>
+        <button id="next-page">下一页</button>
+    </div>
+    <script>
+        function userDiv(u, r) {
+            var father = document.createElement('div');
+            father.id = u['id'];
+            father.setAttribute('class', "info");
+            father.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+            var i = document.createElement('img');
+            i.src = 'http://localhost:10001/store/download/show?image-name=' + getHeadImage(u['head_image']);
+            i.style = 'max-width:100px;min-width:100px;max-height:100px;min-height:100px;float:left;margin:3px;border:3px;border-radius:20px;padding:10px;';
+            father.appendChild(i);
+            var un = document.createElement('p');
+            un.innerText = '用户名:' + u['name'] + '\n' + 'Email:' + u['email']
+                + '\n' + r;
+            un.style = 'font-size:large;display:block;float:left;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+            father.appendChild(un);
+            var jump = document.createElement('a');
+            jump.innerText = '查看详情';
+            jump.href = 'javascript:jumpDetail(' + father.id + ');';
+            jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;float:right;'
+            father.appendChild(jump);
+            result_div.appendChild(father);
+        }
+        function courseDiv(c, t, s) {
+            var father = document.createElement('div');
+            father.id = c['id'];
+            father.setAttribute('class', "info");
+            father.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+            father.appendChild(document.createElement('hr'));
+            var text = document.createElement('p');
+            var tn = "";
+            Array.from(t).forEach(i => {
+                tn += ',' + i['name']
+            });
+            var sn = "";
+            Array.from(s).forEach(i => {
+                sn += ',' + i['name'];
+            })
+            text.innerText = '课程名:' + c['name'] + '\n教师数:' + c['teacher_num'] + '[' + tn.substring(1) + ']\n学生数:' + c['student_num'] + '[' + sn.substring(1) + ']';
+            text.style = 'font-size:medium;display:block;float:left;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+            father.appendChild(text);
+            var jump = document.createElement('a');
+            jump.innerText = '查看详情';
+            jump.href = 'javascript:jumpDetail(' + father.id + ');';
+            jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;float:right;'
+            father.appendChild(jump);
+            result_div.appendChild(father);
+        }
+        function questionDiv(q, qt, t, r, c) {
+            var father = document.createElement('div');
+            father.id = q['id'];
+            father.setAttribute('class', "info");
+            father.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+            father.appendChild(document.createElement('hr'));
+            var text = document.createElement('p');
+            var cstr = "";
+            for (var key in c) {
+                cstr += c[key];
+            }
+            text.innerText = '问题:' + q['title'] + '\n分数:' + q['score'] + '\t 问题类型:' + qt + '\n出题者:' + t['name'] + '\t回答数:' + Object.keys(r).length + '\n来自课程:' + cstr + '...';
+            text.style = 'font-size:medium;display:block;float:left;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;'
+            father.appendChild(text);
+            var jump = document.createElement('a');
+            jump.innerText = '查看详情';
+            jump.href = 'javascript:jumpDetail(' + father.id + ');';
+            jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;float:right;'
+            father.appendChild(jump);
+            result_div.appendChild(father);
+        }
+        function resultDiv(r, s, q, t) {
+            var father = document.createElement('div');
+            father.id = r['id'];
+            father.setAttribute('class', "info");
+            father.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+            father.appendChild(document.createElement('hr'));
+            var text = document.createElement('p');
+            var questionString = "";
+            for (var key in q) {
+                questionString += '题干:' + q[key];
+            }
+            for (var key in t) {
+                questionString += '\n出题人:' + t[key];
+            }
+            text.innerText = '答题者:' + s['name'] + '\n' + questionString + '\n...';
+            text.style = 'font-size:medium;display:block;float:left;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;'
+            father.appendChild(text);
+            var jump = document.createElement('a');
+            jump.innerText = '查看详情';
+            jump.href = 'javascript:jumpDetail(' + father.id + ');';
+            jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;float:right;'
+            father.appendChild(jump);
+            result_div.appendChild(father);
+        }
+        const nextBtn = document.getElementById('next-page');
+        nextBtn.onclick = function () {
+            nextBtn.disabled = true;
+            var tmp = req['params'];
+            var tv = tmp['value'];
+            var tf = tmp['from'];
+            var ts = tmp['size'];
+            if (document.getElementsByClassName('info').length < ts) {
+                alert('已经到底了~');
+                nextBtn.disabled = false;
+                return;
+            }
+            page += 1;
+            req['params'] = {
+                'value': tv,
+                'from': tf + ts,
+                'size': ts
+            };
+            axios(req).then(function (response) {
+                const d = response.data;
+                if (d['code'] == 200) {
+                    result_div.innerHTML = "第" + page + "页\n";
+                    let array = d['objects'];
+                    Array.from(array).forEach(i => {
+                        switch (s1) {
+                            case 1:
+                                const u = i['user'];
+                                const ur = i['roles'];
+                                userDiv(u, ur);
+                                break;
+                            case 2:
+                                const c = i['course'];
+                                const ct = i['teachers'];
+                                const cs = i['students'];
+                                courseDiv(c, ct, cs);
+                                break;
+                            case 3:
+                                const q = i['question'];
+                                const qt = i['questionType'];
+                                const t = i['teacher'];
+                                const qr = i['results'];
+                                questionDiv(q, qt, t, qr);
+                                break;
+                            case 4:
+                                const r = i['result'];
+                                const rs = i['student'];
+                                const rq = i['question'];
+                                resultDiv(r, rs, rq);
+                                break;
+                            default:
+                                alert('异常');
+                                location.reload();
+                        }
+                    })
+                } else {
+                    alert('已经到底了~');
+                    nextBtn.disabled = false;
+                    return;
+                }
+            }).catch(function (error) {
+                alert('异常:' + error);
+                nextBtn.disabled = false;
+                return;
+            })
+            nextBtn.disabled = false;
+        }
+        function jumpDetail(id) {
+            switch (s1) {
+                case 1:
+                    window.open(encodeURI('/homework-system/UsersDetail.html?' + 'uid=' + id), '_self');
+                    break;
+                case 2:
+                    window.open(encodeURI('/homework-system/courseDetail.html?' + 'cid=' + id), '_self');
+                    break;
+                case 3:
+                    window.open(encodeURI('/homework-system/questionDetail.html?' + 'qid=' + id), '_self');
+                    break;
+                case 4:
+                    window.open(encodeURI('/homework-system/resultDetail.html?' + 'rid=' + id), '_self');
+                    break;
+                default:
+                    alert('异常');
+                    location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

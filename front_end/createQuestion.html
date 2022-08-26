@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>创建问题</title>
+</head>
+
+<body onload="initAJAX();checkToken();setTypes()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        var token = getCookie('token');
+        var uid = getCookie('uid');
+        var role = getCookie('role');
+        var cid = decodeURI(document.URL);
+        cid = cid.substring(cid.indexOf('=') + 1);
+        if (!isTeacher(role) || !isAdmin(role)) {
+            alert('只有老师可以进来哟~')
+            top.location = 'main.html';
+        }
+        var request = {
+            'method': 'get',
+            'headers': {
+                'Content-Type': 'application/json',
+                'token': token
+            },
+            'url': '/entry/search/type/all'
+        };
+    </script>
+    <textarea style="display: none;" id="save"></textarea>
+    <div id="head">
+        <h1 style="text-align: center;font-size: 20px;">创建问题</h1>
+    </div>
+    <div id="body">
+        <table id="body-table" align="center" border="1">
+            <th id="questionid" style="text-align: center;font-size: 32px;" colspan="3">创建问题信息</th>
+            <tr>
+                <th>问题标题:</th>
+                <td colspan="2" style="text-align: center;">
+                    <input type="text" id="questionTitle" style="width: 610px;" placeholder="question title" />
+                </td>
+            </tr>
+            <tr>
+                <th>总分:</th>
+                <td style="text-align: center;">
+                    <input type="text" id="questionScore" style="width: 100px;height: 40px;"
+                        oninput="value=value.replace(/[^\d]/g,'')" placeholder="score" />
+                </td>
+                <th>
+                    <p style="display: inline-block;">是否是文件:</p>
+                    <input style="display: inline-block;" type="checkbox" id="questionIsFile" />
+                </th>
+            </tr>
+            <tr>
+                <th>问题内容:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;">
+                    <textarea id="questionContent"
+                        style="min-height: 180px;max-height: 180px;min-width: 600px;max-width: 600px;margin: 5px;border: 5px;padding: 10px;"
+                        placeholder="question content/extension"></textarea>
+                    <input type="file" style="display: none;" id="uploadc" onchange="addContentFile(this)" />
+                </td>
+            </tr>
+            <tr>
+                <th>答案:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;">
+                    <textarea id="questionAnswer"
+                        style="min-height: 180px;max-height: 180px;min-width: 600px;max-width: 600px;margin: 5px;border: 5px;padding: 10px;"
+                        placeholder="question reference answer"></textarea>
+                    <input type="file" style="display: none;" id="uploada" onchange="addAnswerFile(this)" />
+                </td>
+            </tr>
+            <tr>
+                <th>解析:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;">
+                    <textarea id="questionRefer"
+                        style="min-height: 180px;max-height: 180px;min-width: 600px;max-width: 600px;margin: 5px;border: 5px;padding: 10px;"
+                        placeholder="question answer parsing"></textarea>
+                    <input type="file" style="display: none;" id="uploadr" onchange="addReferenceFile(this)" />
+                </td>
+            </tr>
+            <script>
+                var qfile = document.getElementById('questionIsFile');
+                var qcontent = document.getElementById('questionContent');
+                var qanswer = document.getElementById('questionAnswer');
+                var qreference = document.getElementById('questionRefer');
+                var saveTextarae = document.getElementById('save');
+                var cupload = document.getElementById('uploadc');
+                var aupload = document.getElementById('uploada');
+                var rupload = document.getElementById('uploadr');
+                qfile.onclick = function () {
+                    if (qfile.checked) {
+                        qcontent.onclick = function () {
+                            cupload.click();
+                        }
+                        qcontent.readOnly = true;
+                        qanswer.onclick = function () {
+                            aupload.click();
+                        }
+                        qanswer.readOnly = true;
+                        qreference.onclick = function () {
+                            rupload.click();
+                        }
+                        qreference.readOnly = true;
+                    } else {
+                        qcontent.onclick = saveTextarae.onclick;
+                        qcontent.readOnly = false;
+                        qcontent.value = "";
+                        qanswer.onclick = saveTextarae.onclick;
+                        qanswer.readOnly = false;
+                        qanswer.value = "";
+                        qreference.onclick = saveTextarae.onclick;
+                        qreference.readOnly = false;
+                        qreference.value = "";
+                    }
+                }
+                function addContentFile(obj) {
+                    let files = obj.files;
+                    var reqq = axiosRequest(files, uid, token);
+                    axios(reqq).then(res => {
+                        var data = res.data;
+                        console.log(data);
+                        qcontent.value = data;
+                    }).catch(err => {
+                        qcontent.value = '错误:' + err;
+                    })
+                }
+                function addAnswerFile(obj) {
+                    let files = obj.files;
+                    var reqq = axiosRequest(files, uid, token);
+                    axios(reqq).then(res => {
+                        var data = res.data;
+                        console.log(data);
+                        qanswer.value = data;
+                    }).catch(err => {
+                        qanswer.value = '错误:' + err;
+                    })
+                }
+                function addReferenceFile(obj) {
+                    let files = obj.files;
+                    var reqq = axiosRequest(files, uid, token);
+                    axios(reqq).then(res => {
+                        var data = res.data;
+                        console.log(data);
+                        qreference.value = data;
+                    }).catch(err => {
+                        qreference.value = '错误:' + err;
+                    })
+                }
+            </script>
+            <tr>
+                <th>问题类型:</th>
+                <td style="text-align: center;width: 255px;">
+                    <select id="allType" style="width: 240px;">
+                    </select>
+                </td>
+                <td align="center">
+                    <input style="display: inline-block;" type="checkbox" id="other" />
+                    <p style="display: inline-block;">其他:</p>
+                    <input type="text" id="another" style="display: inline-block; width: 240px;" placeholder="勾选后才能填写"
+                        readonly />
+                    <script>
+                        var oth = document.getElementById('other');
+                        var othText = document.getElementById('another');
+                        var downText = document.getElementById('allType');
+                        oth.onclick = function () {
+                            if (oth.checked) {
+                                othText.readOnly = false;
+                            } else {
+                                othText.readOnly = true;
+                            }
+                        }
+                        function setTypes() {
+                            getTypes(token).then(res => {
+                                Array.from(res).forEach(it => {
+                                    var opt = document.createElement('option');
+                                    opt.innerHTML = it;
+                                    downText.appendChild(opt);
+                                });
+                            })
+                        }
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="3">
+                    <button id="commit-create">创建问题</button>
+                </th>
+            </tr>
+        </table>
+        <script>
+            var qtitle = document.getElementById('questionTitle');
+            var qscore = document.getElementById('questionScore');
+            var createBtn = document.getElementById('commit-create');
+            createBtn.onclick = function () {
+                var upType = '';
+                if (oth.checked) {
+                    upType = othText.value;
+                } else {
+                    var index = downText.selectedIndex;
+                    upType = downText.options[index].text;
+                }
+                var upTitle = qtitle.value;
+                var upExtension = qcontent.value;
+                var upScore = qscore.value;
+                var upIsFile = qfile.checked;
+                var upAnswer = qanswer.value;
+                var upComment = qreference.value;
+                var url = "";
+                if (isTeacher(role)) {
+                    url = "/entry/operation/teacher/c/question";
+                } else {
+                    url = "/entry/operation/admin/c/question";
+                }
+                const req = {
+                    'method': 'post',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': url,
+                    'data': {
+                        'tid': uid,
+                        'cid': cid,
+                        'question': {
+                            'title': upTitle,
+                            "extension": upExtension,
+                            "score": upScore,
+                            "isFile": upIsFile,
+                            "answer": upAnswer,
+                            "comment": upComment
+                        },
+                        'type': upType
+                    }
+                };
+                axios(req).then(res => {
+                    const data = res.data;
+                    console.log(data['msg']);
+                    if (data['code'] == 200) {
+                        alert('创建问题完成!');
+                        window.open(encodeURI('/homework-system/questionDetail.html?' + 'qid=' + data['info']), '_self');
+                    } else {
+                        alert('异常:' + data['msg'] + '-' + data['info']);
+                        window.history.back(-1);
+                    }
+                }).catch(err => {
+                    alert('错误:' + err);
+                    window.history.back(-1);
+                })
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+</body>
+
+</html>

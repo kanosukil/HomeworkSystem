@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>创建课程</title>
+</head>
+
+<body onload="initAJAX();checkToken()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        var token = getCookie('token');
+        var uid = getCookie('uid');
+        var role = getCookie('role');
+        var url = "/entry/operation/teacher/c/course";
+        var who;
+        if (isTeacher(role)) {
+            who = '老师';
+        } else if (isAdmin(role)) {
+            who = '管理员';
+            url = '/entry/operation/admin/c/course'
+        } else {
+            alert('学生不可以进来哟~');
+            top.location = 'main.html';
+        }
+    </script>
+    <div id="head">
+        <h1 style="text-align: center;font-size: 20px;">创建课程</h1>
+    </div>
+    <div id="body">
+        <table align="center">
+            <tr>
+                <th>请输入创建的课程名:</th>
+                <td>
+                    <input type="text" id="course-name" size="50" />
+                </td>
+                <td>
+                    <button id="cbtn">提交</button>
+                </td>
+            </tr>
+        </table>
+        <script>
+            const btn = document.getElementById('cbtn');
+            btn.onclick = function () {
+                btn.disabled = true;
+                const name = document.getElementById('course-name');
+                var req = {
+                    'method': 'post',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': url,
+                    'data': {
+                        'tid': uid,
+                        'course': {
+                            'name': name.value
+                        }
+                    }
+                };
+                axios(req).then(res => {
+                    const data = res.data;
+                    console.log(data['message']);
+                    if (data['code'] == 200) {
+                        alert('创建成功!');
+                        btn.disabled = false;
+                        window.open(encodeURI('/homework-system/courseDetail.html?' + 'cid=' + data['info']), '_self');
+                    } else {
+                        alert('异常:' + data);
+                        btn.disabled = false;
+                        window.history.back(-1);
+                    }
+                }).catch(err => {
+                    alert('错误:' + err);
+                    btn.disabled = false;
+                    window.history.back(-1);
+                })
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+</body>
+
+</html>

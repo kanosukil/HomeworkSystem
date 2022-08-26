@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>回答信息</title>
+</head>
+
+<body onload="initAJAX();checkToken()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        var token = getCookie('token');
+        var uid = getCookie('uid');
+        var rid = decodeURI(document.URL);
+        var role = getCookie('role');
+        rid = rid.substring(rid.indexOf('=') + 1);
+    </script>
+    <div id="head">
+        <h1 style="text-align: center;">回答信息</h1>
+    </div>
+    <div id="body">
+        <table id="body-table" border="1" align="center">
+            <th style="text-align: center;" colspan="4">-问题-</th>
+            <tr>
+                <th>题干:</th>
+                <td colspan="3" align="center">
+                    <textarea id="questionMain"
+                        style="max-width: 510px;min-width: 510px;max-height: 100px;min-height: 100px;background-color: azure;"
+                        readonly>12</textarea>
+                    <img id="questionImg" style="display: none;">
+                    <a id="questionFile" style="display: none;"></a>
+                </td>
+            </tr>
+            <tr>
+                <th>总分:</th>
+                <td>
+                    <p id="questionScore" style="font-size: 12px;text-align: center;max-width: 200px;min-width: 200px;">
+                        12</p>
+                </td>
+                <th>类型:</th>
+                <td>
+                    <p id="questionType" style="font-size: 12px;text-align: center;max-width: 200px;min-width: 200px;">
+                        12</p>
+                </td>
+            </tr>
+            <tr>
+                <th>从属课程:</th>
+                <td colspan="3">
+                    <p id="course" style="font-size: 12px;text-align: center;">12</p>
+                </td>
+            </tr>
+
+            <th style="text-align: center;" colspan="4">-回答-</th>
+            <tr>
+                <th>回答者:</th>
+                <td>
+                    <p id="student" style="text-align: center;font-size: 12px;">12</p>
+                </td>
+                <th>
+                    <p style="display: inline-block;">得分:</p>
+                    <input type="text" id="resultScore"
+                        style="font-size: 12px;background-color: azure;height: 25px;width: 25px;display: inline-block;"
+                        value="12" oninput="value=value.replace(/[^\d]/g,'')" readonly />
+                </th>
+                <td align="center">
+                    <p style="display: inline-block;font: 14px"><b>是否为文件:</b></p>
+                    <input type="checkbox" id="resultIsFile" onclick="return false">
+                    <input type="file" id="save" style="display: none;" onchange="addPath(this)">
+                    <textarea id="savetxt" style="display: none;"></textarea>
+                    <input type="checkbox" id="saveInput" style="display: none;" onclick="return false">
+                </td>
+            </tr>
+            <tr>
+                <th>回答内容:</th>
+                <td style="max-height: 100px;min-height: 100px;height: 100px;overflow: hidden;text-align: center;"
+                    id="resultCtd" colspan="3">
+                    <textarea id="resultcontent"
+                        style="max-height: 90px;min-height: 90px;max-width: 510px;min-width: 510px;background-color: azure;"
+                        readonly></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>教师评价:</th>
+                <td colspan="3" align="center">
+                    <textarea id="resultComment"
+                        style="max-width: 510px;min-width: 510px;max-height: 100px;min-height: 100px;background-color: azure;"
+                        readonly>12</textarea>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="4" style="text-align: center;">
+                    <button id="correct">批改</button>
+                    <button id="update">更新</button>
+                    <button id="delete">删除</button>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <p id="correct-info" style="font-size: 12px;text-align: center;color: red;"></p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        var req = {
+            'methed': 'get',
+            'headers': {
+                'Content-type': 'application/json',
+                'token': token
+            },
+            'url': '/entry/search/result/get',
+            'params': {
+                'rid': rid.trim()
+            }
+        }
+        var rSid = 0;
+        var rContent = "";
+        var rIsFile = false;
+        var rIsCheck = false;
+        var rScore = 0;
+        var rComment = "";
+        var scoreTxt = document.getElementById('resultScore');
+        var resultComment = document.getElementById('resultComment');
+        var content = document.getElementById('resultcontent');
+        var con = document.getElementById('resultCtd');
+        var risfile = document.getElementById('resultIsFile');
+        var checked = false;
+        var correctFlag = false;
+        var updateFlag = false;
+        var tid, qid, cid;
+        let arr = [];
+        axios(req).then(function (response) {
+            const d = response.data;
+            console.log('GetResult:' + d['message']);
+            if (d['code'] == 200) {
+                const res = d['objects'][0]['result'];
+                const que = d['objects'][0]['question'];
+                const stu = d['objects'][0]['student'];
+                const tea = d['objects'][0]['teacher'];
+                // 问题
+                var questionMain = document.getElementById("questionMain");
+                var questionScore = document.getElementById('questionScore');
+                var questionType = document.getElementById('questionType');
+                var course = document.getElementById('course');
+                var questionImage = document.getElementById('questionImg');
+                var questionFile = document.getElementById('questionFile');
+                for (var k1 in que) {
+                    qid = k1;
+                }
+                for (var k1 in tea) {
+                    tid = k1;
+                }
+                getQuestion(qid).then(res => {
+                    if (res['question'] == null) {
+                        questionMain.innerText = res;
+                        questionScore.innerText = 'Error!';
+                        return;
+                    } else if (res['question']['isFile']) {
+                        questionMain.innerHTML = res['question']['title'];
+                        var file = res['question']['extension'];
+                        if (regImg(file)) {
+                            questionImage.style = 'width: 500px;height: 90px;';
+                            questionImage.src = 'http://localhost:10001/store/download/show?image-name=' + file;
+                        } else {
+                            questionFile.style = 'display: block;';
+                            questionFile.download = 'http://localhost:10001/store/download/download?name=' + file;
+                            questionFile.href = 'http://localhost:10001/store/download/download?name=' + file;
+                            questionFile.innerText = '问题详情';
+                        }
+                    } else {
+                        questionMain.innerHTML = res['question']['title'] + ':&#10;' + res['question']['extension'];
+                    }
+                    questionScore.innerHTML = res['question']['score'];
+                    for (var key in res['course']) {
+                        cid = key;
+                        course.innerHTML = res['course'][key];
+                    }
+                    questionType.innerHTML = res['questionType'];
+                    getCourseTeacher(cid).then(res => {
+                        Array.from(res).forEach(i => {
+                            arr.push(i['id']);
+                        })
+                        var ti = document.getElementById('correct-info');
+                        ti.innerText = '只有uid在[' + arr + ']里面的教师可以批改哟~';
+                    });
+                })
+                // 回答
+                var student = document.getElementById('student');
+                student.innerHTML = stu['name'];
+                rSid = stu['id'];
+                rIsFile = res['isFile'];
+                rContent = res['content'];
+                rIsCheck = res['isCheck'];
+                rScore = res['score'];
+                rComment = res['comment'];
+                risfile.checked = rIsFile;
+                if (!rIsFile) {
+                    content.value = rContent;
+                } else {
+                    content.style = 'display: none;'
+                    if (regImg(rContent)) {
+                        var img = document.createElement('img');
+                        img.src = 'http://localhost:10001/store/download/show/image-name=' + rContent;
+                        img.style = 'width:500px;height:90px';
+                        con.appendChild(img);
+                    } else {
+                        var a = document.createElement('a');
+                        a.href = 'http://localhost:10001/store/download/download?name=' + rContent;
+                        a.download = 'http://localhost:10001/store/download/download?name=' + rContent;
+                        a.innerText = '下载文件';
+                        con.appendChild(a);
+                    }
+                }
+                if (rIsCheck) {
+                    checked = true;
+                    scoreTxt.value = rScore;
+                    resultComment.innerHTML = rComment;
+                } else {
+                    scoreTxt.value = '0';
+                    resultComment.innerHTML = '未批改';
+                }
+            }
+        })
+        async function getQuestion(qid) {
+            var tmp = JSON.parse(JSON.stringify(req));
+            tmp['url'] = '/entry/search/question/get';
+            tmp['params'] = {
+                'qid': qid
+            };
+            var str = "";
+            await axios(tmp).then(res => {
+                const data = res.data;
+                console.log('GetQuestion:' + data['message']);
+                if (data['code'] == 200) {
+                    str = data['objects'][0];
+                } else {
+                    str = '异常:' + data['objects'];
+                }
+            }).catch(err => {
+                str = '错误:' + err;
+            })
+            return str;
+        }
+        async function getCourseTeacher(cid) {
+            var tmp = JSON.parse(JSON.stringify(req));
+            tmp['url'] = '/entry/search/course/get';
+            tmp['params'] = {
+                'cid': cid
+            };
+            var str = "";
+            await axios(tmp).then(res => {
+                const data = res.data;
+                console.log('GetCourse:' + data['message']);
+                if (data['code'] == 200) {
+                    str = data['objects'][0]['teachers'];
+                } else {
+                    str = '异常:' + data['objects'];
+                }
+            }).catch(err => {
+                str = '错误:' + err;
+            })
+            return str;
+        }
+
+        const btn = document.getElementById('correct');
+        btn.onclick = function () {
+            btn.disabled = true;
+            if (!correctFlag) {
+                if (!isTeacher(role)) {
+                    alert('不是老师呢~');
+                    btn.disabled = false;
+                    return;
+                }
+
+                var pass = false;
+                Array.from(arr).forEach(e => {
+                    if (e == uid) {
+                        pass = true;
+                        btn.disabled = false;
+                        return;
+                    }
+                })
+                if (!pass) {
+                    alert('不是该课程的老师哟~');
+                    btn.disabled = false;
+                    return;
+                }
+                if (checked) {
+                    if (!confirm('已经批改完成了~还需要修改吗?')) {
+                        btn.disabled = false;
+                        return;
+                    }
+                }
+                scoreTxt.readOnly = false;
+                resultComment.readOnly = false;
+                alert('批改开始啦~');
+            } else {
+                if (confirm('已经批改完了吗?还需要修改吗?')) {
+                    btn.disabled = false;
+                    return;
+                }
+                if (!confirm('批改完了吗?要保存吗?')) {
+                    btn.disabled = false;
+                    location.reload();
+                }
+                scoreTxt.readOnly = true;
+                resultComment.readOnly = true;
+                var tmp = JSON.parse(JSON.stringify(req));
+                tmp['url'] = '/entry/operation/teacher/ao/correct/question';
+                tmp['method'] = 'post';
+                tmp['data'] = {
+                    'tid': uid,
+                    'cid': cid,
+                    'qid': qid,
+                    'result': {
+                        'id': rid,
+                        'content': rContent,
+                        'isFile': rIsFile,
+                        'isCheck': true,
+                        'score': scoreTxt.value,
+                        'comment': resultComment.value
+                    }
+                };
+                axios(tmp).then(res => {
+                    var data = res.data;
+                    if (data['code'] == 200) {
+                        alert('批改完成');
+                    } else {
+                        alert('异常:' + data['msg'] + '-' + data['info']);
+                        location.reload();
+                    }
+                }).catch(err => {
+                    alert('错误:' + err);
+                    location.reload();
+                })
+            }
+            correctFlag = !correctFlag;
+            btn.disabled = false;
+        }
+        const updateBtn = document.getElementById('update');
+        var saveFile = document.getElementById('save');
+        var saveTxt = document.getElementById('savetxt');
+        var saveIn = document.getElementById('saveInput');
+        var stuanswer = "";
+        updateBtn.onclick = function () {
+            updateBtn.disabled = true;
+            if (!updateFlag) {
+                if (uid != rSid) {
+                    alert('只有本人能够修改呢~');
+                    updateBtn.disabled = false;
+                    return;
+                }
+                if (checked) {
+                    alert('来晚了~已经改完了~');
+                    updateBtn.disabled = false;
+                    return;
+                }
+                stuanswer = content.value;
+                content.readOnly = false;
+                risfile.onclick = function () {
+                    content.value = "";
+                    if (risfile.checked) {
+                        content.onclick = function () {
+                            saveFile.click();
+                        }
+                    } else {
+                        content.onclick = saveTxt.onclick;
+                    }
+                }
+            } else {
+                if (!confirm('修改完了吗?准备保存吗?')) {
+                    content.value = stuanswer;
+                    content.readOnly = true;
+                    risfile.onclick = saveIn.onclick;
+                    updateBtn.disabled = false;
+                    return;
+                } else {
+                    const req = {
+                        'method': 'post',
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'token': token
+                        },
+                        'url': '/entry/operation/student/u/result',
+                        'data': {
+                            'sid': uid,
+                            'result': {
+                                'id': rid,
+                                'content': content.value,
+                                'isFile': risfile.checked,
+                                'isCheck': checked,
+                                'score': rScore,
+                                'comment': rComment
+                            }
+                        }
+                    };
+                    axios(req).then(res => {
+                        const data = res.data;
+                        console.log(data['msg']);
+                        if (data['code'] == 200) {
+                            alert('更新完成');
+                            updateBtn.disabled = false;
+                        } else {
+                            alert('异常:' + data['msg']);
+                            location.reload();
+                        }
+                    }).catch(err => {
+                        alert('错误:' + err);
+                        location.reload();
+                    })
+                }
+            }
+            updateFlag = !updateFlag;
+            updateBtn.disabled = false;
+        }
+        const delBtn = document.getElementById('delete');
+        delBtn.onclick = function () {
+            if (!isAdmin(role) || rSid != uid) {
+                alert('只有本人可以操作哟~');
+                return;
+            }
+            if (!confirm('真的要删除吗o(TヘTo)')) {
+                alert('好耶!没有删除!');
+                return;
+            }
+            delBtn.disabled = true;
+            var url = "";
+            if (!isAdmin(uid)) {
+                url = '/entry/operation/student/d/result';
+            } else {
+                url = '/entry/operation/admin/d/result';
+            }
+            axios({
+                'method': 'post',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': url,
+                'data': {
+                    'sid': rSid,
+                    'rid': rid
+                }
+            }).then(res => {
+                const data = res.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    alert('删除成功啦~');
+                    top.location = 'main.html';
+                } else {
+                    alert('异常');
+                    location.reload();
+                }
+            }).catch(err => {
+                console.log(err);
+                alert('错误');
+                location.reload();
+            })
+            delBtn.disabled = false;
+        }
+    </script>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+</body>
+
+</html>

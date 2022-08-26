@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>登录</title>
+</head>
+
+<body onload="initAJAX()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie);
+    </script>
+    <center>
+        <div class="head">
+            <h1 class="content">登录</h1>
+        </div>
+        <div class="body">
+            <table border="1">
+                <tr>
+                    <td>电子邮件:</td>
+                    <td>
+                        <input type="text" id="login-email" size="70" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>密码:</td>
+                    <td>
+                        <input type="password" id="login-password" size="70" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td style="text-align: center;">
+                        <button id="login-btn">登录</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>登录信息:</td>
+                    <td id="login-text">请输入电子邮件以及密码</td>
+                </tr>
+            </table>
+        </div>
+        <div class="tail">
+            <a href="register.html">没有账号?前往注册!</a>
+        </div>
+    </center>
+    <script>
+        const loginBtn = document.getElementById("login-btn");
+        loginBtn.onclick = function () {
+            loginBtn.disabled = true;
+            var emailstr = document.getElementById("login-email").value;
+            var passwordStr = document.getElementById("login-password").value;
+            if (emailstr == "") {
+                alert("电子邮箱为空");
+            } else {
+                if (passwordStr == "") {
+                    alert("密码为空");
+                } else {
+                    requsetLogin(emailstr, passwordStr);
+                }
+            }
+            loginBtn.disabled = false;
+        }
+        function requsetLogin(account, password) {
+            var text = document.getElementById("login-text");
+            axios({
+                method: 'post',
+                headers: {
+                    'Content-type': 'application/json',
+                    token: ''
+                },
+                url: '/entry/api/login',
+                data: {
+                    'account': account,
+                    'password': password
+                }
+            }).then(function (response) {
+                text.innerHTML = "";
+                var d = response.data;
+                console.log(d);
+                var code = d['code'];
+                const divO = document.createElement('div');
+                const msg = document.createTextNode(d['msg']);
+                divO.appendChild(msg);
+                if (code == 200) {
+                    setCookie("uid", d['uid'], 5);
+                    setCookie("token", d['object'], 5);
+                    setCookie('role', getCookieRole(d['isStudent'], d['isTeacher'], d['isAdmin']), 5);
+                    const jumpBtn = document.createElement('a');
+                    jumpBtn.id = 'jump';
+                    jumpBtn.href = 'main.html';
+                    jumpBtn.innerText = '前往主页';
+                    divO.appendChild(jumpBtn);
+                } else {
+                    const excText = document.createTextNode(": " + d['object']);
+                    divO.appendChild(excText);
+                }
+                text.appendChild(divO);
+            }, function (error) {
+                text.innerHTML = "";
+                console.log(error);
+                text.innerText = error;
+            })
+        }
+    </script>
+</body>
+
+</html>

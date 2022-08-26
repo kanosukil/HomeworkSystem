@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>问题信息</title>
+</head>
+
+<body onload="initAJAX();checkToken();setTypes()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        var token = getCookie('token');
+        var uid = getCookie('uid');
+        var role = getCookie('role');
+        var qid = decodeURI(document.URL);
+        qid = qid.substring(qid.indexOf('=') + 1);
+        var quTitle = '';
+        var quExtension = '';
+        var quScore = '';
+        var quIsFile = false;
+        var quAnswer = '';
+        var quComment = '';
+        var quCreate_time = '';
+        var quType = '';
+        var quTeacher = '';
+        var quCourse = '';
+        var quResults = 0;
+        var updateFlag = false;
+        var teacherid = 0;
+        var textareaStyle = 'min-height: 180px;max-height: 180px;min-width: 600px;max-width: 600px;margin: 5px;border: 5px;padding: 10px';
+        var cid = 0;
+        var qSid = [];
+    </script>
+    <div id="head">
+        <h1 style="text-align: center;font-size: 20px;">问题信息</h1>
+    </div>
+    <div id="body">
+        <table id="body-table" align="center" border="1">
+            <th id="questionid" style="text-align: center;font-size: 32px;" colspan="3">
+                <script>
+                    var idth = document.getElementById('questionid');
+                    idth.innerHTML = 'QID:' + qid + '问题信息';
+                </script>
+            </th>
+            <tr>
+                <th>问题标题:</th>
+                <td colspan="2">
+                    <input type="text" id="title" style="width: 610px;text-align: center;" readonly>
+                </td>
+            </tr>
+            <tr>
+                <th>问题总分:</th>
+                <td align="center">
+                    <input type="text" oninput="value=value.replace(/[^\d]/g,'')"
+                        style="width: 100px;height: 40px;text-align: center;" id="score" readonly>
+                </td>
+                <td align="center">
+                    <p style="display: inline-block;">是否为文件:</p>
+                    <input type="checkbox" id="isFile" />
+                </td>
+            </tr>
+            <tr>
+                <th>问题内容:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;" id="content">
+                    <input type="file" style="display: none;" id="contentif" onchange="updateC(this)">
+                </td>
+            </tr>
+            <tr>
+                <th>参考答案:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;" id="answer">
+                    <input type="file" style="display: none;" id="answerif" onchange="updateA(this)">
+                </td>
+            </tr>
+            <tr>
+                <th>答案解析:</th>
+                <td colspan="2" style="width: auto;height: 200px;text-align: center;" id="comment">
+                    <input type="file" style="display: none;" id="referenceif" onchange="updateR(this)">
+                </td>
+            </tr>
+            <tr>
+                <th>出题人:</th>
+                <td align="center">
+                    <p id="teacher" style="display: inline-block;"></p>
+                </td>
+                <td align="center">
+                    <p style="display: inline-block;">题型:</p>
+                    <select id="allType" style="width: 150px;display: inline-block;" disabled>
+                    </select>
+                    <p style="display: inline-block;">其他:</p>
+                    <input type="checkbox" style="display: inline-block;" onclick="return false" id="other">
+                    <input type="text" style="display: inline-block;" id="otherTxt" readonly>
+                </td>
+            </tr>
+            <tr>
+                <th>来自课程:</th>
+                <td id="course" align="center"></td>
+                <td align="center">
+                    <p style="display: inline-block;">回答数:</p>
+                    <p style="display: inline-block;" id="results"></p>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="3" align="center">
+                    <button id="update" style="margin: 10px;">更新问题</button>
+                    <button id="create-result" style="margin: 10px;">回答问题</button>
+                    <button id="delete" style="margin: 10px;">删除问题</button>
+                </th>
+            </tr>
+        </table>
+        <input type="checkbox" style="display: none;" id="save-checkbox" />
+        <textarea style="display: none;" id="save-textarea"></textarea>
+        <script>
+            var oth = document.getElementById('other');
+            var othText = document.getElementById('otherTxt');
+            var downText = document.getElementById('allType');
+            var savecheckbox = document.getElementById('save-checkbox');
+            var savetextarea = document.getElementById('save-textarea');
+            function setTypes() {
+                getTypes(token).then(res => {
+                    Array.from(res).forEach(it => {
+                        var opt = document.createElement('option');
+                        opt.innerHTML = it;
+                        opt.value = it;
+                        downText.appendChild(opt);
+                    });
+                })
+            }
+            var qtitle = document.getElementById('title'); // input(text)
+            var qcontent = document.getElementById('content'); // td
+            var qscore = document.getElementById('score'); // input(text)
+            var qisfile = document.getElementById('isFile'); // input(checkbox)
+            var qanswer = document.getElementById('answer'); // td
+            var qcomment = document.getElementById('comment'); // td
+            var qteacher = document.getElementById('teacher'); // p 
+            var qcourse = document.getElementById('course'); // td
+            var qresult = document.getElementById('results'); // p
+            var updateBtn = document.getElementById('update'); // 更新
+            var crBtn = document.getElementById('create-result'); // 回答
+            var contentif = document.getElementById('contentif');
+            var answerif = document.getElementById('answerif');
+            var referenceif = document.getElementById('referenceif');
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': '/entry/search/question/get',
+                'params': {
+                    'qid': qid
+                }
+            }).then(res => {
+                const data = res.data;
+                console.log(data['message']);
+                if (data['code'] == 200) {
+                    const ques = data['objects'][0]['question'];
+                    const quty = data['objects'][0]['questionType'];
+                    const teac = data['objects'][0]['teacher'];
+                    const cour = data['objects'][0]['course'];
+                    const resu = data['objects'][0]['results'];
+                    // 赋值
+                    quTitle = ques['title'];
+                    quExtension = ques['extension'];
+                    quScore = ques['score'];
+                    quIsFile = ques['isFile'];
+                    quAnswer = ques['answer'];
+                    quComment = ques['comment'];
+                    quCreate_time = ques['create_time'];
+                    quType = quty;
+                    quTeacher = teac['name'];
+                    teacherid = teac['id'];
+                    for (var k in cour) {
+                        quCourse = cour[k];
+                        cid = k;
+                    }
+                    quResults = 0;
+                    for (var k in resu) {
+                        qSid.push(k);
+                        quResults += 1;
+                    }
+                    // 显示
+                    qtitle.value = quTitle;
+                    if (quIsFile) {
+                        var txtc = document.createElement('a');
+                        txtc.download = 'http://localhost:10001/store/download/download?name=' + quExtension;
+                        txtc.href = 'http://localhost:10001/store/download/download?name=' + quExtension;
+                        txtc.innerText = '下载'
+                        txtc.id = 'extensionQues'
+                        qcontent.appendChild(txtc);
+                        if (!isStudent(role) || isResponse()) {
+                            txta.download = 'http://localhost:10001/store/download/download?name=' + quAnswer;
+                            txta.href = 'http://localhost:10001/store/download/download?name=' + quAnswer;
+                            txta.innerText = '下载'
+                            txta.id = 'answerQues';
+                            qanswer.appendChild(txta);
+                            var txtr = document.createElement('a');
+                            txtr.download = 'http://localhost:10001/store/download/download?name=' + quComment;
+                            txtr.href = 'http://localhost:10001/store/download/download?name=' + quComment;
+                            txtr.innerText = '下载'
+                            txtr.id = 'commentQues';
+                            qcomment.appendChild(txtr);
+                        } else {
+                            qanswer.appendChild(document.createTextNode('学生未答题不可见'));
+                            qcomment.appendChild(document.createTextNode('学生未答题不可见'));
+                        }
+                    } else {
+                        var txtc = document.createElement('textarea');
+                        txtc.style = textareaStyle;
+                        txtc.value = quExtension;
+                        txtc.id = 'extensionQues';
+                        txtc.readOnly = true;
+                        qcontent.appendChild(txtc);
+                        if (!isStudent(role) || isResponse()) {
+                            var txta = document.createElement('textarea');
+                            txta.style = textareaStyle;
+                            txta.value = quAnswer;
+                            txta.id = 'answerQues';
+                            txta.readOnly = true;
+                            qanswer.appendChild(txta);
+                            var txtr = document.createElement('textarea');
+                            txtr.style = textareaStyle;
+                            txtr.value = quComment;
+                            txtr.id = 'commentQues';
+                            txtr.readOnly = true;
+                            qcomment.appendChild(txtr);
+                        } else {
+                            qanswer.appendChild(document.createTextNode('学生未答题不可见'));
+                            qcomment.appendChild(document.createTextNode('学生未答题不可见'));
+                        }
+                    }
+                    qscore.value = quScore;
+                    qisfile.checked = quIsFile;
+                    qteacher.innerHTML = quTeacher;
+                    qcourse.innerHTML = quCourse;
+                    qresult.innerHTML = quResults;
+                    downText.value = quty;
+                } else {
+                    console.log(data);
+                    qtitle.value = data;
+                    qcontent.innerHTML = '异常';
+                    qscore.value = 0;
+                    qanswer.innerHTML = '异常';
+                    qcomment.innerHTML = '异常';
+                    qteacher.innerHTML = '异常';
+                    qcourse.innerHTML = '异常';
+                    qresult.innerHTML = '异常';
+                }
+            }).catch(err => {
+                console.log(err);
+                qtitle.value = err;
+                qcontent.innerHTML = '错误';
+                qscore.value = -1;
+                qanswer.innerHTML = '错误';
+                qcomment.innerHTML = '错误';
+                qteacher.innerHTML = '错误';
+                qcourse.innerHTML = '错误';
+                qresult.innerHTML = '错误';
+            })
+            qisfile.onclick = function () {
+                if (updateFlag) {
+                    var qContent = document.getElementById('extensionQues');
+                    var qAnswer = document.getElementById('answerQues');
+                    var qComment = document.getElementById('commentQues');
+                    if (qisfile.checked) {
+                        qContent.onclick = function () {
+                            contentif.click();
+                        }
+                        qAnswer.onclick = function () {
+                            answerif.click();
+                        }
+                        qComment.onclick = function () {
+                            referenceif.click();
+                        }
+                    } else {
+                        if (qContent.tagName == 'TEXTAREA') {
+                            qContent.onclick = savetextarea.onclick;
+                            qAnswer.onclick = savetextarea.onclick;
+                            qComment.onclick = savetextarea.onclick;
+                        } else {
+                            var newCon = document.createElement('textarea');
+                            var newAns = document.createElement('textarea');
+                            var newCom = document.createElement('textarea');
+                            newCon.style = textareaStyle;
+                            newCon.id = 'extensionQues';
+                            newCon.value = qContent.download.substring(qContent.download.indexOf('=') + 1);
+                            newAns.style = textareaStyle;
+                            newAns.id = 'answerQues';
+                            newAns.value = qAnswer.download.substring(qAnswer.download.indexOf('=') + 1);;
+                            newCom.style = textareaStyle;
+                            newCom.id = 'commentQues';
+                            newCom.value = qComment.download.substring(qComment.download.indexOf('=') + 1);;
+                            qcontent.removeChild(qContent);
+                            qcontent.appendChild(newCon);
+                            qanswer.removeChild(qAnswer);
+                            qanswer.appendChild(newAns);
+                            qcomment.removeChild(qComment);
+                            qcomment.appendChild(newCom);
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            updateBtn.onclick = function () {
+                if (uid != teacherid || !isAdmin(role)) {
+                    alert('只有出题人能够修改哟~');
+                    return;
+                }
+                updateBtn.disabled = true;
+                var qContent = document.getElementById('extensionQues');
+                var qAnswer = document.getElementById('answerQues');
+                var qComment = document.getElementById('commentQues');
+                if (!updateFlag) {
+                    // 填写更新内容
+                    qtitle.readOnly = false;
+                    qscore.readOnly = false;
+                    qContent.readOnly = false;
+                    qAnswer.readOnly = false;
+                    qComment.readOnly = false;
+                    oth.onclick = function () {
+                        if (oth.checked) {
+                            othText.readOnly = false;
+                        } else {
+                            othText.readOnly = true;
+                        }
+                    }
+                    downText.disabled = false;
+                } else {
+                    // 上传
+                    if (!confirm('已经修改完了吗?确定要保存吗?(取消将刷新页面哟~)')) {
+                        location.reload();
+                    }
+                    qtitle.readOnly = true;
+                    qContent.readOnly = true;
+                    qscore.readOnly = true;
+                    qisfile.disabled = true;
+                    qAnswer.readOnly = true;
+                    qComment.readOnly = true;
+                    oth.disabled = true;
+                    othText.readOnly = true;
+                    downText.disabled = true;
+                    var url = '';
+                    if (isAdmin(role)) {
+                        url = '/entry/operation/admin/u/question';
+                    } else {
+                        url = '/entry/operation/teacher/u/question';
+                    }
+                    var updateType = '';
+                    if (oth.checked) {
+                        updateType = othText.value;
+                    } else {
+                        var index = downText.selectedIndex;
+                        updateType = downText.options[index].text;
+                    }
+                    var upC, upA, upR;
+                    if (qContent.tagName == 'A') {
+                        upC = quExtension;
+                        upA = quAnswer;
+                        upR = quComment;
+                    } else {
+                        upC = qContent.value;
+                        upA = qAnswer.value;
+                        upR = qComment.value;
+                    }
+                    axios({
+                        'method': 'post',
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'token': token
+                        },
+                        'url': url,
+                        'data': {
+                            'tid': uid,
+                            'qid': qid,
+                            'question': {
+                                'id': qid,
+                                'title': qtitle.value,
+                                'extension': upC,
+                                'score': qscore.value,
+                                'isFile': qisfile.checked,
+                                'answer': upA,
+                                'comment': upR
+                            },
+                            'type': updateType
+                        }
+                    }).then(res => {
+                        const data = res.data;
+                        console.log(data);
+                        if (data['code'] == 200) {
+                            alert('更新完成!正在准备刷新页面啦~');
+                        } else {
+                            alert('异常');
+                        }
+                        location.reload();
+                    }).catch(err => {
+                        console.log(err);
+                        alert('错误');
+                        location.reload();
+                    })
+                }
+                updateBtn.disabled = false;
+                updateFlag = !updateFlag;
+            }
+            function updateC(obj) {
+                let files = obj.files;
+                var reqq = axiosRequest(files, uid, token);
+                var qcontent = document.getElementById('extensionQues')
+                axios(reqq).then(res => {
+                    var data = res.data;
+                    console.log(data);
+                    qcontent.value = data;
+                }).catch(err => {
+                    qcontent.value = '错误:' + err;
+                })
+            }
+            function updateA(obj) {
+                let files = obj.files;
+                var reqq = axiosRequest(files, uid, token);
+                var qanswer = document.getElementById('answerQues')
+                axios(reqq).then(res => {
+                    var data = res.data;
+                    console.log(data);
+                    qanswer.value = data;
+                }).catch(err => {
+                    qanswer.value = '错误:' + err;
+                })
+            }
+            function updateR(obj) {
+                let files = obj.files;
+                var reqq = axiosRequest(files, uid, token);
+                var qreference = document.getElementById('commentQues')
+                axios(reqq).then(res => {
+                    var data = res.data;
+                    console.log(data);
+                    qreference.value = data;
+                }).catch(err => {
+                    qreference.value = '错误:' + err;
+                })
+            }
+            crBtn.onclick = function () {
+                if (!isStudent(role) || !isAdmin(role)) {
+                    alert('只有学生可以作答哟~');
+                    return;
+                }
+                alert('正在前往问题创建页面哟~');
+                window.open(encodeURI('/homework-system/createResult.html?' + 'qid=' + qid + '&cid=' + cid), '_self');
+            }
+            var btn = document.getElementById('delete');
+            btn.onclick = function () {
+                if (!isAdmin(role) || uid != teacherid) {
+                    alert('只有本人可以删除哟~');
+                    return;
+                }
+                if (!confirm('真的要删除吗o(TヘTo)')) {
+                    alert('好耶~删除取消了ヾ(≧▽≦*)o');
+                    return;
+                }
+                btn.disabled = true;
+                var url = '';
+                if (!isAdmin(role)) {
+                    url = '/entry/operation/teacher/d/question';
+                } else {
+                    url = '/entry/operation/admin/d/question';
+                }
+                axios({
+                    'method': 'post',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': url,
+                    'data': {
+                        'tid': teacherid,
+                        'qid': qid
+                    }
+                }).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        alert('删除成功啦~');
+                        top.location = 'main.html';
+                    } else {
+                        alert('异常');
+                        location.reload();
+                    }
+                }).catch(err => {
+                    console.log(err);
+                    alert('错误');
+                    location.reload();
+                })
+                btn.disabled = false;
+            }
+            function isResponse() {
+                for (var i = 0; i < qSid.length; i++) {
+                    if (qSid[i] == uid) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+</body>
+
+</html>

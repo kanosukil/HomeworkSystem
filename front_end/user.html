@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>用户信息</title>
+</head>
+
+<body onload="initAJAX();checkToken();getUser()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+        var token = getCookie("token");
+        var userid = getCookie("uid");
+        var role = getCookie("role");
+        var username = "";
+        var password = "";
+        var head_image = "";
+        var introduction = "";
+        var email = "";
+        var create_time = "";
+        var student = false;
+        var teacher = false;
+        var admin = false;
+        var updateFlag = false;
+        var passFlag = false;
+        var roleFlag = false;
+        var infoFlag = false;
+        function getUser() {
+            axios({
+                method: 'get',
+                headers: {
+                    'Content-type': 'application/json',
+                    'token': token
+                },
+                url: '/entry/search/user/get',
+                params: {
+                    'uid': userid
+                }
+            }).then(function (response) {
+                var d = response.data;
+                // console.log(d);
+                if (d['code'] == 200) {
+                    var obj = d['objects'][0];
+                    var user = obj['user'];
+                    username = user['name'];
+                    password = user['password_hash'];
+                    head_image = user['head_image'];
+                    introduction = user['introduction'];
+                    email = user['email'];
+                    create_time = user['create_time'];
+                    for (let role of obj['roles']) {
+                        switch (role) {
+                            case 'Student': student = true;
+                                break;
+                            case 'Teacher': teacher = true;
+                                break;
+                            case 'Admin': admin = true;
+                                break;
+                        }
+                    }
+                    inputTable();
+                } else {
+                    console.log(d);
+                    alert("用户信息获取异常:" + d['message']);
+                    top.location = "mainpage.html";
+                }
+            }).catch(function (error) {
+                console.log(error);
+                alert("获取用户信息异常");
+                top.location = "mainpage.html";
+            })
+        }
+    </script>
+    <div id="head-div" style="text-align: center;">
+        <h1>用户信息</h1>
+    </div>
+    <div id="body-div" style="text-align: center;">
+        <table class="user-info-table" border="2" align="center">
+            <tr>
+                <th>用户名:</th>
+                <td style="text-align: start;">
+                    <input type="text" id="user-username" size="50" readonly />
+                </td>
+                <td rowspan="3" style="width: 120px;">
+                    <form enctype="multipart/form-data">
+                        <input type="file" style="display: none;" onchange="showImg(this)" id="img_file" multiple />
+                    </form>
+                    <img id="user-headimage" style="max-width: 100px;">
+                    <script>
+                        var headPic = document.getElementById("user-headimage");
+                        function showImg(obj) {
+                            let formDatas = new FormData();
+                            formDatas.append('uid', userid);
+                            let files = obj.files;
+                            var url = "";
+                            if (files.length == 1) {
+                                formDatas.append('image', files[0]);
+                                url = "/entry/upload/image";
+                            } else {
+                                Array.from(files).forEach(item => {
+                                    formDatas.append('images', item);
+                                })
+                                url = "/entry/upload/images";
+                            }
+                            const req = {
+                                method: 'post',
+                                headers: {
+                                    'token': token
+                                },
+                                data: formDatas,
+                                'url': url
+                            }
+                            axios(req).then(function (response) {
+                                const d = response.data;
+                                console.log(d);
+                                if (d['code'] == 200) {
+                                    head_image = d['path'];
+                                    headPic.src = 'http://localhost:10001/store/download/show?image-name=' + head_image;
+                                    infoFlag = !infoFlag;
+                                } else {
+                                    alert('异常:' + d['message'] + '=' + d['path']);
+                                }
+                            }).catch(function (error) {
+                                alert('错误:' + error);
+                            })
+                        }
+                        headPic.onclick = function () {
+                            if (updateFlag) {
+                                document.getElementById("img_file").click();
+                            }
+                        }
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <th>密码:</th>
+                <td style="text-align: start;">
+                    <input type="text" id="user-password" size="50" readonly />
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <button id="btn-change-password">修改密码</button>
+                </th>
+                <td style="text-align: start;">
+                    <input type="text" id="user-password-check" size="50" readonly />
+                </td>
+            </tr>
+            <tr>
+                <th>电子邮件:</th>
+                <td colspan="2">
+                    <input type="text" id="user-email" size="70" readonly />
+                </td>
+            </tr>
+            <tr>
+                <th>自我介绍:</th>
+                <td colspan="2">
+                    <input type="text" id="user-introduction" size="70" readonly />
+                </td>
+            </tr>
+            <tr>
+                <th>用户角色:</th>
+                <td style="text-align: center;" colspan="2">
+                    学生:<input type="checkbox" name="multiple" id="student" value="学生" onclick="return false" />
+                    老师:<input type="checkbox" name="multiple" id="teacher" value="老师" onclick="return false" />
+                    管理员:<input type="checkbox" name="multiple" id="admin" value="管理员" onclick="return false" />
+                    <input type="checkbox" name="multiple" style="display: none;" id="save" onclick="return false" />
+                </td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td style="text-align: center;" colspan="2">
+                    <button id="user-update">更新数据</button>
+                </td>
+            </tr>
+            <tr>
+                <th>更新信息:</th>
+                <td id="infomation" colspan="2">
+                    点击一次更新,开始修改;点击第二次更新提交修改.
+                </td>
+            </tr>
+        </table>
+        <img src="" />
+    </div>
+    <div id="tail-div" style="text-align:center ;">
+        <a href="main.html">返回主页</a>
+        <a id="logoff" href="#">注销用户</a>
+        <a id="create-course" href="#">创建课程</a>
+        <script>
+            const logoff = document.getElementById('logoff');
+            const create = document.getElementById('create-course');
+            logoff.onclick = function () {
+                if (!confirm('账号不想你离开o(TヘTo)')) {
+                    // 取消按键
+                    axios({
+                        method: 'post',
+                        headers: {
+                            'Content-type': 'application/json',
+                            'token': token
+                        },
+                        url: '/entry/api/logoff/email',
+                        params: {
+                            'email': email
+                        }
+                    }).then(function (response) {
+                        const d = response.data;
+                        if (d['code'] == 200) {
+                            alert('账号已注销,将要离开网站.');
+                            top.location = 'index.html';
+                        } else {
+                            alert('注销失败,将返回主页:' + d['object']);
+                        }
+                    }).catch(function (error) {
+                        alert('错误:' + error);
+                    })
+                }
+                top.location = 'main.html';
+            }
+            create.onclick = function () {
+                if (isTeacher(role) || isAdmin(role)) {
+                    alert('正在前往课程创建页面哟~');
+                    top.location = '/homework-system/createCourse.html';
+                } else {
+                    alert('肥肠抱歉, 学生只能看着捏~');
+                }
+            }
+
+        </script>
+    </div>
+    <script>
+        var inUsername = document.getElementById("user-username");
+        var inEmail = document.getElementById("user-email");
+        var inIntroduction = document.getElementById("user-introduction");
+        var isStudentBoolean = document.getElementById("student");
+        var isTeacherBoolean = document.getElementById("teacher");
+        var isAdminBoolean = document.getElementById("admin");
+        var uPassword = document.getElementById("user-password");
+        var ucPassword = document.getElementById("user-password-check");
+        const saveData = document.getElementById("save").onclick;
+        const btnInfo = document.getElementById("user-update");
+        const btnPass = document.getElementById("btn-change-password");
+
+        function inputTable() {
+            inUsername.value = username;
+            inEmail.value = email;
+            inIntroduction.value = introduction;
+            if (student) {
+                isStudentBoolean.checked = true;
+            }
+            if (teacher) {
+                isTeacherBoolean.checked = true;
+            }
+            if (admin) {
+                isAdminBoolean.checked = true;
+            }
+            headPic.src = 'http://localhost:10001/store/download/show?image-name=' + getHeadImage(head_image);;
+        }
+
+        // 更新数据
+        btnInfo.onclick = function () {
+            if (!updateFlag) {
+                alert("现在可以修改数据了~");
+                inUsername.readOnly = false;
+                inIntroduction.readOnly = false;
+                isStudentBoolean.onclick = "";
+                isTeacherBoolean.onclick = "";
+                isAdminBoolean.onclick = "";
+            } else {
+                alert("数据准备提交了~");
+                if (inUsername.value != username ||
+                    inEmail.value != email ||
+                    inIntroduction.value != introduction) {
+                    infoFlag = !infoFlag;
+                    username = inUsername.value;
+                    introduction = inIntroduction.value;
+                }
+                if (isStudentBoolean.checked != student ||
+                    isTeacherBoolean.checked != teacher ||
+                    isAdminBoolean.checked != admin) {
+                    roleFlag = !roleFlag;
+                    student = isStudentBoolean.checked;
+                    teacher = isTeacherBoolean.checked;
+                    admin = isAdminBoolean.checked;
+                }
+                userUpdate();
+                inUsername.readOnly = true;
+                inIntroduction.readOnly = true;
+                isStudentBoolean.onclick = saveData;
+                isTeacherBoolean.onclick = saveData;
+                isAdminBoolean.onclick = saveData;
+            }
+            updateFlag = !updateFlag;
+        }
+        // 修改密码
+        btnPass.onclick = function () {
+            if (!passFlag) {
+                alert("可以修改密码了~");
+                uPassword.readOnly = false;
+                ucPassword.readOnly = false;
+            } else {
+                var v1 = uPassword.value;
+                var v2 = ucPassword.value;
+                if (v1 == "" || v2 == "") {
+                    alert("修改的密码为空哟~");
+                } else if (v1.length < 6 || v1.length > 16) {
+                    alert("修改的密码长度不符要求哟~");
+                } else if (v1 != v2) {
+                    alert("修改的密码前后两次不相同哟~");
+                } else {
+                    password = v1;
+                    infoFlag = !infoFlag;
+                    alert("开始提交密码的修改了~")
+                    userUpdate();
+                }
+                uPassword.readOnly = true;
+                ucPassword.readOnly = true;
+            }
+            passFlag = !passFlag;
+        }
+        function roleArray() {
+            var array = [];
+            if (teacher) {
+                array.push('Teacher');
+            }
+            if (admin) {
+                array.push('Admin');
+            }
+            if (student || array.length == 0) {
+                array.push('Student');
+            }
+            return array;
+        }
+        function userUpdate() {
+            if (infoFlag && roleFlag) {
+                axios({
+                    method: 'post',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    url: '/entry/user/update/all',
+                    data: {
+                        'uid': userid,
+                        'user': {
+                            'id': userid,
+                            'name': username,
+                            'password_hash': password,
+                            'head_image': head_image,
+                            'introduction': introduction,
+                            'email': email,
+                            'create_time': create_time
+                        },
+                        'roles': roleArray()
+                    }
+                }).then(function (response) {
+                    infoFlag = !infoFlag;
+                    roleFlag = !roleFlag;
+                    succ(response);
+                }).catch(function (error) {
+                    fail(error);
+                })
+            } else if (infoFlag && !roleFlag) {
+                axios({
+                    method: 'post',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    url: '/entry/user/update/info',
+                    data: {
+                        'uid': userid,
+                        'user': {
+                            'id': userid,
+                            'name': username,
+                            'password_hash': password,
+                            'head_image': head_image,
+                            'introduction': introduction,
+                            'email': email,
+                            'create_time': create_time
+                        }
+                    }
+                }).then(function (response) {
+                    infoFlag = !infoFlag;
+                    succ(response);
+                }).catch(function (error) {
+                    fail(error);
+                })
+            } else if (!infoFlag && roleFlag) {
+                axios({
+                    method: 'post',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    url: '/entry/user/update/role',
+                    data: {
+                        'uid': userid,
+                        'roles': roleArray()
+                    }
+                }).then(function (response) {
+                    roleFlag = !roleFlag;
+                    succ(response);
+                }).catch(function (error) {
+                    fail(error);
+                })
+            } else {
+                var infomation = document.getElementById("infomation");
+                infomation.innerText = "未修改数据";
+            }
+        }
+        function succ(response) {
+            var d = response.data;
+            console.log(d);
+            if (d['code'] != 200) {
+                alert('修改失败!数据未保存:' + d['object']);
+                top.location = "main.html";
+            } else {
+                alert('用户数据更新成功!请重新登录!');
+                deleteCookie("token");
+                deleteCookie("uid");
+                top.location = 'login.html';
+            }
+        }
+        function fail(error) {
+            alert('异常:' + error);
+            top.location = "main.html";
+        }
+    </script>
+</body>
+
+</html>

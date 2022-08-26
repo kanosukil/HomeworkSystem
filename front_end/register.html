@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>注册</title>
+</head>
+
+<body onload="initAJAX()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+    </script>
+    <div id="head-div" style="text-align: center;">
+        <h1>注册</h1>
+    </div>
+    <div id="body-div">
+        <table class="register-info-table" border="2" align="center">
+            <tr>
+                <td>用户名:</td>
+                <td>
+                    <input type="text" id="reg-username" size="70" />
+                </td>
+            </tr>
+            <tr>
+                <td>密码:</td>
+                <td>
+                    <input type="password" id="reg-password" size="70" />
+                </td>
+            </tr>
+            <tr>
+                <td>电子邮件:</td>
+                <td>
+                    <input type="text" id="reg-email" size="70" />
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td style="text-align: center;">
+                    <button id="reg-btn">注册</button>
+                </td>
+            </tr>
+            <tr>
+                <td>注册信息:</td>
+                <td id="reg-text">请输入你的用户名,密码和电子邮件</td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        const regBtn = document.getElementById("reg-btn");
+        regBtn.onclick = function () {
+            regBtn.disabled = true;
+            var nameStr = document.getElementById("reg-username").value;
+            var emailstr = document.getElementById("reg-email").value;
+            var passwordStr = document.getElementById("reg-password").value;
+            if (nameStr == "") {
+                alert("用户名为空");
+            } else if (emailstr == "") {
+                alert("电子邮箱为空");
+            } else if (passwordStr == "") {
+                alert("密码为空");
+            } else {
+                requsetReg(nameStr, emailstr, passwordStr);
+            }
+            regBtn.disabled = false;
+        }
+        function requsetReg(username, email, password) {
+            var text = document.getElementById("reg-text");
+            axios({
+                method: 'post',
+                headers: {
+                    'Content-type': 'application/json',
+                    token: ''
+                },
+                url: '/entry/api/register',
+                data: {
+                    'name': username,
+                    'password': password,
+                    'email': email
+                }
+            }).then(function (response) {
+                text.innerHTML = "";
+                var d = response.data;
+                console.log(d);
+                var code = d['code'];
+                const divO = document.createElement('div');
+                const msg = document.createTextNode(d['msg']);
+                divO.appendChild(msg);
+                if (code == 200) {
+                    setCookie("uid", d['uid'], 5);
+                    setCookie("token", d['object'], 5);
+                    const jumpBtn = document.createElement('a');
+                    jumpBtn.id = 'jump';
+                    jumpBtn.href = 'main.html';
+                    jumpBtn.innerText = '前往主页';
+                    divO.appendChild(jumpBtn);
+                } else {
+                    const excText = document.createTextNode(": " + d['object']);
+                    divO.appendChild(excText);
+                }
+                text.appendChild(divO);
+            }, function (error) {
+                text.innerHTML = "";
+                console.log(error);
+                text.innerText = error;
+            })
+        }
+    </script>
+</body>
+
+</html>
