@@ -83,6 +83,9 @@ public interface HomeworkService {
             throws Exception;
     // 根据课程
 
+    List<ResultQuestionDTO> selectResultByQID(Integer qid)
+            throws Exception;
+
     HomeworkOpBO answerQuestion(Integer sid, Integer cid, Integer qid, Result result)
             throws SQLRWException;
     // 回答问题, 创建答案

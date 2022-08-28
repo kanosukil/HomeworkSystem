@@ -44,4 +44,10 @@ public class ResultFindController {
             throws IOException {
         return service.getStudentResult(sid);
     }
+
+    @GetMapping("question")
+    public List<ResultQuestionDTO> getQuestionResult(@RequestParam("qid") Integer qid)
+            throws IOException {
+        return service.getQuestionResult(qid);
+    }
 }

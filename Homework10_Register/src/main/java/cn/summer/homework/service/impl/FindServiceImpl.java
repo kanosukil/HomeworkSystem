@@ -121,4 +121,9 @@ public class FindServiceImpl implements FindService {
         return result.getStudentResult(sid);
     }
 
+    @Override
+    public List<ResultQuestionDTO> resultBQuestion(Integer qid) throws IOException {
+        return result.getQuestionResult(qid);
+    }
+
 }

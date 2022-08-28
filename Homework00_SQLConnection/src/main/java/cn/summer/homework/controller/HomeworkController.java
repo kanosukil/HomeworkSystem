@@ -242,6 +242,15 @@ public class HomeworkController {
         }
     }
 
+    @GetMapping("result-get-question")
+    public List<ResultQuestionDTO> getQuestionResult(@RequestParam("qid") Integer qid) {
+        try {
+            return homeworkService.selectResultByQID(qid);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     private void setRes_R(HomeworkOpBO res, Boolean isSuccess, String key, Object value) {
         res.setIsSuccess(isSuccess);
         res.setIsQuestion(false);

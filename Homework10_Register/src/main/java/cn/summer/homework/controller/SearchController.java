@@ -509,4 +509,21 @@ public class SearchController {
             return new SearchVO<>(500, "Type-Search:Error", null);
         }
     }
+
+    @GetMapping("/score/question")
+    public SearchVO<String> getScoreByQID(@RequestParam("qid") Integer qid) {
+        try {
+            List<String> res = new ArrayList<>();
+            for (ResultQuestionDTO it : find.resultBQuestion(qid)) {
+                res.add(it.getStudent().getName() + ":" + it.getResult().getScore());
+            }
+            if (res.size() == 0) {
+                throw new IOException("问题类型获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (IOException io) {
+            logger.error("SQL Result 获取异常", io);
+            return new SearchVO<>(500, "Result-Search:Error", null);
+        }
+    }
 }

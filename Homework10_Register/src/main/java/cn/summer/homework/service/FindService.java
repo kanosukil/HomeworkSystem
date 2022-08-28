@@ -49,4 +49,6 @@ public interface FindService {
     List<ResultQuestionDTO> resultBCourse(Integer cid) throws IOException;
 
     List<ResultQuestionDTO> resultBStudent(Integer sid) throws IOException;
+
+    List<ResultQuestionDTO> resultBQuestion(Integer qid) throws IOException;
 }

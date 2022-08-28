@@ -654,6 +654,16 @@ public class HomeworkServiceImpl implements HomeworkService {
     }
 
     @Override
+    public List<ResultQuestionDTO> selectResultByQID(Integer qid)
+            throws Exception {
+        List<ResultQuestionDTO> res = new ArrayList<>();
+        for (Integer rid : questionResultDao.selectByQID(qid)) {
+            res.add(getRQ_DTO(rid));
+        }
+        return res;
+    }
+
+    @Override
     @Transactional(rollbackFor = SQLWarningException.class)
     public HomeworkOpBO answerQuestion(Integer sid, Integer cid, Integer qid, Result result)
             throws SQLRWException {

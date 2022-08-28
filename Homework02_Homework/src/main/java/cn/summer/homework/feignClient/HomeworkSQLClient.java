@@ -33,6 +33,10 @@ public interface HomeworkSQLClient {
     @GetMapping("/homework-sql/result-get-student")
     List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid);
 
+    @GetMapping("/homework-sql/result-get-question")
+    List<ResultQuestionDTO> getQuestionResult(@RequestParam("qid") Integer qid);
+
+
     @PostMapping("/homework-sql/result-create")
     HomeworkOpBO insertResult(@RequestBody NewResultDTO newResult);
 

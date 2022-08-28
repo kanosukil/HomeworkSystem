@@ -50,4 +50,13 @@ public class ResultSelectServiceImpl implements ResultSelectService {
         }
         return client.getStudentResult(sid);
     }
+
+    @Override
+    public List<ResultQuestionDTO> getQuestionResult(Integer qid)
+            throws IOException {
+        if (qid == null) {
+            throw new IOException("传入 QuestionID 为空");
+        }
+        return client.getQuestionResult(qid);
+    }
 }

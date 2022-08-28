@@ -30,6 +30,9 @@ public interface ResultClient {
     @GetMapping("/result/result-get-student")
     List<ResultQuestionDTO> getStudentResult(@RequestParam("sid") Integer sid);
 
+    @GetMapping("/result/result-get-question")
+    List<ResultQuestionDTO> getQuestionResult(@RequestParam("qid") Integer qid);
+
     @PostMapping("/result/result-create")
     HomeworkOpBO insertResult(@RequestBody NewResultDTO newResult);
 
