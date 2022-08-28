@@ -510,13 +510,16 @@ public class SearchController {
         }
     }
 
-    @GetMapping("/score/question")
-    public SearchVO<String> getScoreByQID(@RequestParam("qid") Integer qid) {
+    /**
+     * 获取某问题的所有回答分数
+     *
+     * @param qid 问题id
+     * @return StudentName:Score
+     */
+    @GetMapping("/result/question")
+    public SearchVO<ResultQuestionDTO> getScoreByQID(@RequestParam("qid") Integer qid) {
         try {
-            List<String> res = new ArrayList<>();
-            for (ResultQuestionDTO it : find.resultBQuestion(qid)) {
-                res.add(it.getStudent().getName() + ":" + it.getResult().getScore());
-            }
+            List<ResultQuestionDTO> res = find.resultBQuestion(qid);
             if (res.size() == 0) {
                 throw new IOException("结果获取异常");
             }
@@ -527,6 +530,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定老师的教授课程
+     *
+     * @param tid 老师id
+     * @return CourseSTDTO {Course, List&lt;Teacher&gt;, List&lt;Student&gt;}
+     */
     @GetMapping("/course/teacher")
     public SearchVO<CourseSTDTO> getCourseByTid(@RequestParam("tid") Integer tid) {
         try {
@@ -541,6 +550,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定学生的选修课程
+     *
+     * @param sid 学生id
+     * @return CourseSTDTO {Course, List&lt;Teacher&gt;, List&lt;Student&gt;}
+     */
     @GetMapping("/course/student")
     public SearchVO<CourseSTDTO> getCourseBySid(@RequestParam("sid") Integer sid) {
         try {
@@ -555,6 +570,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定老师创建的问题
+     *
+     * @param tid 老师id
+     * @return QuestionResultDTO {Question, QuestionType, Teacher, CourseID: CourseName, Map&lt;StudentID: ResultID&gt;}
+     */
     @GetMapping("/question/teacher")
     public SearchVO<QuestionResultDTO> getQuestionByTid(@RequestParam("tid") Integer tid) {
         try {
@@ -569,6 +590,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取指定课程下的问题
+     *
+     * @param cid 课程id
+     * @return QuestionResultDTO {Question, QuestionType, Teacher, CourseID: CourseName, Map&lt;StudentID: ResultID&gt;}
+     */
     @GetMapping("/question/course")
     public SearchVO<QuestionResultDTO> getQuestionByCid(@RequestParam("cid") Integer cid) {
         try {
@@ -583,6 +610,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取某个课程下的回答
+     *
+     * @param cid 课程id
+     * @return ResultQuestionDTO {Result, Student, TeacherID: TeacherName, QuestionID: QuestionTitle}
+     */
     @GetMapping("/result/course")
     public SearchVO<ResultQuestionDTO> getResultByCid(@RequestParam("cid") Integer cid) {
         try {
@@ -597,6 +630,12 @@ public class SearchController {
         }
     }
 
+    /**
+     * 获取某个学生创建的回答
+     *
+     * @param sid 学生id
+     * @return ResultQuestionDTO {Result, Student, TeacherID: TeacherName, QuestionID: QuestionTitle}
+     */
     @GetMapping("/result/student")
     public SearchVO<ResultQuestionDTO> getResultBySid(@RequestParam("sid") Integer sid) {
         try {

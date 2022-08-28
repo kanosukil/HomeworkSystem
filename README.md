@@ -24,8 +24,6 @@
 
 顶级用例图<br>![顶层图](image/HomeworkSystemTop.png)
 
-
-
 + 数据库设计工具: [dbdiagram](https://dbdiagram.io/home)
 + 系统架构设计工具: [diagrams.net](https://github.com/jgraph/drawio-desktop)
 
@@ -60,7 +58,9 @@
 > 将从 Gateway 输入进来的数据向下游服务分类别传输, 并向 ElasticSearch 传输数据提高数据查询的效率
 
 10. Register
+
 ##### 工具服务
+
 + SQLConnection 数据库链接
 + ElasticSearch 搜索查询
 + FileStore 文件存储和访问
@@ -447,6 +447,11 @@
   > 	method: GET
   > 	请求参数: cid <int>
   > 	返回数据: ResultQuestionDTO
+  >     // 获取指定问题的回答
+  >     /result-get-question
+  >     method: GET
+  > 	请求参数: cid <int>
+  > 	返回数据: ResultQuestionDTO
   > 	// 新建回答
   > 	/result-create
   > 	method: POST
@@ -768,272 +773,283 @@
 + 将数据输入, 数据处理, 数据入库进行划分, 减轻服务器压力
 
 > + 访问接口(未从 Gateway 暴露, 且未实现 Cors 设置):
->
->   + User
->
->     +  注册
->       `/user-sql/user-register(SQLConnection) ->`
->       ` /user/user-register(User) ->` 
->       ` /api/register(Register[UserIOService -> LoginController])`
+    >
+    >
++ User
+  >
+  >
++ 注册
+  > `/user-sql/user-register(SQLConnection) ->`
+  > ` /user/user-register(User) ->`
+  > ` /api/register(Register[UserIOService -> LoginController])`
 >     + 登录
->       `/user-sql/user-login(SQLConnection) ->`
->       ` /user/user-login(User) ->` 
->        ` /api/login(Register[UserIOService -> LoginController])`
+        > `/user-sql/user-login(SQLConnection) ->`
+        > ` /user/user-login(User) ->`
+        > ` /api/login(Register[UserIOService -> LoginController])`
 >     + 全部获取
->       `/user-sql/users-get(SQLConnection) ->`
->       ` /user/users-get(User) ->` 
->       ` /search/user/all(Register[UserSearchService -> FindService -> SearchController])`
+        > `/user-sql/users-get(SQLConnection) ->`
+        > ` /user/users-get(User) ->`
+        > ` /search/user/all(Register[UserSearchService -> FindService -> SearchController])`
 >     + 通过 ID 获取
->       `/user-sql/user-get-id(SQLConnection) ->`
->       ` /user/user-get-id(User) ->` 
->       ` /search/user/get(Register[UserSearchService -> FindService -> SearchController])`
+        > `/user-sql/user-get-id(SQLConnection) ->`
+        > ` /user/user-get-id(User) ->`
+        > ` /search/user/get(Register[UserSearchService -> FindService -> SearchController])`
 >     + 通过 ID 删除
->       `/user-sql/user-delete-id(SQLConnection) ->`
->       ` /user/user-delete-id(User) ->` 
->       ` 无(Register 只接入但未使用[UserIOService])`
+        > `/user-sql/user-delete-id(SQLConnection) ->`
+        > ` /user/user-delete-id(User) ->`
+        > ` 无(Register 只接入但未使用[UserIOService])`
 >     + 通过 Email 删除/注销
->       `/user-sql/user-delete(SQLConnection) ->`
->       ` /user/user-delete ->` 
->       ` /api/logoff/id & /api/logoff/email (Register<id -> email> [UserIOService -> LoginController])`
+        > `/user-sql/user-delete(SQLConnection) ->`
+        > ` /user/user-delete ->`
+        > ` /api/logoff/id & /api/logoff/email (Register<id -> email> [UserIOService -> LoginController])`
 >     + 用户更新
->       `/user-sql/user-update(SQLConnection) ->`
->       ` /user/user-upda te(User) ->` 
->       ` /user/update/all(Register [UserIOService -> UserInfoController])`
+        > `/user-sql/user-update(SQLConnection) ->`
+        > ` /user/user-upda te(User) ->`
+        > ` /user/update/all(Register [UserIOService -> UserInfoController])`
 >     + 用户信息更新
->       `/user-sql/user-info-update(SQLConnection) ->`
->       ` /user/user-info-update(User) ->` 
->       ` /user/update/info(Register [UserIOService -> UserInfoController])`
+        > `/user-sql/user-info-update(SQLConnection) ->`
+        > ` /user/user-info-update(User) ->`
+        > ` /user/update/info(Register [UserIOService -> UserInfoController])`
 >     + 用户角色更新
->       `/user-sql/user-role-update(SQLConnection) ->`
->       ` /user/user-role-update(User) ->` 
->       ` /user/update/role(Register [UserIOService -> UserInfoController])`
+        > `/user-sql/user-role-update(SQLConnection) ->`
+        > ` /user/user-role-update(User) ->`
+        > ` /user/update/role(Register [UserIOService -> UserInfoController])`
 >
 >   + Homework(Result)
->
->     + 回答全部获取
->       `/homework-sql/results-get(SQLConnection) ->`
->       ` /result/results-get(Homework) ->` 
->       ` /query/result/all(Respondent[ResultSelectService -> ResultFindController]) ->` 
->       ` /search/result/all(Register[FindService -> SearchController])`
+      >
+      >
++ 回答全部获取
+  > `/homework-sql/results-get(SQLConnection) ->`
+  > ` /result/results-get(Homework) ->`
+  > ` /query/result/all(Respondent[ResultSelectService -> ResultFindController]) ->`
+  > ` /search/result/all(Register[FindService -> SearchController])`
 >
 >     + 获取指定 ID 回答
->       `/homework-sql/result-get(SQLConnection) ->`
->       ` /result/result-get(Homework) ->` 
->       ` /query/result/id(Respondent[ResultSelectService -> ResultFindController]) ->` 
->       ` /search/result/get(Register[FindService -> SearchController])`
->
+        > `/homework-sql/result-get(SQLConnection) ->`
+        > ` /result/result-get(Homework) ->`
+        > ` /query/result/id(Respondent[ResultSelectService -> ResultFindController]) ->`
+        > ` /search/result/get(Register[FindService -> SearchController])`
+>    
 >     + 获取指定 Course 回答
->       `/homework-sql/result-get-course(SQLConnection) ->`
->       ` /result/result-get-course(Homework) ->` 
->       ` /query/result/course(Respondent[ResultSelectService -> ResultFindController]) ->` 
->       ` 无(Register 只接入未使用[FindService])`
->
+        > `/homework-sql/result-get-course(SQLConnection) ->`
+        > ` /result/result-get-course(Homework) ->`
+        > ` /query/result/course(Respondent[ResultSelectService -> ResultFindController]) ->`
+        > ` /result/course(Register [FindService -> SearchController])`
+>    
 >     + 获取指定学生的回答
->
->       `/homework-sql/result-get-student(SQLConnection)->`
->       ` /result/result-get-student(Homework) ->` ` /query/result/student(Respondent[ResultSelectService -> ResultFindController]) ->` 
->       ` 无(Register 只接入未使用[FindService])`
->
+        >
+        >       `/homework-sql/result-get-student(SQLConnection)->`
+        > ` /result/result-get-student(Homework) ->` ` /query/result/student(Respondent[ResultSelectService -> ResultFindController]) ->`
+        > ` /result/student(Register [FindService -> SearchController])`
+>    
+>     + 获取指定问题的回答
+        >
+        >       `/homework-sql/result-get-question(SQLConnection)->`
+        > ` /result/result-get-question(Homework) ->` ` /query/result/question(Respondent[ResultSelectService -> ResultFindController]) ->`
+        > ` /score/question(Register [FindService -> SearchController])`
+>    
 >     + 新建回答
->
->       `/homework-sql/result-create(SQLConnection) -> `
->       `/result/result-create(Homework) ->`
->       ` /respondent/new(Respondent[ResultIOService -> ResultHandleController]) ->` 
->       ` /s/c/result(Student[CUDController]) ->` 
->       ` /operation/student/c/result(Register[StudentController])`
->
+        >
+        >       `/homework-sql/result-create(SQLConnection) -> `
+        > `/result/result-create(Homework) ->`
+        > ` /respondent/new(Respondent[ResultIOService -> ResultHandleController]) ->`
+        > ` /s/c/result(Student[CUDController]) ->`
+        > ` /operation/student/c/result(Register[StudentController])`
+>    
 >     + 回答更新
->
->       `/homework-sql/result-update(SQLConnection) -> `
->       `/result/result-update(Homework) ->`
->       ` /respondent/update(Respondent[ResultIOService -> ResultHandleController]) ->` 
->       ` /s/u/result(Student[CUDController]) ->` 
->       ` /operation/student/u/result(Register[StudentController])`
->
+        >
+        >       `/homework-sql/result-update(SQLConnection) -> `
+        > `/result/result-update(Homework) ->`
+        > ` /respondent/update(Respondent[ResultIOService -> ResultHandleController]) ->`
+        > ` /s/u/result(Student[CUDController]) ->`
+        > ` /operation/student/u/result(Register[StudentController])`
+>    
 >     + 回答删除
->
->       `/homework-sql/result-delete(SQLConnection) -> `
->       `/result/result-delete(Homework) ->`
->       ` /respondent/delete(Respondent[ResultIOService -> ResultHandleController]) ->` 
->       ` /s/d/result(Student[CUDController]) ->` 
->       ` /operation/student/d/result(Register[StudentController])`
->
+        >
+        >       `/homework-sql/result-delete(SQLConnection) -> `
+        > `/result/result-delete(Homework) ->`
+        > ` /respondent/delete(Respondent[ResultIOService -> ResultHandleController]) ->`
+        > ` /s/d/result(Student[CUDController]) ->`
+        > ` /operation/student/d/result(Register[StudentController])`
+>    
 >     + 批改问题
->
->       `/homework-sql/result-correct(SQLConnection) ->`
->       ` /question/result-correct(Homework) ->` 
->       ` /create/correct(Creator[QuestionIOService -> QuestionHandleController]) ->` 
->       ` /t/ao/correct/question(Teacher[AddOpController]) ->` 
->       `/operation/teacher/ao/correct/question(Register[TeacherController])`
+        >
+        >       `/homework-sql/result-correct(SQLConnection) ->`
+        > ` /question/result-correct(Homework) ->`
+        > ` /create/correct(Creator[QuestionIOService -> QuestionHandleController]) ->`
+        > ` /t/ao/correct/question(Teacher[AddOpController]) ->`
+        > `/operation/teacher/ao/correct/question(Register[TeacherController])`
 >
 >   + Homework(Question)
->
->     + 问题全部获取
->
->       `/homework-sql/questions-get(SQLConnection) ->`
->       ` /question/questions-get(Homework) ->` 
->       ` /query/question/all(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` /search/question/all(Register[FindService -> SearchController])`
+      >
+      >
++ 问题全部获取
+  >
+  >       `/homework-sql/questions-get(SQLConnection) ->`
+  > ` /question/questions-get(Homework) ->`
+  > ` /query/question/all(Creator[QuestionSelectService -> QuestionFindController]) ->`
+  > ` /search/question/all(Register[FindService -> SearchController])`
 >
 >     + 获取指定 ID 问题
->
->       `/homework-sql/question-get(SQLConnection) ->`
->       ` /question/question-get(Homework) ->` 
->       ` /query/question/id(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` /search/question/get(Register[FindService -> SearchController])`
->
+        >
+        >       `/homework-sql/question-get(SQLConnection) ->`
+        > ` /question/question-get(Homework) ->`
+        > ` /query/question/id(Creator[QuestionSelectService -> QuestionFindController]) ->`
+        > ` /search/question/get(Register[FindService -> SearchController])`
+>    
 >     + 获取指定老师的问题
->
->       `/homework-sql/question-get-tid(SQLConnection) ->`
->       ` /question/question-get-tid(Homework) ->` 
->       ` /query/question/teacher(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` 无(Register 只接入未使用[FindService])`
->
+        >
+        >       `/homework-sql/question-get-tid(SQLConnection) ->`
+        > ` /question/question-get-tid(Homework) ->`
+        > ` /query/question/teacher(Creator[QuestionSelectService -> QuestionFindController]) ->`
+        > ` /question/teacher(Register[FindService -> SearchController])`
+>    
 >     + 获取指定类型的问题
->
->       `/homework-sql/question-get-type(SQLConnection) ->`
->       ` /question/question-get-type(Homework) ->` 
->       ` /query/question/type(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` 无(Register 只接入未使用[FindService])`
->
+        >
+        >       `/homework-sql/question-get-type(SQLConnection) ->`
+        > ` /question/question-get-type(Homework) ->`
+        > ` /query/question/type(Creator[QuestionSelectService -> QuestionFindController]) ->`
+        > ` 无(Register 只接入未使用[FindService])`
+>    
 >     + 获取指定 Course 的问题
->
->       `/homework-sql/question-get-course(SQLConnection) ->`
->       ` /question/question-get-course(Homework) ->` 
->       ` /query/question/course(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` 无(Register 只接入未使用[FindService])`
->
+        >
+        >       `/homework-sql/question-get-course(SQLConnection) ->`
+        > ` /question/question-get-course(Homework) ->`
+        > ` /query/question/course(Creator[QuestionSelectService -> QuestionFindController]) ->`
+        > ` /question/course(Register[FindService -> SearchController])`
+>    
 >     + 新建问题
->
->       `/homework-sql/question-create(SQLConnection) ->`
->       ` /question/question-create(Homework) ->` 
->       ` /create/new(Creator[QuestionIOService -> QuestionHandleController]) ->` 
->       ` /t/c/question(Teacher[CUDController]) ->` 
->       ` /operation/teacher/c/question(Register[TeacherController])`
->
+        >
+        >       `/homework-sql/question-create(SQLConnection) ->`
+        > ` /question/question-create(Homework) ->`
+        > ` /create/new(Creator[QuestionIOService -> QuestionHandleController]) ->`
+        > ` /t/c/question(Teacher[CUDController]) ->`
+        > ` /operation/teacher/c/question(Register[TeacherController])`
+>    
 >     + 问题更新
->
->       `/homework-sql/question-update(SQLConnection) ->`
->       ` /question/question-update(Homework) ->` 
->       ` /create/update(Creator[QuestionIOService -> QuestionHandleController]) ->` 
->       ` /t/u/question(Teacher[CUDController]) ->` 
->       ` /operation/teacher/u/question(Register[TeacherController])`
->
+        >
+        >       `/homework-sql/question-update(SQLConnection) ->`
+        > ` /question/question-update(Homework) ->`
+        > ` /create/update(Creator[QuestionIOService -> QuestionHandleController]) ->`
+        > ` /t/u/question(Teacher[CUDController]) ->`
+        > ` /operation/teacher/u/question(Register[TeacherController])`
+>    
 >     + 问题删除
->
->       `/homework-sql/question-delete(SQLConnection) ->`
->       ` /question/question-delete(Homework) ->` 
->       ` /create/delete(Creator[QuestionIOService -> QuestionHandleController]) ->` 
->       ` /t/d/question(Teacher[CUDController]) ->` 
->       ` /operation/teacher/d/question(Register[TeacherController])`
->
+        >
+        >       `/homework-sql/question-delete(SQLConnection) ->`
+        > ` /question/question-delete(Homework) ->`
+        > ` /create/delete(Creator[QuestionIOService -> QuestionHandleController]) ->`
+        > ` /t/d/question(Teacher[CUDController]) ->`
+        > ` /operation/teacher/d/question(Register[TeacherController])`
+>    
 >     + 类型全部获取
->
->       `/homework-sql/question-types-get(SQLConnection) ->`
->       ` /question/question-types-get(Homework) ->` 
->       ` /query/question/all-type(Creator[QuestionSelectService -> QuestionFindController]) ->` 
->       ` /search/type/all(Register [FindService -> SearchController])`
->
+        >
+        >       `/homework-sql/question-types-get(SQLConnection) ->`
+        > ` /question/question-types-get(Homework) ->`
+        > ` /query/question/all-type(Creator[QuestionSelectService -> QuestionFindController]) ->`
+        > ` /search/type/all(Register [FindService -> SearchController])`
+>    
 >     + 添加问题类型
->
->       `/homework-sql/question-type-add(SQLConnection) -> /question/question-type-add(Homework) -> /create/new/type(Creator[QuestionIOService -> QuestionHadnleController]) -> /t/c/type(Teacher[CUDController]) -> /operation/teacher/c/type(Register [TeacherController])`
->
+        >
+        >       `/homework-sql/question-type-add(SQLConnection) -> /question/question-type-add(Homework) -> /create/new/type(Creator[QuestionIOService -> QuestionHadnleController]) -> /t/c/type(Teacher[CUDController]) -> /operation/teacher/c/type(Register [TeacherController])`
+>    
 >     + 删除问题类型
->
->       `/homework-sql/question-type-delete(SQLConnection) -> /question/question-type-delete(Homework) -> /create/delete/type(Creator[QuestionIOService -> QuestionHadnleController]) -> /t/d/type(Teacher[CUDController]) -> /operation/teacher/d/type(Register [TeacherController])`
+        >
+        >       `/homework-sql/question-type-delete(SQLConnection) -> /question/question-type-delete(Homework) -> /create/delete/type(Creator[QuestionIOService -> QuestionHadnleController]) -> /t/d/type(Teacher[CUDController]) -> /operation/teacher/d/type(Register [TeacherController])`
 >
 >   + Course
->
->     + 课程全部获取
->
->       `/course-sql/courses-get(SQLConnection) ->`
->       ` /course/courses-get(Course) ->` 
->       ` /query/course/all(CourseManager[CourseSelectService -> CourseFindController]) ->` 
->       ` /search/course/all(Register[FindService -> SearchController])`
+      >
+      >
++ 课程全部获取
+  >
+  >       `/course-sql/courses-get(SQLConnection) ->`
+  > ` /course/courses-get(Course) ->`
+  > ` /query/course/all(CourseManager[CourseSelectService -> CourseFindController]) ->`
+  > ` /search/course/all(Register[FindService -> SearchController])`
 >
 >     + 获取指定ID课程
->
->       `/course-sql/course-get(SQLConnection) ->`
->       ` /course/course-get(Course) ->` 
->       ` /query/course/id(CourseManager[CourseSelectService -> CourseFindController]) ->` 
->       ` /search/course/get(Register[FindService -> SearchController])`
->
+        >
+        >       `/course-sql/course-get(SQLConnection) ->`
+        > ` /course/course-get(Course) ->`
+        > ` /query/course/id(CourseManager[CourseSelectService -> CourseFindController]) ->`
+        > ` /search/course/get(Register[FindService -> SearchController])`
+>    
 >     + 获取指定名称的课程
->
->       `/course-sql/courses-get-name(SQLConnection) ->`
->       ` /course/courses-get-name(Course) ->` 
->       ` /query/course/name(CourseManager[CourseSelectService -> CourseFindController]) ->` 
->       ` 无(Register[FindService])`
->
+        >
+        >       `/course-sql/courses-get-name(SQLConnection) ->`
+        > ` /course/courses-get-name(Course) ->`
+        > ` /query/course/name(CourseManager[CourseSelectService -> CourseFindController]) ->`
+        > ` 无(Register[FindService])`
+>    
 >     + 获取指定老师教授的课程
->
->       `/course-sql/courses-get-teacher(SQLConnection) ->`
->       ` /course/courses-get-teacher(Course) -> ` 
->       `/query/course/teacher(CourseManager[CourseSelectService -> CourseFindController]) ->`
->       ` 无(Register[FindService])`
->
+        >
+        >       `/course-sql/courses-get-teacher(SQLConnection) ->`
+        > ` /course/courses-get-teacher(Course) -> `
+        > `/query/course/teacher(CourseManager[CourseSelectService -> CourseFindController]) ->`
+        > ` /course/teacher(Register[FindService -> SearchController])`
+>    
 >     + 获取指定学生选修的课程
->
->       `/course-sql/courses-get-student(SQLConnection) ->`
->       ` /course/courses-get-student(Course) ->` 
->       ` /query/course/student(CourseManager[CourseSelectService -> CourseFindController]) ->` 
->       ` 无(Register[FindService])`
->
+        >
+        >       `/course-sql/courses-get-student(SQLConnection) ->`
+        > ` /course/courses-get-student(Course) ->`
+        > ` /query/course/student(CourseManager[CourseSelectService -> CourseFindController]) ->`
+        > ` /course/student(Register[FindService -> SearchController])`
+>    
 >     + 新建课程
->
->       `/course-sql/create-course(SQLConnection) ->`
->       ` /course/create-course(Course) ->` 
->       ` /course-handle/teacher/new(CourseManager[CourseTeacherService -> CourseHandleController]) ->` 
->       ` /t/c/course(Teacher[CUDController]) ->` 
->       ` /operation/teacher/c/course(Register[TeacherController])`
->
+        >
+        >       `/course-sql/create-course(SQLConnection) ->`
+        > ` /course/create-course(Course) ->`
+        > ` /course-handle/teacher/new(CourseManager[CourseTeacherService -> CourseHandleController]) ->`
+        > ` /t/c/course(Teacher[CUDController]) ->`
+        > ` /operation/teacher/c/course(Register[TeacherController])`
+>    
 >     + 课程名更新
->
->       `/course-sql/course-update-name(SQLConnection) ->`
->       ` /course/course-update-name(Course) ->` 
->       ` /course-handle/teacher/update(CourseManager[CourseTeacherService -> CourseHandleController]) ->` 
->       ` /t/u/course(Teacher[CUDController]) ->` 
->       ` /operation/teacher/u/course(Register[TeacherController])`
->
+        >
+        >       `/course-sql/course-update-name(SQLConnection) ->`
+        > ` /course/course-update-name(Course) ->`
+        > ` /course-handle/teacher/update(CourseManager[CourseTeacherService -> CourseHandleController]) ->`
+        > ` /t/u/course(Teacher[CUDController]) ->`
+        > ` /operation/teacher/u/course(Register[TeacherController])`
+>    
 >     + 学生选修
->
->       `/course-sql/course-add-student(SQLConnection) ->`
->       ` /course/course-add-student(Course)->` 
->       ` /course-handle/student/add(CourseManager[CourseStudentService -> CourseHandleController]) ->` 
->       ` /s/ao/add/course(Student[AddOpController]) ->` 
->       ` /operation/student/ao/add/course(Register[StudentController])`
->
+        >
+        >       `/course-sql/course-add-student(SQLConnection) ->`
+        > ` /course/course-add-student(Course)->`
+        > ` /course-handle/student/add(CourseManager[CourseStudentService -> CourseHandleController]) ->`
+        > ` /s/ao/add/course(Student[AddOpController]) ->`
+        > ` /operation/student/ao/add/course(Register[StudentController])`
+>    
 >     + 老师加入
->
->       `/course-sql/course-add-teacher(SQLConnection) ->`
->       ` /course/course-add-teacher(Course) ->` 
->       ` /course-handle/teacher/add(CourseManager[CourseTeacherService -> CourseHandleController]) ->` 
->       ` /t/ao/add/course(Teacher[AddOpController]) ->` 
->       ` /operation/teacher/ao/add/course(Register[TeacherController])`
->
+        >
+        >       `/course-sql/course-add-teacher(SQLConnection) ->`
+        > ` /course/course-add-teacher(Course) ->`
+        > ` /course-handle/teacher/add(CourseManager[CourseTeacherService -> CourseHandleController]) ->`
+        > ` /t/ao/add/course(Teacher[AddOpController]) ->`
+        > ` /operation/teacher/ao/add/course(Register[TeacherController])`
+>    
 >     + 学生退课
->
->       `/course-sql/course-drop-student(SQLConnection) ->`
->       ` /course/course-drop-student(Course)->` 
->       ` /course-handle/student/drop(CourseManager[CourseStudentService -> CourseHandleController]) ->` 
->       ` /s/ao/drop/course(Student[AddOpController]) ->` 
->       ` /operation/student/ao/drop/course(Register[StudentController])`
->
+        >
+        >       `/course-sql/course-drop-student(SQLConnection) ->`
+        > ` /course/course-drop-student(Course)->`
+        > ` /course-handle/student/drop(CourseManager[CourseStudentService -> CourseHandleController]) ->`
+        > ` /s/ao/drop/course(Student[AddOpController]) ->`
+        > ` /operation/student/ao/drop/course(Register[StudentController])`
+>    
 >     + 老师退出
->
->       `/course-sql/course-drop-teacher(SQLConnection) ->`
->       ` /course/course-drop-teacher(Course) ->` 
->       ` /course-handle/teacher/drop(CourseManager[CourseTeacherService -> CourseHandleController]) ->` 
->       ` /t/ao/drop/course(Teacher[AddOpController]) ->` 
->       ` /operation/teacher/ao/drop/course(Register[TeacherController])`
->
+        >
+        >       `/course-sql/course-drop-teacher(SQLConnection) ->`
+        > ` /course/course-drop-teacher(Course) ->`
+        > ` /course-handle/teacher/drop(CourseManager[CourseTeacherService -> CourseHandleController]) ->`
+        > ` /t/ao/drop/course(Teacher[AddOpController]) ->`
+        > ` /operation/teacher/ao/drop/course(Register[TeacherController])`
+>    
 >     + 课程删除
->
->       `/course-sql/course-delete(SQLConnection) ->`
->       ` /course/course-delete(Course) ->` 
->       ` /course-handle/teacher/delete(CourseManager[CourseTeacherService -> CourseHandleController]) ->` 
->       ` /t/d/course(Teacher[CUDController]) ->` 
->       ` /operation/teacher/d/course(Register[TeacherController])`
+        >
+        >       `/course-sql/course-delete(SQLConnection) ->`
+        > ` /course/course-delete(Course) ->`
+        > ` /course-handle/teacher/delete(CourseManager[CourseTeacherService -> CourseHandleController]) ->`
+        > ` /t/d/course(Teacher[CUDController]) ->`
+        > ` /operation/teacher/d/course(Register[TeacherController])`
 >
 > + Student & Teacher & Admin 将 Register 传入的 CourseInDTO/QuestionInDTO/ResultInDTO 转换成下游服务需要的实体类型
 >
@@ -1239,6 +1255,36 @@
   > 				'students': [user]
   > 			]
   > 		}
+  > 		// 通过 Tid 获取
+  > 		/course/teacher
+  > 		method: GET
+  > 		请求参数:
+  > 			tid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'course': course,
+  > 				'teachers': [user],
+  > 				'students': [user]
+  > 			]
+  > 		}
+  > 		// 通过 Sid 获取
+  > 		/course/Student
+  > 		method: GET
+  > 		请求参数:
+  > 			sid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'course': course,
+  > 				'teachers': [user],
+  > 				'students': [user]
+  > 			]
+  > 		}
   > 	// 问题
   > 		// 全部
   > 		/question/all
@@ -1309,6 +1355,50 @@
   > 				}
   > 			]
   > 		}
+  > 		// 通过 Tid 获取
+  > 		/question/teacher
+  > 		method: GET
+  > 		请求参数:
+  > 			tid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'question': question,
+  > 				'questionType': string,
+  > 				'teacher': user,
+  > 				'course': {
+  > 					cid: cname
+  > 				},
+  > 				'results': {
+  > 					sid: rid,
+  > 					...
+  > 				}
+  > 			]
+  > 		}
+  > 		// 通过 Cud 获取
+  > 		/question/course
+  > 		method: GET
+  > 		请求参数:
+  > 			cid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'question': question,
+  > 				'questionType': string,
+  > 				'teacher': user,
+  > 				'course': {
+  > 					cid: cname
+  > 				},
+  > 				'results': {
+  > 					sid: rid,
+  > 					...
+  > 				}
+  > 			]
+  > 		}
   > 	// 回答
   > 		// 全部
   > 		/result/all
@@ -1358,6 +1448,66 @@
   > 		method: GET
   > 		请求参数:
   > 			rid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'result': result,
+  > 				'student': user,
+  > 				'teacher': {
+  > 					tid: tname
+  > 				},
+  > 				'question': {
+  > 					qid: qtitle
+  > 				}
+  > 			]
+  > 		}
+  > 		// 通过 Cid 获取
+  > 		/result/course
+  > 		method: GET
+  > 		请求参数:
+  > 			cid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'result': result,
+  > 				'student': user,
+  > 				'teacher': {
+  > 					tid: tname
+  > 				},
+  > 				'question': {
+  > 					qid: qtitle
+  > 				}
+  > 			]
+  > 		}
+  > 		// 通过 Sid 获取
+  > 		/result/student
+  > 		method: GET
+  > 		请求参数:
+  > 			sid <int>
+  > 		返回数据:
+  > 		{
+  > 			'code': int,
+  > 			'message': string,
+  > 			'objects': [
+  > 				'result': result,
+  > 				'student': user,
+  > 				'teacher': {
+  > 					tid: tname
+  > 				},
+  > 				'question': {
+  > 					qid: qtitle
+  > 				}
+  > 			]
+  > 		}
+  > 		// 获取 Question 的回答者以及其分数
+  > 		/score/question
+  > 		method: GET
+  > 		请求参数:
+  > 			qid <int>
   > 		返回数据:
   > 		{
   > 			'code': int,
