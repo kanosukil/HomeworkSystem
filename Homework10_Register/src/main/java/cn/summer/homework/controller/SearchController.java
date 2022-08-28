@@ -518,11 +518,95 @@ public class SearchController {
                 res.add(it.getStudent().getName() + ":" + it.getResult().getScore());
             }
             if (res.size() == 0) {
-                throw new IOException("问题类型获取异常");
+                throw new IOException("结果获取异常");
             }
             return new SearchVO<>(200, "OK", res);
-        } catch (IOException io) {
+        } catch (Exception io) {
             logger.error("SQL Result 获取异常", io);
+            return new SearchVO<>(500, "Result-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/course/teacher")
+    public SearchVO<CourseSTDTO> getCourseByTid(@RequestParam("tid") Integer tid) {
+        try {
+            List<CourseSTDTO> res = find.courseBTeacher(tid);
+            if (res == null) {
+                throw new IOException("课程获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Course 获取异常", ex);
+            return new SearchVO<>(500, "Course-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/course/student")
+    public SearchVO<CourseSTDTO> getCourseBySid(@RequestParam("sid") Integer sid) {
+        try {
+            List<CourseSTDTO> res = find.courseBStudent(sid);
+            if (res == null) {
+                throw new IOException("课程获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Course 获取异常", ex);
+            return new SearchVO<>(500, "Course-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/question/teacher")
+    public SearchVO<QuestionResultDTO> getQuestionByTid(@RequestParam("tid") Integer tid) {
+        try {
+            List<QuestionResultDTO> res = find.questionBTeacher(tid);
+            if (res == null) {
+                throw new IOException("问题获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Question 获取异常", ex);
+            return new SearchVO<>(500, "Question-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/question/course")
+    public SearchVO<QuestionResultDTO> getQuestionByCid(@RequestParam("cid") Integer cid) {
+        try {
+            List<QuestionResultDTO> res = find.questionBCourse(cid);
+            if (res == null) {
+                throw new IOException("问题获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Question 获取异常", ex);
+            return new SearchVO<>(500, "Question-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/result/course")
+    public SearchVO<ResultQuestionDTO> getResultByCid(@RequestParam("cid") Integer cid) {
+        try {
+            List<ResultQuestionDTO> res = find.resultBCourse(cid);
+            if (res == null) {
+                throw new IOException("回答获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Result 获取异常", ex);
+            return new SearchVO<>(500, "Result-Search:Error", null);
+        }
+    }
+
+    @GetMapping("/result/student")
+    public SearchVO<ResultQuestionDTO> getResultBySid(@RequestParam("sid") Integer sid) {
+        try {
+            List<ResultQuestionDTO> res = find.resultBStudent(sid);
+            if (res == null) {
+                throw new IOException("回答获取异常");
+            }
+            return new SearchVO<>(200, "OK", res);
+        } catch (Exception ex) {
+            logger.error("SQL Result 获取异常", ex);
             return new SearchVO<>(500, "Result-Search:Error", null);
         }
     }
