@@ -175,6 +175,9 @@
                 <th>&nbsp;</th>
                 <td style="text-align: center;" colspan="2">
                     <button id="user-update">更新数据</button>
+                    <button id="teacher-course" title="老师查看自己创建的课程\学生查看自己选修的课程">查看课程</button>
+                    <button id="teacher-question" title="老师查看自己创建的问题">查看问题</button>
+                    <button id="student-result" title="学生查看自己创建的回答">查看回答</button>
                 </td>
             </tr>
             <tr>
@@ -184,7 +187,7 @@
                 </td>
             </tr>
         </table>
-        <img src="" />
+        <img src="" style="display: none;" />
     </div>
     <div id="tail-div" style="text-align:center ;">
         <a href="main.html">返回主页</a>
@@ -428,6 +431,42 @@
         function fail(error) {
             alert('异常:' + error);
             top.location = "main.html";
+        }
+        var getCourse = document.getElementById("teacher-course");
+        var getQuestion = document.getElementById("teacher-question");
+        var getResult = document.getElementById("student-result");
+        getCourse.onclick = function () {
+            var args = "";
+            if (isTeacher(role) && !isStudent(role)) {
+                alert("跳转至创建的课程查看页面");
+                args = "tid=" + userid;
+            } else if (isStudent(role) && !isTeacher(role)) {
+                alert("跳转至选修的课程查看页面");
+                args = "sid=" + userid;
+            } else if (isStudent(role) && isTeacher(role)) {
+                if (confirm("请问是否作为教师查看课程")) {
+                    args = "tid=" + userid;
+                } else {
+                    args = "sid=" + userid;
+                }
+            }
+            window.open(encodeURI('/homework-system/showCourse.html?' + args), '_self');
+        }
+        getQuestion.onclick = function () {
+            if (isTeacher(role)) {
+                alert("跳转至创建的问题查看页面");
+                window.open(encodeURI('/homework-system/showQuestion.html?' + 'tid=' + userid), '_self');
+            } else {
+                alert("学生查看不了哟~");
+            }
+        }
+        getResult.onclick = function () {
+            if (isStudent(role)) {
+                alert("跳转至创建的回答查看页面");
+                window.open(encodeURI('/homework-system/showResult.html?' + 'sid=' + userid), '_self');
+            } else {
+                alert("老师没法创建回答哟~");
+            }
         }
     </script>
 </body>

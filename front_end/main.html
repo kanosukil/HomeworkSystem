@@ -224,6 +224,7 @@
     </div>
     <div id="tail-div" style="text-align: center;clear:both;margin: 3px;border: 3px;padding: 5px;position: relative;">
         <hr>
+        <button id="last-page">上一页</button>
         <button id="next-page">下一页</button>
     </div>
     <script>
@@ -319,6 +320,7 @@
             result_div.appendChild(father);
         }
         const nextBtn = document.getElementById('next-page');
+        const lastBtn = document.getElementById('last-page');
         nextBtn.onclick = function () {
             nextBtn.disabled = true;
             var tmp = req['params'];
@@ -383,6 +385,71 @@
                 return;
             })
             nextBtn.disabled = false;
+        }
+        lastBtn.onclick = function () {
+            lastBtn.disabled = true;
+            var tmp = req['params'];
+            var tv = tmp['value'];
+            var tf = tmp['from'];
+            var ts = tmp['size'];
+            if (page == 1) {
+                alert('已经到顶了~');
+                lastBtn.disabled = false;
+                return;
+            }
+            page -= 1;
+            req['params'] = {
+                'value': tv,
+                'from': tf - ts,
+                'size': ts
+            };
+            axios(req).then(function (response) {
+                const d = response.data;
+                if (d['code'] == 200) {
+                    result_div.innerHTML = "第" + page + "页\n";
+                    let array = d['objects'];
+                    Array.from(array).forEach(i => {
+                        switch (s1) {
+                            case 1:
+                                const u = i['user'];
+                                const ur = i['roles'];
+                                userDiv(u, ur);
+                                break;
+                            case 2:
+                                const c = i['course'];
+                                const ct = i['teachers'];
+                                const cs = i['students'];
+                                courseDiv(c, ct, cs);
+                                break;
+                            case 3:
+                                const q = i['question'];
+                                const qt = i['questionType'];
+                                const t = i['teacher'];
+                                const qr = i['results'];
+                                questionDiv(q, qt, t, qr);
+                                break;
+                            case 4:
+                                const r = i['result'];
+                                const rs = i['student'];
+                                const rq = i['question'];
+                                resultDiv(r, rs, rq);
+                                break;
+                            default:
+                                alert('异常');
+                                location.reload();
+                        }
+                    })
+                } else {
+                    alert('已经到顶了~');
+                    lastBtn.disabled = false;
+                    return;
+                }
+            }).catch(function (error) {
+                alert('异常:' + error);
+                lastBtn.disabled = false;
+                return;
+            })
+            lastBtn.disabled = false;
         }
         function jumpDetail(id) {
             switch (s1) {

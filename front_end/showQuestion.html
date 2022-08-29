@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>显示问题</title>
+</head>
+
+<body onload="initAJAX();checkToken()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+        var token = getCookie("token");
+        var userid = getCookie("uid");
+        var role = getCookie("role");
+        var tid = decodeURI(document.URL);
+        tid = tid.substring(tid.indexOf("=") + 1);
+    </script>
+    <div id="head" style="text-align: center;">
+        <h1>问题信息</h1>
+    </div>
+    <div id="body-div" style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+        <hr>
+        <script>
+            var divBody = document.getElementById('body-div');
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': '/entry/search/question/teacher',
+                'params': {
+                    'tid': tid
+                }
+            }).then((result) => {
+                const data = result.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    let array = data['objects'];
+                    Array.from(array).forEach(it => {
+                        const co = it['course'];
+                        const qu = it['question'];
+                        const qt = it['questionType'];
+                        const re = it['results'];
+                        const te = it['teacher'];
+                        var coIf = "";
+                        for (var key in co) {
+                            coIf = 'CID:' + key + '\t课程名:' + co[key];
+                        }
+                        var parent = document.createElement('div');
+                        parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                        parent.id = qu['id'];
+                        var p1 = document.createElement('p');
+                        p1.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        p1.innerHTML = coIf + '<br>问题:<b>' + qu['title'] + '</b>\t问题类型:' + qt + '<br>出题人:' + te['name'] + '\t总分:' + qu['score'];
+                        parent.appendChild(p1);
+                        var p2 = document.createElement('p');
+                        p2.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        getResult(qu['id']).then(res => {
+                            var str = "";
+                            Array.from(res).forEach(it => {
+                                str += '\t答题人:' + it['student']['name'] + '\t分数:' + (it['result']['isCheck'] ? it['result']['score'] : '未批改') + '<br>';
+                            })
+                            if (str == "") {
+                                str = "还没有回答";
+                            }
+                            p2.innerHTML = str;
+                        });
+                        parent.appendChild(p2);
+                        var jump = document.createElement('a');
+                        jump.innerHTML = '查看详情';
+                        jump.href = 'javascript:jumpDetail(' + qu['id'] + ')';
+                        jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                        parent.appendChild(jump);
+                        parent.appendChild(document.createElement('hr'));
+                        divBody.appendChild(parent);
+                    })
+                } else {
+                    alert('问题信息获取异常');
+                    window.history.back(-1);
+                }
+            }).catch((err) => {
+                alert('错误:' + err);
+                window.history.back(-1);
+            });
+            async function getResult(qid) {
+                var tmp = {
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/result/question',
+                    'params': {
+                        'qid': qid
+                    }
+                }
+                var str = "";
+                await axios(tmp).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        str = data['objects'];
+                    } else {
+                        str = "异常";
+                    }
+                }).catch(err => {
+                    str = "错误";
+                })
+                console.log(str);
+                return str;
+            }
+            function jumpDetail(qid) {
+                window.open(encodeURI('/homework-system/questionDetail.html?' + 'qid=' + qid), '_self');
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+
+</html>

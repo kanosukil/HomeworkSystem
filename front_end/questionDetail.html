@@ -191,6 +191,7 @@
                         txtc.id = 'extensionQues'
                         qcontent.appendChild(txtc);
                         if (!isStudent(role) || isResponse()) {
+                            var txta = document.createElement('a');
                             txta.download = 'http://localhost:10001/store/download/download?name=' + quAnswer;
                             txta.href = 'http://localhost:10001/store/download/download?name=' + quAnswer;
                             txta.innerText = '下载'
@@ -492,6 +493,60 @@
                 return false;
             }
         </script>
+        <h1>学生回答</h1>
+        <div id="result-div">
+            <hr>
+            <script>
+                var rd = document.getElementById('result-div');
+                axios({
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/result/question',
+                    'params': {
+                        'qid': qid
+                    }
+                }).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        let array = data['objects'];
+                        if (array == false) {
+                            rd.innerText = '还没有回答哟~';
+                        }
+                        Array.from(array).forEach(it => {
+                            const re = it['result'];
+                            const st = it['student'];
+                            var parent = document.createElement('div');
+                            parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                            parent.id = re['id'];
+                            var p = document.createElement('p');
+                            p.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                            p.innerHTML = '答题人:' + st['name'] + '\t得分' + re['score'] + '<br>回答:<b>' + (re['isFile'] ? "[file]" : re['content'].substring(0, 11) + '...') + '</b>';
+                            parent.appendChild(p);
+                            var jump = document.createElement('a');
+                            jump.innerHTML = '查看详情';
+                            jump.href = 'javascript:jumpDetail(' + re['id'] + ')';
+                            jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                            parent.appendChild(jump);
+                            parent.appendChild(document.createElement('hr'));
+                            rd.appendChild(parent);
+                        })
+                    } else {
+                        alert('问题信息获取异常');
+                        window.history.back(-1);
+                    }
+                }).catch((err) => {
+                    alert('错误:' + err);
+                    window.history.back(-1);
+                });
+                function jumpDetail(rid) {
+                    window.open(encodeURI('/homework-system/resultDetail.html?' + 'rid=' + rid), '_self');
+                }
+            </script>
+        </div>
     </div>
     <div id="tail" style="text-align: center;">
         <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">

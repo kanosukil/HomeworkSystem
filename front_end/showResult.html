@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>显示回答</title>
+</head>
+
+<body onload="initAJAX();checkToken()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+        var token = getCookie("token");
+        var userid = getCookie("uid");
+        var role = getCookie("role");
+        var sid = decodeURI(document.URL);
+        sid = sid.substring(sid.indexOf("=") + 1);
+    </script>
+    <div id="head" style="text-align: center;">
+        <h1>回答信息</h1>
+    </div>
+    <div id="body-div" style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+        <hr>
+        <script>
+            var divBody = document.getElementById('body-div');
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': '/entry/search/result/student',
+                'params': {
+                    'sid': sid
+                }
+            }).then(res => {
+                const data = res.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    let array = data['objects'];
+                    Array.from(array).forEach(it => {
+                        const qu = it['question'];
+                        const re = it['result'];
+                        const te = it['teacher'];
+                        const st = it['student'];
+                        var quIf = "";
+                        for (var key in qu) {
+                            quIf += '问题:' + qu[key] + "\tQid:" + key;
+                        }
+                        for (var key in te) {
+                            quIf += '\t出题人:' + te[key];
+                        }
+                        var parent = document.createElement('div');
+                        parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                        parent.id = re['id'];
+                        var p = document.createElement('p');
+                        p.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        p.innerHTML = '\n' + quIf + '<br>答题人:' + st['name'] + '\t回答:<b>' + (re['isFile'] ? "[file]" : re['content'].substring(0, 11) + '...') + '</b>\n得分:' + (re['isCheck'] ? re['score'] : '未批改');
+                        parent.appendChild(p);
+                        var jump = document.createElement('a');
+                        jump.innerHTML = '查看详情';
+                        jump.href = 'javascript:jumpDetail(' + re['id'] + ')';
+                        jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                        parent.appendChild(jump);
+                        parent.appendChild(document.createElement('hr'));
+                        divBody.appendChild(parent);
+                    })
+                } else {
+                    alert('回答信息获取异常');
+                    window.history.back(-1);
+                }
+            }).catch(err => {
+                alert('错误:' + err);
+                window.history.back(-1);
+            });
+            function jumpDetail(rid) {
+                window.open(encodeURI('/homework-system/resultDetail.html?' + 'rid=' + rid), '_self');
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+
+</html>

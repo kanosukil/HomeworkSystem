@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>显示课程</title>
+</head>
+
+<body onload="initAJAX();checkToken()" style="background-color: gray;">
+    <script src="js/commons.js"></script>
+    <script>
+        // console.log(document.cookie)
+        var token = getCookie("token");
+        var userid = getCookie("uid");
+        var role = getCookie("role");
+        var uid = decodeURI(document.URL);
+        var teacherFlag = false;
+        if (uid.substring(uid.indexOf('?') + 1, uid.indexOf('=')) == 'tid') {
+            teacherFlag = true;
+        }
+        uid = uid.substring(uid.indexOf('=') + 1);
+    </script>
+    <div id="head" style="text-align: center;">
+        <h1>课程信息</h1>
+    </div>
+    <div id="body-div" style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+        <hr>
+        <script>
+            var divBody = document.getElementById('body-div');
+            var url;
+            var params;
+            if (teacherFlag) {
+                url = '/entry/search/course/teacher'
+                params = {
+                    'tid': uid
+                }
+            } else {
+                url = '/entry/search/course/student'
+                params = {
+                    'sid': uid
+                }
+            }
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': url,
+                'params': params
+            }).then(res => {
+                const data = res.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    let array = data['objects'];
+                    Array.from(array).forEach(it => {
+                        const cour = it['course'];
+                        const teac = it['teachers'];
+                        const stud = it['students'];
+                        var parent = document.createElement('div');
+                        parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                        parent.id = cour['id'];
+                        var p1 = document.createElement('p');
+                        p1.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        p1.innerHTML = '课程名:<b>' + cour['name'] + '</b>\t教师数:' + cour['teacher_num'] + '\t学生数:' + cour['student_num'] + '...';
+                        parent.appendChild(p1);
+                        var p2 = document.createElement('p');
+                        p2.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        getQ(cour['id']).then(res => {
+                            var string = "";
+                            Array.from(res).forEach(qu => {
+                                string += '\nQID:' + qu['question']['id'] + '\t问题:' + qu['question']['title'] + '\n分数:' + qu['question']['score'] + '\t回答人数:' + Object.keys(qu['results']).length + '...'
+                            })
+                            p2.innerText = string;
+                        })
+                        parent.appendChild(p2);
+                        var p3 = document.createElement('p');
+                        p3.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        getR(cour['id']).then(res => {
+                            var string = "";
+                            Array.from(res).forEach(re => {
+                                var questionString = "";
+                                for (var key in re['question']) {
+                                    questionString += '\t题干:' + re['question'][key];
+                                }
+                                for (var key in re['teacher']) {
+                                    questionString += '\n出题人:' + re['teacher'][key];
+                                }
+                                string += '\n答题者:' + re['student']['name'] + questionString + '\t分数:' + (re['result']['isCheck'] ? re['result']['score'] : '未批改');
+                            })
+                            p3.innerText = string;
+                        })
+                        parent.appendChild(p3);
+                        var jump = document.createElement('a');
+                        jump.innerHTML = '查看详情';
+                        jump.href = 'javascript:jumpDetail(' + cour['id'] + ')';
+                        jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                        parent.appendChild(jump);
+                        parent.appendChild(document.createElement('hr'));
+                        divBody.appendChild(parent);
+                    })
+                } else {
+                    alert('课程信息获取异常');
+                    window.history.back(-1);
+                }
+            }).catch(err => {
+                alert('错误:' + err);
+                window.history.back(-1);
+            })
+            async function getQ(cid) {
+                var resu = "";
+                var tmp = {
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/question/course',
+                    'params': {
+                        'cid': cid
+                    }
+                }
+                await axios(tmp).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        resu = data['objects'];
+                    } else {
+                        resu = '异常';
+                    }
+                }).catch(err => {
+                    resu = '错误';
+                })
+                return resu;
+            }
+            async function getR(cid) {
+                var resu = "";
+                var tmp = {
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/result/course',
+                    'params': {
+                        'cid': cid
+                    }
+                }
+                await axios(tmp).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        resu = data['objects'];
+                    } else {
+                        resu = '异常';
+                    }
+                }).catch(err => {
+                    resu = '错误';
+                })
+                return resu;
+            }
+            function jumpDetail(cid) {
+                window.open(encodeURI('/homework-system/courseDetail.html?' + 'cid=' + cid), '_self');
+            }
+        </script>
+    </div>
+    <div id="tail" style="text-align: center;clear: both;margin: 3px;border: 3px;padding: 5px;position: relative;">
+        <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
+            <script>
+                getTime('time-p');
+            </script>
+        </p>
+        <a href="main.html" style="display: inline-block;margin:3px;border:3px;padding:10px;overflow:hidden;">返回主页</a>
+    </div>
+
+</html>

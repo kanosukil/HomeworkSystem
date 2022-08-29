@@ -373,6 +373,126 @@
             } 
         </script>
     </div>
+    <h1>课堂问题</h1>
+    <div id="question-div">
+        <hr>
+        <script>
+            var qd = document.getElementById('question-div');
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': '/entry/search/question/course',
+                'params': {
+                    'cid': cid
+                }
+            }).then(res => {
+                const data = res.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    let array = data['objects'];
+                    if (array == false) {
+                        qd.innerText = '还没有创建问题哟~';
+                    }
+                    Array.from(array).forEach(it => {
+                        const qu = it['question'];
+                        const qt = it['questionType'];
+                        const re = it['results'];
+                        const te = it['teacher'];
+                        var parent = document.createElement('div');
+                        parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                        parent.id = qu['id'];
+                        var p1 = document.createElement('p');
+                        p1.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        p1.innerHTML = '问题:<b>' + qu['title'] + '</b>\t问题类型:' + qt + '<br>出题人:' + te['name'] + '\t总分:' + qu['score'];
+                        parent.appendChild(p1);
+                        var jump = document.createElement('a');
+                        jump.innerHTML = '查看详情';
+                        jump.href = 'javascript:jumpDetailQ(' + qu['id'] + ')';
+                        jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                        parent.appendChild(jump);
+                        parent.appendChild(document.createElement('hr'));
+                        qd.appendChild(parent);
+                    })
+                } else {
+                    alert('问题信息获取异常');
+                    window.history.back(-1);
+                }
+            }).catch((err) => {
+                alert('错误:' + err);
+                window.history.back(-1);
+            });
+            function jumpDetailQ(qid) {
+                window.open(encodeURI('/homework-system/questionDetail.html?' + 'qid=' + qid), '_self');
+            }
+        </script>
+    </div>
+    <hr>
+    <h1>学生回答</h1>
+    <div id="result-div">
+        <hr>
+        <script>
+            var rd = document.getElementById('result-div');
+            axios({
+                'method': 'get',
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'token': token
+                },
+                'url': '/entry/search/result/course',
+                'params': {
+                    'cid': cid
+                }
+            }).then(res => {
+                const data = res.data;
+                console.log(data);
+                if (data['code'] == 200) {
+                    let array = data['objects'];
+                    if (array == false) {
+                        rd.innerText = '还没有回答哟~';
+                    }
+                    Array.from(array).forEach(it => {
+                        const qu = it['question'];
+                        const re = it['result'];
+                        const te = it['teacher'];
+                        const st = it['student'];
+                        var quIf = "";
+                        for (var key in qu) {
+                            quIf += '问题:' + qu[key] + "\tQid:" + key;
+                        }
+                        for (var key in te) {
+                            quIf += '\t出题人:' + te[key];
+                        }
+                        var parent = document.createElement('div');
+                        parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                        parent.id = re['id'];
+                        var p = document.createElement('p');
+                        p.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                        p.innerHTML = quIf + '<br>答题人:' + st['name'] + '\t得分' + re['score'] + '<br>回答:<b>' + (re['isFile'] ? "[file]" : re['content'].substring(0, 11) + '...') + '</b>';
+                        parent.appendChild(p);
+                        var jump = document.createElement('a');
+                        jump.innerHTML = '查看详情';
+                        jump.href = 'javascript:jumpDetailR(' + re['id'] + ')';
+                        jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                        parent.appendChild(jump);
+                        parent.appendChild(document.createElement('hr'));
+                        rd.appendChild(parent);
+                    })
+                } else {
+                    alert('问题信息获取异常');
+                    window.history.back(-1);
+                }
+            }).catch((err) => {
+                alert('错误:' + err);
+                window.history.back(-1);
+            });
+            function jumpDetailR(rid) {
+                window.open(encodeURI('/homework-system/resultDetail.html?' + 'rid=' + rid), '_self');
+            }
+        </script>
+    </div>
     <div id="tail" style="text-align: center;">
         <p id='time-p' style="display: inline-block; margin:3px;border:3px;padding:10px;overflow:hidden;">
             <script>
