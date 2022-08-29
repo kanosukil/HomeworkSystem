@@ -520,7 +520,7 @@ public class SearchController {
     public SearchVO<ResultQuestionDTO> getScoreByQID(@RequestParam("qid") Integer qid) {
         try {
             List<ResultQuestionDTO> res = find.resultBQuestion(qid);
-            if (res.size() == 0) {
+            if (res == null) {
                 throw new IOException("结果获取异常");
             }
             return new SearchVO<>(200, "OK", res);
