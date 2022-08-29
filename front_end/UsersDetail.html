@@ -13,6 +13,7 @@
     <script src="js/commons.js"></script>
     <script>
         var token = getCookie('token');
+        var role = getCookie('role');
         var uid = decodeURI(document.URL);
         uid = uid.substring(uid.indexOf('=') + 1).replace(/[^0-9]/g, '');
     </script>
@@ -119,6 +120,135 @@
                 introdction = err;
                 email = 'error!';
             })
+        </script>
+    </div>
+    <h1>教授课程</h1>
+    <div id="teacher-course">
+        <hr>
+        <script>
+            var tc = document.getElementById('teacher-course');
+            if (isTeacher(role)) {
+                axios({
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/course/teacher',
+                    'params': {
+                        'tid': uid
+                    }
+                }).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        let array = data['objects'];
+                        if (array == false) {
+                            tc.appendChild(document.createTextNode('还没有创建课程哟~'));
+                        }
+                        Array.from(array).forEach(it => {
+                            const cour = it['course'];
+                            const teac = it['teachers'];
+                            const stud = it['students'];
+                            if (cour == null) {
+                                tc.appendChild(document.createTextNode('没有创建课程!'))
+                            } else {
+                                var parent = simpleReques(cour, teac, stud);
+                                tc.appendChild(parent);
+                            }
+                        })
+                    } else {
+                        alert('问题信息获取异常');
+                        window.history.back(-1);
+                    }
+                }).catch((err) => {
+                    alert('错误:' + err);
+                    window.history.back(-1);
+                });
+            } else {
+                tc.appendChild(document.createTextNode("学生没有教授课程哟~"));
+            }
+            function jumpDetailT(cid) {
+                window.open(encodeURI('/homework-system/courseDetail.html?' + 'cid=' + cid), '_self');
+            }
+        </script>
+    </div>
+    <hr>
+    <h1>选修课程</h1>
+    <div id="student-course">
+        <hr>
+        <script>
+            var sc = document.getElementById('student-course');
+            if (isStudent(role)) {
+                axios({
+                    'method': 'get',
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/course/student',
+                    'params': {
+                        'sid': uid
+                    }
+                }).then(res => {
+                    const data = res.data;
+                    console.log(data);
+                    if (data['code'] == 200) {
+                        let array = data['objects'];
+                        if (array == false) {
+                            sc.appendChild(document.createTextNode('还没有选课哟~'));
+                        }
+                        Array.from(array).forEach(it => {
+                            const cour = it['course'];
+                            const teac = it['teachers'];
+                            const stud = it['students'];
+                            if (cour == null) {
+                                sc.appendChild(document.createTextNode('没有选修课程!'))
+                            } else {
+                                var parent = simpleReques(cour, teac, stud);
+                                sc.appendChild(parent);
+                            }
+
+                        })
+                    } else {
+                        alert('课程信息获取异常');
+                        window.history.back(-1);
+                    }
+                }).catch(err => {
+                    alert('错误:' + err);
+                    window.history.back(-1);
+                })
+            } else {
+                sc.appendChild(document.getElementById('只有学生才有选课资格哟~'));
+            }
+            function simpleReques(cour, teac, stud) {
+                var parent = document.createElement('div');
+                parent.style = 'clear:both;margin:3px;border:3px;padding:10px;';
+                parent.id = cour['id'];
+                var p1 = document.createElement('p');
+                p1.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                p1.innerHTML = '课程名:<b>' + cour['name'] + '</b>\t教师数:' + cour['teacher_num'] + '\t学生数:' + cour['student_num'] + '...';
+                parent.appendChild(p1);
+                var str = "老师:";
+                Array.from(teac).forEach(te => {
+                    str += te['name'] + ',';
+                })
+                str = str.substring(0, str.length - 1) + "<br>学生:"
+                Array.from(stud).forEach(st => {
+                    str += st['name'] + ',';
+                })
+                var p2 = document.createElement('p');
+                p2.style = 'font-size:medium;display:block;text-align:start;margin:3px;border:3px;padding:10px;overflow:hidden;';
+                p2.innerHTML = str.substring(0, str.length - 1);
+                parent.appendChild(p2);
+                var jump = document.createElement('a');
+                jump.innerHTML = '查看详情';
+                jump.href = 'javascript:jumpDetailT(' + cour['id'] + ')';
+                jump.style = 'font-size:medium;display:block;margin:3px;border:3px;padding:10px;'
+                parent.appendChild(jump);
+                parent.appendChild(document.createElement('hr'));
+                return parent;
+            }
         </script>
     </div>
     <div id="tail" style="text-align: center;">
