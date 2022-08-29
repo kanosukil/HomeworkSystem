@@ -456,12 +456,8 @@ public class HomeworkServiceImpl implements HomeworkService {
             flag = 2;
             QuestionType questionType = new QuestionType(qid, qtid);
             int update = 0;
-            int i = question_typeDao.accurateSelect(questionType);
-            if (i > 0 && question_typeDao.selectByQID(qid).size() > 1) {
-                update = question_typeDao.accurateDelete(questionType);
-            } else if (i <= 0) {
-                update = question_typeDao.createTypeOfQuestion(questionType);
-            }
+            update += question_typeDao.deleteByQID(qid);
+            update += question_typeDao.createTypeOfQuestion(questionType);
             flag = 3;
             logger.info("QuestionID: {} 更新完成", qid);
             logger.info("Question_Type 更新了 {} 条数据", update);
@@ -509,12 +505,8 @@ public class HomeworkServiceImpl implements HomeworkService {
             update[0] = questionDao.updateQuestion(question);
             flag = 2;
             QuestionType questionType = new QuestionType(qid, qtid);
-            int i = question_typeDao.accurateSelect(questionType);
-            if (i > 0 && question_typeDao.selectByQID(qid).size() > 1) {
-                update[1] = question_typeDao.accurateDelete(questionType);
-            } else if (i <= 0) {
-                update[1] = question_typeDao.createTypeOfQuestion(questionType);
-            }
+            update[1] += question_typeDao.deleteByQID(qid);
+            update[1] += question_typeDao.createTypeOfQuestion(questionType);
             flag = 3;
             logger.info("QuestionID: {} 更新完成", qid);
             logger.info("Question 更新了 {} 条数据", update[0]);
