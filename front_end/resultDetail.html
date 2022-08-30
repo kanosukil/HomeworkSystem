@@ -164,11 +164,13 @@
                         if (regImg(file)) {
                             questionImage.style = 'width: 500px;height: 90px;';
                             questionImage.src = 'http://localhost:10001/store/download/show?image-name=' + file;
+                            questionImage.id = 'quim';
                         } else {
                             questionFile.style = 'display: block;';
                             questionFile.download = 'http://localhost:10001/store/download/download?name=' + file;
                             questionFile.href = 'http://localhost:10001/store/download/download?name=' + file;
                             questionFile.innerText = '问题详情';
+                            questionFile.id = 'qufi';
                         }
                     } else {
                         questionMain.innerHTML = res['question']['title'] + ':&#10;' + res['question']['extension'];
@@ -205,12 +207,14 @@
                         var img = document.createElement('img');
                         img.src = 'http://localhost:10001/store/download/show/image-name=' + rContent;
                         img.style = 'width:500px;height:90px';
+                        img.id = 'reim';
                         con.appendChild(img);
                     } else {
                         var a = document.createElement('a');
                         a.href = 'http://localhost:10001/store/download/download?name=' + rContent;
                         a.download = 'http://localhost:10001/store/download/download?name=' + rContent;
                         a.innerText = '下载文件';
+                        a.id = 'refi';
                         con.appendChild(a);
                     }
                 }
@@ -358,6 +362,7 @@
                     updateBtn.disabled = false;
                     return;
                 }
+                alert('开始修改啦哟~');
                 stuanswer = content.value;
                 content.readOnly = false;
                 risfile.onclick = function () {
@@ -367,6 +372,12 @@
                             saveFile.click();
                         }
                     } else {
+                        var file = document.getElementById('reim');
+                        if (file == null) {
+                            file = document.getElementById('refi');
+                            file.style = 'display: none;';
+                        }
+                        content.style = 'max-height: 90px;min-height: 90px;max-width: 510px;min-width: 510px;background-color: azure;';
                         content.onclick = saveTxt.onclick;
                     }
                 }
@@ -378,6 +389,16 @@
                     updateBtn.disabled = false;
                     return;
                 } else {
+                    var upCon = "";
+                    if (risfile.checked) {
+                        if (content.tagName == 'A') {
+                            upCon = rContent;
+                        } else {
+                            upCon = content.value;
+                        }
+                    } else {
+                        upCon = content.value;
+                    }
                     const req = {
                         'method': 'post',
                         'headers': {
@@ -389,7 +410,7 @@
                             'sid': uid,
                             'result': {
                                 'id': rid,
-                                'content': content.value,
+                                'content': upCon,
                                 'isFile': risfile.checked,
                                 'isCheck': checked,
                                 'score': rScore,
@@ -455,6 +476,17 @@
                 location.reload();
             })
             delBtn.disabled = false;
+        }
+        function addPath(obj) {
+            let files = obj.files;
+            var reqq = axiosRequest(files, uid, token);
+            axios(reqq).then(res => {
+                var data = res.data;
+                console.log(data);
+                content.value = data;
+            }).catch(err => {
+                content.value = '错误:' + err;
+            })
         }
     </script>
     <div id="tail" style="text-align: center;">

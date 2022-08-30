@@ -92,6 +92,7 @@
                 if (code == 200) {
                     setCookie("uid", d['uid'], 5);
                     setCookie("token", d['object'], 5);
+                    setCookie('role', getCookieRole(d['isStudent'], d['isTeacher'], d['isAdmin']), 5);
                     const jumpBtn = document.createElement('a');
                     jumpBtn.id = 'jump';
                     jumpBtn.href = 'main.html';

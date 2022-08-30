@@ -319,8 +319,10 @@
                     qtitle.readOnly = false;
                     qscore.readOnly = false;
                     qContent.readOnly = false;
-                    qAnswer.readOnly = false;
-                    qComment.readOnly = false;
+                    if (!isStudent(role) || isResponse()) {
+                        qAnswer.readOnly = false;
+                        qComment.readOnly = false;
+                    }
                     oth.onclick = function () {
                         if (oth.checked) {
                             othText.readOnly = false;
@@ -338,8 +340,10 @@
                     qContent.readOnly = true;
                     qscore.readOnly = true;
                     qisfile.disabled = true;
-                    qAnswer.readOnly = true;
-                    qComment.readOnly = true;
+                    if (!isStudent(role) || isResponse()) {
+                        qAnswer.readOnly = true;
+                        qComment.readOnly = true;
+                    }
                     oth.disabled = true;
                     othText.readOnly = true;
                     downText.disabled = true;

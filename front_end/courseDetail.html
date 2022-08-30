@@ -176,7 +176,7 @@
                         cqBtn.disabled = true;
                         if (!isTeacher(role)) {
                             alert('不是老师不能教书哟~');
-                            tdropBtn.disabled = false;
+                            cqBtn.disabled = false;
                             return;
                         }
                         for (var i = 0; i < courseTid.length; i++) {
@@ -209,7 +209,7 @@
                             tmp['method'] = 'post';
                             tmp['url'] = '/entry/operation/teacher/u/course';
                             tmp['data'] = {
-                                'tid': courseTid[0],
+                                'tid': uid,
                                 'course': {
                                     'id': cid,
                                     'name': cname.value

@@ -22,7 +22,7 @@
     <div id="head" style="text-align: center;">
         <h1>回答信息</h1>
     </div>
-    <div id="body-div" style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+    <div id="body-div" style="text-align: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
         <hr>
         <script>
             var divBody = document.getElementById('body-div');
@@ -41,6 +41,9 @@
                 console.log(data);
                 if (data['code'] == 200) {
                     let array = data['objects'];
+                    if (array == false || array.length == 0) {
+                        divBody.appendChild(document.createTextNode('还未创建回答'));
+                    }
                     Array.from(array).forEach(it => {
                         const qu = it['question'];
                         const re = it['result'];

@@ -26,7 +26,7 @@
     <div id="head" style="text-align: center;">
         <h1>课程信息</h1>
     </div>
-    <div id="body-div" style="align-items: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
+    <div id="body-div" style="text-align: center;margin: 3px;border: 3px;padding: 5px;position: relative;clear: both;">
         <hr>
         <script>
             var divBody = document.getElementById('body-div');
@@ -56,6 +56,9 @@
                 console.log(data);
                 if (data['code'] == 200) {
                     let array = data['objects'];
+                    if (array == false || array.length == 0) {
+                        divBody.appendChild(document.createTextNode((teacherFlag ? '还未创建课程' : '还未选修课程')))
+                    }
                     Array.from(array).forEach(it => {
                         const cour = it['course'];
                         const teac = it['teachers'];

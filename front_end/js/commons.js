@@ -112,7 +112,7 @@ function isStudent(number) {
     return number == 1 || number == 3 || number == 5 || number == 7;
 }
 function isTeacher(number) {
-    return number == 2 || number == 6 || number == 7;
+    return number == 2 || number == 3 || number == 6 || number == 7;
 }
 function isAdmin(number) {
     return number == 4 || number == 5 || number == 6 || number == 7;

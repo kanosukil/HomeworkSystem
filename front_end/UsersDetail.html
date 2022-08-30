@@ -13,7 +13,6 @@
     <script src="js/commons.js"></script>
     <script>
         var token = getCookie('token');
-        var role = getCookie('role');
         var uid = decodeURI(document.URL);
         uid = uid.substring(uid.indexOf('=') + 1).replace(/[^0-9]/g, '');
     </script>
@@ -74,52 +73,57 @@
             var student = document.getElementById('student');
             var teacher = document.getElementById('teacher');
             var admin = document.getElementById('admin');
-            var request = {
-                'method': 'get',
-                'headers': {
-                    'Content-type': 'application/json',
-                    'token': token
-                },
-                'url': '/entry/search/user/get',
-                'params': {
-                    'uid': uid
-                }
-            };
-            axios(request).then(res => {
-                const data = res.data;
-                console.log(data['message']);
-                if (data['code'] == 200) {
-                    const userinfo = data['objects'][0]['user'];
-                    userroles = data['objects'][0]['roles'];
-                    Array.from(userroles).forEach(i => {
-                        switch (i) {
-                            case 'Student': student.checked = true; break;
-                            case 'Teacher': teacher.checked = true; break;
-                            case 'Admin': admin.checked = true; break;
-                        }
-                    })
-                    username = userinfo['name'];
-                    userpassword = userinfo['password_hash'];
-                    userhead_image = userinfo['head_image'];
-                    userintrodction = userinfo['introduction'];
-                    useremail = userinfo['email'];
-                    usercreate_time = userinfo['create_time'];
-                    namep.innerHTML = username;
-                    head_image.src = 'http://localhost:10001/store/download/show?image-name=' + getHeadImage(userhead_image);
-                    emailp.innerHTML = useremail;
-                    introdctionp.innerHTML = userintrodction;
-                } else {
-                    console.log('异常:' + data);
-                    username = 'exception!';
-                    introdction = data;
-                    email = 'exception!';
-                }
-            }).catch(err => {
-                console.log('错误:' + err);
-                username = 'error!';
-                introdction = err;
-                email = 'error!';
-            })
+            var role = 0;
+            async function getInfo() {
+                var roleE = 0;
+                await axios({
+                    'method': 'get',
+                    'headers': {
+                        'Content-type': 'application/json',
+                        'token': token
+                    },
+                    'url': '/entry/search/user/get',
+                    'params': {
+                        'uid': uid
+                    }
+                }).then(res => {
+                    const data = res.data;
+                    console.log(data['message']);
+                    if (data['code'] == 200) {
+                        const userinfo = data['objects'][0]['user'];
+                        userroles = data['objects'][0]['roles'];
+                        Array.from(userroles).forEach(i => {
+                            switch (i) {
+                                case 'Student': student.checked = true; roleE += 1; break;
+                                case 'Teacher': teacher.checked = true; roleE += 2; break;
+                                case 'Admin': admin.checked = true; roleE += 4; break;
+                            }
+                        })
+                        username = userinfo['name'];
+                        userpassword = userinfo['password_hash'];
+                        userhead_image = userinfo['head_image'];
+                        userintrodction = userinfo['introduction'];
+                        useremail = userinfo['email'];
+                        usercreate_time = userinfo['create_time'];
+                        namep.innerHTML = username;
+                        head_image.src = 'http://localhost:10001/store/download/show?image-name=' + getHeadImage(userhead_image);
+                        emailp.innerHTML = useremail;
+                        introdctionp.innerHTML = userintrodction;
+                    } else {
+                        console.log('异常:' + data);
+                        username = 'exception!';
+                        introdction = data;
+                        email = 'exception!';
+                    }
+                }).catch(err => {
+                    console.log('错误:' + err);
+                    username = 'error!';
+                    introdction = err;
+                    email = 'error!';
+                })
+                role = roleE;
+                return roleE;
+            }
         </script>
     </div>
     <h1>教授课程</h1>
@@ -127,46 +131,53 @@
         <hr>
         <script>
             var tc = document.getElementById('teacher-course');
-            if (isTeacher(role)) {
-                axios({
-                    'method': 'get',
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'token': token
-                    },
-                    'url': '/entry/search/course/teacher',
-                    'params': {
-                        'tid': uid
-                    }
-                }).then(res => {
-                    const data = res.data;
-                    console.log(data);
-                    if (data['code'] == 200) {
-                        let array = data['objects'];
-                        if (array == false) {
-                            tc.appendChild(document.createTextNode('还没有创建课程哟~'));
+            getInfo().then(res => {
+                role = res;
+                teacherCourse();
+                studentCourse();
+            });
+            async function teacherCourse() {
+                if (isTeacher(role)) {
+                    await axios({
+                        'method': 'get',
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'token': token
+                        },
+                        'url': '/entry/search/course/teacher',
+                        'params': {
+                            'tid': uid
                         }
-                        Array.from(array).forEach(it => {
-                            const cour = it['course'];
-                            const teac = it['teachers'];
-                            const stud = it['students'];
-                            if (cour == null) {
-                                tc.appendChild(document.createTextNode('没有创建课程!'))
-                            } else {
-                                var parent = simpleReques(cour, teac, stud);
-                                tc.appendChild(parent);
+                    }).then(res => {
+                        const data = res.data;
+                        console.log(data);
+                        if (data['code'] == 200) {
+                            let array = data['objects'];
+                            if (array == false) {
+                                tc.appendChild(document.createTextNode('还没有创建课程哟~'));
                             }
-                        })
-                    } else {
-                        alert('问题信息获取异常');
+                            Array.from(array).forEach(it => {
+                                const cour = it['course'];
+                                const teac = it['teachers'];
+                                const stud = it['students'];
+                                if (cour == null) {
+                                    tc.appendChild(document.createTextNode('没有创建课程!'))
+                                } else {
+                                    var parent = simpleReques(cour, teac, stud);
+                                    tc.appendChild(parent);
+                                }
+                            })
+                        } else {
+                            alert('问题信息获取异常');
+                            window.history.back(-1);
+                        }
+                    }).catch((err) => {
+                        alert('错误:' + err);
                         window.history.back(-1);
-                    }
-                }).catch((err) => {
-                    alert('错误:' + err);
-                    window.history.back(-1);
-                });
-            } else {
-                tc.appendChild(document.createTextNode("学生没有教授课程哟~"));
+                    });
+                } else {
+                    tc.appendChild(document.createTextNode("学生没有教授课程哟~"));
+                }
             }
             function jumpDetailT(cid) {
                 window.open(encodeURI('/homework-system/courseDetail.html?' + 'cid=' + cid), '_self');
@@ -179,47 +190,49 @@
         <hr>
         <script>
             var sc = document.getElementById('student-course');
-            if (isStudent(role)) {
-                axios({
-                    'method': 'get',
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'token': token
-                    },
-                    'url': '/entry/search/course/student',
-                    'params': {
-                        'sid': uid
-                    }
-                }).then(res => {
-                    const data = res.data;
-                    console.log(data);
-                    if (data['code'] == 200) {
-                        let array = data['objects'];
-                        if (array == false) {
-                            sc.appendChild(document.createTextNode('还没有选课哟~'));
+            async function studentCourse() {
+                if (isStudent(role)) {
+                    await axios({
+                        'method': 'get',
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'token': token
+                        },
+                        'url': '/entry/search/course/student',
+                        'params': {
+                            'sid': uid
                         }
-                        Array.from(array).forEach(it => {
-                            const cour = it['course'];
-                            const teac = it['teachers'];
-                            const stud = it['students'];
-                            if (cour == null) {
-                                sc.appendChild(document.createTextNode('没有选修课程!'))
-                            } else {
-                                var parent = simpleReques(cour, teac, stud);
-                                sc.appendChild(parent);
+                    }).then(res => {
+                        const data = res.data;
+                        console.log(data);
+                        if (data['code'] == 200) {
+                            let array = data['objects'];
+                            if (array == false) {
+                                sc.appendChild(document.createTextNode('还没有选课哟~'));
                             }
+                            Array.from(array).forEach(it => {
+                                const cour = it['course'];
+                                const teac = it['teachers'];
+                                const stud = it['students'];
+                                if (cour == null) {
+                                    sc.appendChild(document.createTextNode('没有选修课程!'))
+                                } else {
+                                    var parent = simpleReques(cour, teac, stud);
+                                    sc.appendChild(parent);
+                                }
 
-                        })
-                    } else {
-                        alert('课程信息获取异常');
+                            })
+                        } else {
+                            alert('课程信息获取异常');
+                            window.history.back(-1);
+                        }
+                    }).catch(err => {
+                        alert('错误:' + err);
                         window.history.back(-1);
-                    }
-                }).catch(err => {
-                    alert('错误:' + err);
-                    window.history.back(-1);
-                })
-            } else {
-                sc.appendChild(document.getElementById('只有学生才有选课资格哟~'));
+                    })
+                } else {
+                    sc.appendChild(document.createTextNode('只有学生才有选课资格哟~'));
+                }
             }
             function simpleReques(cour, teac, stud) {
                 var parent = document.createElement('div');
